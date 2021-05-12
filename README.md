@@ -1,0 +1,3 @@
+```
+htmlviewer directories... > output.html
+```

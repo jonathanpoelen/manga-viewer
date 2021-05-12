@@ -1,0 +1,197 @@
+#!/usr/bin/env sh
+echo '<html>
+<head>
+	<title>Viewer: '"$@"'</title>
+	<meta http-equiv="Content-Type" content="application/xhtml+xml;charset=UTF-8" />
+	<style>
+	body{margin:0;padding:0;background:#000}
+	img{display:block;margin:auto;max-width:100%}
+	</style>
+</head>
+<body>
+<img src="" />
+<script type="text/javascript">
+var names = ['
+
+find "$@" -type f | sort -V | sed '/\(Thumbs\.db\|\.directory\)$/d;s/^/"/;s/$/",/g'
+
+echo '];
+
+var n = +window.location.search.split("=")[1] || 0;
+var img = document.getElementsByTagName("img")[0];
+var body = document.body;
+var len = names.length;
+//var iswebkit = (/(webkit)[ \/]([\w.]+)/).exec(navigator.userAgent.toLowerCase())
+
+img.src = names[n];
+
+function add_rotation(deg) {
+	var r = img.getAttribute("style");
+	if (r) {
+		deg += Number(r.substring(25, r.length-4));
+	}
+	img.setAttribute("style", "-webkit-transform:rotate(" + deg + "deg)");
+}
+
+var key_move_actions = {
+	"80"/*p*/: function(){ n = Math.min(n+100, len-1); },
+	"67"/*c*/: function(){ n = Math.min(n+30, len-1); },
+	"68"/*d*/: function(){ n = Math.min(n+12, len-1); },
+	"69"/*e*/: function(){ n = Math.min(n+5, len-1); },
+	"81"/*q*/: function(){ n = Math.max(n-5, 0); },
+	"65"/*a*/: function(){ n = Math.max(n-12, 0); },
+	"90"/*z*/: function(){ n = Math.max(n-30, 0); },
+	"73"/*i*/: function(){ n = Math.max(n-100, 0); },
+	"37"/*←*/: function(){ n && --n; },
+	"83"/*s*/: function(){ n && --n; },
+	"86"/*v*/: function(){ n && --n; },
+	"78"/*n*/: function(){ n && --n; },
+	"188"/*,*/: function(){ n && --n; },
+	"186"/*;*/: function(){ n && --n; },
+	"39"/*→*/: function(){ n !== len && ++n; },
+	"89"/*y*/: function() { add_rotation(-90); },
+	"85"/*u*/: function() { add_rotation(90); },
+};
+key_move_actions["8"] = key_move_actions["37"];
+
+var normal_ctx = {
+	move: function() {
+		img.src = names[n];
+		body.scrollTop = 0;
+	},
+	next: function() {
+		img.src = names[++n];
+		body.scrollTop = 0;
+	}
+};
+var db_ctx = {
+	start: function() {
+		this.db = false;
+	},
+	move: function() {
+		this.db = false;
+		img.src = names[n];
+		body.scrollTop = 0;
+	},
+	next: function() {
+		if (this.dp) {
+			img.src = names[++n];
+		}
+		this.dp = !this.dp;
+		body.scrollTop = 0;
+	}
+};
+var hz_ctx = {
+	update_n: function() {
+		var es = this.eimgs.children;
+		var top = body.scrollTop + body.clientHeight;
+		var pos = (es[n] && es[n].offsetTop <= body.scrollTop) ? n : 0;
+		var len = names.length - n;
+		var half, middle;
+		while (len > 0) {
+			half = ~~(len / 2);
+			middle = pos + half;
+			if (es[middle].offsetTop + es[middle].clientHeight < top) {
+				pos = middle + 1;
+				len = len - half - 1;
+			}
+			else {
+				len = half;
+			}
+		}
+		n = pos == names.length ? pos - 1 : pos;
+	},
+	start: function() {
+		if (!this.eimgs) {
+			var div = document.createElement("div");
+			for (var i = 0; i < len; ++i) {
+				var e = document.createElement("img");
+				e.src = names[i];
+				div.appendChild(e);
+			}
+			this.eimgs = div;
+
+			var acts = {};
+			for (var k in key_move_actions) {
+				acts[k] = (function(a, self){
+					return function() {
+						self.update_n();
+						a();
+					};
+				})(key_move_actions[k], this);
+			}
+			this.old_acts = key_move_actions;
+			this.new_acts = acts;
+		}
+
+		body.removeChild(img);
+		body.appendChild(this.eimgs);
+		key_move_actions = this.new_acts;
+
+		this.move();
+	},
+	stop: function() {
+		this.update_n();
+		img.src = names[n];
+		body.removeChild(this.eimgs);
+		body.appendChild(img);
+		key_move_actions = this.old_acts;
+		body.scrollTop = 0;
+	},
+	move: function() {
+		body.scrollTop = this.eimgs.children[n].offsetTop;
+	},
+	next: function() {}
+};
+
+var key_contexts = {
+	"76"/*l*/: hz_ctx,
+	"74"/*j*/: db_ctx,
+	"75"/*k*/: normal_ctx
+};
+
+var ctx = normal_ctx;
+// ctx.start();
+
+var a;
+window.addEventListener(/*iswebkit ? */"keydown"/* : "keypress"*/, function(e){
+	if ((e.keyCode === 0 /*simple quote*/ || (e.keyCode === 32 && !e.altKey)) && body.clientHeight + /*(iswebkit ? */body.scrollTop/* : e.pageY)*/ >= body.scrollHeight - 20 && n !== len){
+		e.preventDefault();
+		ctx.next();
+		//window.location.search = "?n="+n;
+		return false;
+	}
+	else if ((a = key_move_actions[e.keyCode])) {
+		e.preventDefault();
+		a();
+		ctx.move();
+		return false;
+	}
+	else if ((a = key_contexts[e.keyCode])) {
+		e.preventDefault();
+		ctx.stop && ctx.stop();
+		ctx = a;
+		ctx.start && ctx.start();
+		return false;
+	}
+	else if ((e.keyCode === 32 && e.altKey) || e.keyCode === 190 /*.*/ || e.keyCode === 220 /*\*/ || e.keyCode === 77 /*m*/ || e.keyCode === 66 /*b*/ || e.keyCode === 88/*x*/ || e.keyCode === 221 /*]*/) {
+		if (body.scrollTop === 0) {
+			n && --n;
+			ctx.move();
+		}
+		else {
+			e.preventDefault();
+			body.scrollTop -= 800;
+		}
+		return false;
+	}
+	else if (e.keyCode === 0 /*simple quote*/) {
+		e.preventDefault();
+		body.scrollTop += body.clientHeight - 10;
+		return false;
+	}
+	return true;
+}, false);
+</script>
+</body>
+</html>'
