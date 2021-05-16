@@ -1,197 +1,710 @@
-#!/usr/bin/env sh
-echo '<html>
+#!/usr/bin/env bash
+
+set -e
+
+inputs='# default input.conf
+p next 100
+c next 30
+d next 12
+e next 5
+q prev 5
+a prev 12
+z prev 30
+i prev 100
+s prev
+v prev
+n prev
+, prev
+; prev
+left prev
+right next
+y rotate -90
+u rotate 90
+l mode single
+j mode double
+k mode normal
+. pgup_or_prev
+\ pgup_or_prev
+m pgup_or_prev
+b pgup_or_prev
+x pgup_or_prev
+] pgup_or_prev
+space pgdown_or_next
+shift+space pgup_or_prev
+g info
+f toggle_auto_scroll
+w add_interval -25
+r add_interval 25
+'
+
+header='<style>
+body{margin:0;padding:0;background:#000}
+img{display:block;margin:auto;max-width:100%}
+#info{padding:.5em;position:absolute;top:0px;color:#000;background:#eee;}
+</style>'
+
+config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
+inputconf="$config"/input.conf
+
+usage="Generate a html viewer file
+
+  $0: [-n] [-s] [-S] [-f <filename>] [-i <filename>] [-e <html>] [-c <command>] [-t <title>] directory...
+  $0: [-p]
+  $0: [-K]
+
+  -h
+      Show this help.
+
+  -n
+      Do not load default configuration files. By default load $inputconf.
+
+  -s
+      Sort input directories (default).
+
+  -S
+      Do not sort input directories.
+
+  -p
+      Print default keyboard mapping.
+
+  -K
+      Generates a html file which displays the name of the keys.
+
+  -f <filename>
+      Read directories from <filename>. If - is specified as filename,
+      directories are read from the standard input.
+
+        find -type d | fzf | htmlviewer -f-
+
+  -i <filename>
+      Specify configuration file. See input.conf.
+
+  -e <html>
+      Specify content of html header. By default its contains the html style.
+
+  -c <command>
+      Add a command. See input.conf syntax.
+
+  -t <title>
+      Specify title page.
+
+
+  input.conf
+      The input.conf file consists of a list of key bindings, for example:
+
+        n next       # go to the next image with the n key
+        m rotate 90  # rotates images 90 degrees
+
+      Each line maps a key to an input command.
+
+      In general, keys can be combined with Shift, Ctrl and Alt:
+
+        shift+Space pgup_or_prev
+
+
+  input.conf syntax
+      <key> <command> [<args>...]
+
+      Newlines always start a new binding. # starts a comment.
+      To bind commands to the # key, SHARP can be used.
+
+      <key> is either the literal character the key produces (ASCII,
+      Unicode character or Javascript KeyEvent.key). See -K flag.
+
+      <command> is the command itself. It consists of the command name
+      and multiple (or none) arguments, all separated by whitespace.
+
+  Special key names
+      space
+      sharp alias for #
+      plus alias for +
+      pgup alias for PageUp
+      pgdown alias for PageDown
+      up alias for ArrowUp
+      down alias for ArrowDown
+      left alias for ArrowLeft
+      right alias for ArrowRight
+
+      Note: aliases are insensitive case
+
+  Commands
+      next [n=1]
+          Advance n images. A negative number goes back n images.
+
+      prev [n=1]
+          Equivalent to next -n.
+
+      rotate <deg>
+          Rotate an images.
+
+      pgup
+
+      pgdown
+
+      pgdown_or_next [pixel_distance=20]
+          Next image when at the bottom of the page, otherwise scroll down.
+
+      pgup_or_prev [pixel_distance=20]
+          Previous image when at the top of the page, otherwise scroll up.
+
+      mode {normal|single|double}
+          - single: all images display on one page.
+          - double: once on 2, the commands pgdown_or_next/pgup_or_prev go to
+                    top/bottom of the page rather than go to the next/prev
+                    image.
+
+      info
+          Show current image position.
+
+      auto_scroll [ms_delay=800]
+          Start auto scroll with specific delay.
+
+      toggle_auto_scroll [ms_delay=800]
+          Resume or stop auto scroll. Equivalent to auto_scroll when not started.
+
+      add_interval <ms_delay>
+          Add delay of auto scroll. Delay can be negative.
+
+  COPYRIGHT
+       By Jonathan Poelen
+       License MIT
+       https://github.com/jonathanpoelen/manga-viewer
+"
+
+declare -A modes=(
+  [normal]=normalMode
+  [single]=singlePageMode
+  [double]=doublePageMode
+)
+
+declare -A fns=(
+  [next]=1
+  [prev]=1
+  [rotate]=1
+  [mode]=1
+  [pgup]=1
+  [pgdown]=1
+  [pgdown_or_next]=1
+  [pgup_or_prev]=1
+  [info]=1
+  [toggle_auto_scroll]=1
+  [auto_scroll]=1
+  [add_interval]=1
+)
+
+declare -A remap=(
+  [space]=' '
+  [left]='ArrowLeft'
+  [right]='ArrowRight'
+  [up]='ArrowUp'
+  [down]='ArrowDown'
+  [pgup]='PageUp'
+  [pgdown]='PageDown'
+  [sharp]='#'
+  [plus]='+'
+  ['\']='\\'
+  [\']=\\\'
+)
+
+check_n()
+{
+  local -i n=$(($#-1))
+  if [[ $n -ne $1 ]]; then
+    error="requires $1 argument, $n but were provided"
+    return 1
+  fi
+}
+
+check_int()
+{
+  if [[ $# -ne 1 ]]; then
+    error="requires 1 argument, $# but were provided"
+    return 1
+  fi
+
+  local -i n=$1
+  if [[ "$1" != "$n" ]]; then
+    error="bad argument: $1 is not a number"
+    return 1
+  fi
+}
+
+next()
+{
+  if [[ $# -eq 0 ]]; then
+    code='mode.advance(1);'
+  else
+    check_int "$@"
+    code="mode.advance($1);"
+  fi
+}
+
+prev()
+{
+  if [[ $# -eq 0 ]]; then
+    code='mode.advance(-1);'
+  else
+    check_int "$@"
+    local -i n=$1
+    ((n=-n))
+    code="mode.advance($n);"
+  fi
+}
+
+rotate()
+{
+  check_int "$@"
+  code="rotate($1);"
+}
+
+mode()
+{
+  check_n 1 "$@"
+  local mode=${modes[$1]}
+  if [[ -z $mode ]]; then
+    error="unknown mode '$1'"
+  fi
+  code="if (mode !== $mode) { mode.stop(); mode = $mode; mode.start(); }"
+}
+
+pgup_or_prev()
+{
+  if [[ $# -eq 0 ]]; then
+    code='upOrPrev(20)'
+  else
+    check_int "$@"
+    code="upOrPrev($1)"
+  fi
+}
+
+pgdown_or_next()
+{
+  if [[ $# -eq 0 ]]; then
+    code='downOrNext(20)'
+  else
+    check_int "$@"
+    code="downOrNext($1)"
+  fi
+}
+
+pgup() { check_n 0 ; code='body.scrollTop -= body.clientHeight' ; }
+pgdown() { check_n 0 ; code='body.scrollTop += body.clientHeight' ; }
+
+info() { code='showImageInfo()' ; }
+
+auto_scroll()
+{
+  if [[ $# -eq 0 ]]; then
+    code='startAutoScroll(800)' ;
+  else
+    check_int "$@"
+    code="startAutoScroll($1)"
+  fi
+}
+
+toggle_auto_scroll()
+{
+  if [[ $# -eq 0 ]]; then
+    code='toggleAutoScroll(800)' ;
+  else
+    check_int "$@"
+    code="toggleAutoScroll($1)"
+  fi
+}
+
+add_interval()
+{
+  check_int "$@"
+  code="addAutoScrollInterval($1)"
+}
+
+inputdirs=''
+hasinput=0
+sort=1
+title="${@:0:200}"
+declare -a keys=()
+
+while getopts 'sSnpKi:c:e:t:f:h?' opt ; do
+  case $opt in
+    s) sort=1;;
+    S) sort=0;;
+    n) inputconf=''; hasinput=0;;
+    i) inputconf="$OPTARG"; hasinput=1;;
+    e) header="$OPTARG";;
+    c) keys+=($OPTIND "$OPTARG");;
+    t) title="$OPTARG";;
+    f) inputdirs="$OPTARG";;
+    p) echo -n "$inputs"; exit;;
+    K) echo '<!DOCTYPE html>
+<html><head><title>Key viewer</title><meta charset="Utf-8"/></head>
+<p>Press keys on the keyboard to see what the KeyboardEvent'\''s key values is for each one.</p>
+<div id="output"></div>
+<script>const output = document.getElementById("output");
+window.addEventListener("keydown", function(event) {
+  const p = document.createElement("p");
+  p.textContent = `key="${event.key}"`;
+  output.appendChild(p);
+}, true);
+</script></body></html>'; exit;;
+    h|?) echo "$usage"; exit;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+shortcuts=()
+
+parse_input_line()
+{
+  local key=$1
+  [[ ${key[0]} != '#' ]] || return
+
+  local fn=$2
+  [[ ${fn[0]} != '#' ]] || {
+    error="key without command"
+    return 1
+  }
+
+  if [[ -z $fn ]]; then
+    error='Empty command'
+    return 1
+  fi
+
+  if [[ -z ${fns[$fn]} ]]; then
+    error="Unknown command '$fn'"
+    return 1
+  fi
+
+  shift 2
+
+  # strip comment
+  local -a args=()
+  for arg in "$@"; do
+    [[ ${arg[0]} != '#' ]] || break
+    args+=("$arg")
+  done
+
+  $fn "${args[@]}" || error="$fn: $error"
+
+  # extract controls and convert key to lowercase
+  local -A control=([alt]=0 [ctrl]=0 [shift]=0 [meta]=0)
+  local ifs="$IFS"
+  IFS=+
+  local -a keys=($key)
+  IFS="$ifs"
+  for key in "${keys[@]}"; do
+    key=${key,,}
+    control["$key"]=1
+  done
+
+  local newkey="${remap[$key]}"
+  [[ -z $newkey ]] || key="$newkey"
+  shortcuts+=("{alt: ${control[alt]}, ctrl: ${control[ctrl]}, shift: ${control[shift]}, meta: ${control[meta]}, key: '$key', action: function(){ $code }},"$'\n')
+}
+
+# read input.conf
+if [[ -f "$inputconf" ]]; then
+  inputs="$(<$inputconf)"
+elif [[ $hasinput -eq 1 ]]; then
+  echo "Unknown '$inputconf'" >&2
+  exit 1
+fi
+
+# parse input.conf
+nline=0
+errors=''
+while read -r line ; do
+  ((++nline))
+  [[ -n $line ]] || continue
+  error=
+  parse_input_line $line ||:
+  [[ -z $error ]] || errors+="line $nline: $error in '$line'"$'\n'
+done <<<"$inputs"
+
+for ((i=0; i < ${#keys[@]}; i+=2)); do
+  error=
+  cmd="${keys[$((i+1))]}"
+  parse_input_line $cmd ||:
+  [[ -z $error ]] || errors+="arg ${keys[$i]}: $error in '$cmd'"$'\n'
+done
+
+if [[ -n $errors ]]; then
+  echo -n "$errors" >&2
+  exit 2
+fi
+
+# read input directories
+declare -a dirs=()
+if [[ -n $inputdirs ]]; then
+  [[ $inputdirs != '-' ]] || inputdirs=/dev/stdin
+  while read -r path; do
+    dirs+=("$path")
+  done <"$inputdirs"
+fi
+
+
+echo '<!DOCTYPE html>
+<html>
 <head>
-	<title>Viewer: '"$@"'</title>
-	<meta http-equiv="Content-Type" content="application/xhtml+xml;charset=UTF-8" />
-	<style>
-	body{margin:0;padding:0;background:#000}
-	img{display:block;margin:auto;max-width:100%}
-	</style>
+	<title>Viewer: '"$title"'</title>
+	<meta charset="Utf-8"/>
+	<meta http-equiv="cache-control" content="max-age=0"/>
+  <meta http-equiv="cache-control" content="no-cache"/>
+  <meta http-equiv="expires" content="0"/>
+  <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+	'"$header"'
 </head>
 <body>
 <img src="" />
+<div id="info" style="display:none;z-index=10"></div>
 <script type="text/javascript">
-var names = ['
+const names = ['
 
-find "$@" -type f | sort -V | sed '/\(Thumbs\.db\|\.directory\)$/d;s/^/"/;s/$/",/g'
+{
+  if [[ $sort -eq 1 ]]; then
+    find "$@" "${dirs[@]}" -type f | sort -V
+  else
+    for d in "$@" "${dirs[@]}"; do
+      find "$d" -type f | sort -V
+    done
+  fi
+} | sed '/\(Thumbs\.db\|\.directory\)$/d;s/"/\"/;s/^/"/;s/$/",/g'
 
 echo '];
 
-var n = +window.location.search.split("=")[1] || 0;
-var img = document.getElementsByTagName("img")[0];
-var body = document.body;
-var len = names.length;
-//var iswebkit = (/(webkit)[ \/]([\w.]+)/).exec(navigator.userAgent.toLowerCase())
+let n = +window.location.search.split("=")[1] || 0;
+const img = document.getElementsByTagName("img")[0];
+const body = document.documentElement;
+const len = names.length;
 
 img.src = names[n];
 
-function add_rotation(deg) {
-	var r = img.getAttribute("style");
+const min = Math.min;
+const max = Math.max;
+
+const rotate = function(deg) {
+	const r = img.getAttribute("style");
 	if (r) {
 		deg += Number(r.substring(25, r.length-4));
 	}
-	img.setAttribute("style", "-webkit-transform:rotate(" + deg + "deg)");
-}
-
-var key_move_actions = {
-	"80"/*p*/: function(){ n = Math.min(n+100, len-1); },
-	"67"/*c*/: function(){ n = Math.min(n+30, len-1); },
-	"68"/*d*/: function(){ n = Math.min(n+12, len-1); },
-	"69"/*e*/: function(){ n = Math.min(n+5, len-1); },
-	"81"/*q*/: function(){ n = Math.max(n-5, 0); },
-	"65"/*a*/: function(){ n = Math.max(n-12, 0); },
-	"90"/*z*/: function(){ n = Math.max(n-30, 0); },
-	"73"/*i*/: function(){ n = Math.max(n-100, 0); },
-	"37"/*←*/: function(){ n && --n; },
-	"83"/*s*/: function(){ n && --n; },
-	"86"/*v*/: function(){ n && --n; },
-	"78"/*n*/: function(){ n && --n; },
-	"188"/*,*/: function(){ n && --n; },
-	"186"/*;*/: function(){ n && --n; },
-	"39"/*→*/: function(){ n !== len && ++n; },
-	"89"/*y*/: function() { add_rotation(-90); },
-	"85"/*u*/: function() { add_rotation(90); },
+	img.setAttribute("style", `transform:rotate(${deg}deg)`);
 };
-key_move_actions["8"] = key_move_actions["37"];
 
-var normal_ctx = {
-	move: function() {
+const showImageInfo = (function() {
+  const info = document.getElementById("info");
+  const removeInfo = function() {
+    info.style.display = "none";
+    window.removeEventListener("keydown", removeInfo, true);
+  };
+  return function() {
+    info.textContent = `[${n}/${len}] ${names[n]}`;
+    info.style.display = "";
+    info.style.top = `${body.scrollTop}px`;
+    window.addEventListener("keydown", removeInfo, true);
+  };
+})();
+
+const toBottomOnLoad = function() {
+  img.onload = function(e) {
+    body.scrollTop = img.clientHeight;
+    img.onload = undefined;
+  };
+};
+
+const normalMode = {
+  start: function() {},
+  stop: function() {},
+	next: function() {
+    if (n !== len) {
+      img.src = names[++n];
+      body.scrollTop = 0;
+    }
+	},
+	prev: function() {
+    if (n) {
+      img.src = names[--n];
+      toBottomOnLoad();
+    }
+	},
+	advance: function(x) {
+    n = max(0, min(n+x, len-1));
 		img.src = names[n];
 		body.scrollTop = 0;
 	},
-	next: function() {
-		img.src = names[++n];
-		body.scrollTop = 0;
-	}
 };
-var db_ctx = {
+
+const doublePageMode = {
 	start: function() {
 		this.db = false;
 	},
-	move: function() {
-		this.db = false;
-		img.src = names[n];
-		body.scrollTop = 0;
-	},
+  stop: function() {},
 	next: function() {
 		if (this.dp) {
+      if (n === len) {
+        return;
+      }
 			img.src = names[++n];
 		}
 		this.dp = !this.dp;
 		body.scrollTop = 0;
-	}
+	},
+	prev: function() {
+		if (this.dp) {
+      if (!n) {
+        return;
+      }
+			img.src = names[--n];
+      toBottomOnLoad();
+		}
+		else {
+      body.scrollTop = img.clientHeight;
+    }
+		this.dp = !this.dp;
+	},
+	advance: function(x) {
+		this.db = false;
+    n = max(0, min(n+x, len-1));
+		img.src = names[n];
+		body.scrollTop = 0;
+	},
 };
-var hz_ctx = {
-	update_n: function() {
-		var es = this.eimgs.children;
-		var top = body.scrollTop + body.clientHeight;
-		var pos = (es[n] && es[n].offsetTop <= body.scrollTop) ? n : 0;
-		var len = names.length - n;
-		var half, middle;
-		while (len > 0) {
-			half = ~~(len / 2);
+
+const singlePageMode = {
+	updateN: function() {
+		const es = this.eimgs.children;
+		const top = body.scrollTop + body.clientHeight;
+		let pos = (es[n] && es[n].offsetTop <= body.scrollTop) ? n : 0;
+		let count = len - pos;
+		let half, middle, img;
+		while (count > 0) {
+			half = ~~(count / 2);
 			middle = pos + half;
-			if (es[middle].offsetTop + es[middle].clientHeight < top) {
+      img = es[middle];
+			if (img.offsetTop + img.clientHeight < top) {
 				pos = middle + 1;
-				len = len - half - 1;
+				count = count - half - 1;
 			}
 			else {
-				len = half;
+				count = half;
 			}
 		}
-		n = pos == names.length ? pos - 1 : pos;
+		n = (pos === count) ? max(0, pos - 1) : pos;
 	},
 	start: function() {
 		if (!this.eimgs) {
-			var div = document.createElement("div");
-			for (var i = 0; i < len; ++i) {
-				var e = document.createElement("img");
+			const div = document.createElement("div");
+			for (let i = 0; i < len; ++i) {
+				const e = document.createElement("img");
 				e.src = names[i];
 				div.appendChild(e);
 			}
 			this.eimgs = div;
-
-			var acts = {};
-			for (var k in key_move_actions) {
-				acts[k] = (function(a, self){
-					return function() {
-						self.update_n();
-						a();
-					};
-				})(key_move_actions[k], this);
-			}
-			this.old_acts = key_move_actions;
-			this.new_acts = acts;
 		}
 
-		body.removeChild(img);
-		body.appendChild(this.eimgs);
-		key_move_actions = this.new_acts;
+		document.body.removeChild(img);
+		document.body.appendChild(this.eimgs);
 
-		this.move();
+    this.advance(0);
 	},
 	stop: function() {
-		this.update_n();
+		this.updateN();
 		img.src = names[n];
-		body.removeChild(this.eimgs);
-		body.appendChild(img);
-		key_move_actions = this.old_acts;
+		document.body.removeChild(this.eimgs);
+		document.body.appendChild(img);
 		body.scrollTop = 0;
 	},
-	move: function() {
+	next: function() {},
+	prev: function() {},
+	advance: function(x) {
+    this.updateN();
+    n = max(0, min(n+x, len-1));
 		body.scrollTop = this.eimgs.children[n].offsetTop;
 	},
-	next: function() {}
 };
 
-var key_contexts = {
-	"76"/*l*/: hz_ctx,
-	"74"/*j*/: db_ctx,
-	"75"/*k*/: normal_ctx
-};
-
-var ctx = normal_ctx;
+let mode = normalMode;
 // ctx.start();
 
-var a;
-window.addEventListener(/*iswebkit ? */"keydown"/* : "keypress"*/, function(e){
-	if ((e.keyCode === 0 /*simple quote*/ || (e.keyCode === 32 && !e.altKey)) && body.clientHeight + /*(iswebkit ? */body.scrollTop/* : e.pageY)*/ >= body.scrollHeight - 20 && n !== len){
-		e.preventDefault();
-		ctx.next();
-		//window.location.search = "?n="+n;
-		return false;
-	}
-	else if ((a = key_move_actions[e.keyCode])) {
-		e.preventDefault();
-		a();
-		ctx.move();
-		return false;
-	}
-	else if ((a = key_contexts[e.keyCode])) {
-		e.preventDefault();
-		ctx.stop && ctx.stop();
-		ctx = a;
-		ctx.start && ctx.start();
-		return false;
-	}
-	else if ((e.keyCode === 32 && e.altKey) || e.keyCode === 190 /*.*/ || e.keyCode === 220 /*\*/ || e.keyCode === 77 /*m*/ || e.keyCode === 66 /*b*/ || e.keyCode === 88/*x*/ || e.keyCode === 221 /*]*/) {
-		if (body.scrollTop === 0) {
-			n && --n;
-			ctx.move();
-		}
-		else {
-			e.preventDefault();
-			body.scrollTop -= 800;
-		}
-		return false;
-	}
-	else if (e.keyCode === 0 /*simple quote*/) {
-		e.preventDefault();
-		body.scrollTop += body.clientHeight - 10;
-		return false;
-	}
+const downOrNext = function(d) {
+  if (body.scrollTop + body.clientHeight >= body.scrollHeight - d) {
+    mode.next();
+  }
+  else {
+    body.scrollTop += body.clientHeight;
+  }
+};
+
+const upOrPrev = function(d) {
+  if (body.scrollTop == 0) {
+    mode.prev();
+  }
+  else {
+    body.scrollTop -= body.clientHeight;
+  }
+};
+
+//@{
+let autoScrollDelay = null;
+let autoScrollTimerId = null;
+
+const startAutoScroll = function(delay) {
+  console.log(`delay: ${delay}`);
+  clearInterval(autoScrollTimerId);
+  autoScrollDelay = delay;
+  autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, 20);
+};
+
+const toggleAutoScroll = function(delay) {
+  if (autoScrollDelay === null) {
+    startAutoScroll(delay);
+  }
+  else if (autoScrollTimerId === null) {
+    autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, 20);
+  }
+  else {
+    clearInterval(autoScrollTimerId);
+    autoScrollTimerId = null;
+  }
+};
+
+const addAutoScrollInterval = function(delay) {
+  if (autoScrollTimerId !== null) {
+    clearInterval(autoScrollTimerId);
+    autoScrollDelay = max(0, autoScrollDelay + delay);
+    console.log(`autoScrollDelay: ${autoScrollDelay} (+${delay})`);
+    autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, 20);
+  }
+};
+//@}
+
+const actionsByKeys = (function(){
+  const actionsByKeys = {};
+  for (const d of [
+'"${shortcuts[@]}"']) {
+    let actionsByControls = actionsByKeys[d.key];
+    if (!actionsByControls) {
+      actionsByControls = {};
+      actionsByKeys[d.key] = actionsByControls;
+    }
+    actionsByControls[d.alt + (d.ctrl << 1) + (d.shift << 2) + (d.meta << 3)] = d.action;
+  }
+  return actionsByKeys;
+})();
+
+window.addEventListener("keydown", function(e) {
+  let action = actionsByKeys[e.key];
+  if (action) {
+    action = action[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
+    if (action) {
+      e.preventDefault();
+      e.stopPropagation();
+      action();
+      //window.location.search = "?n="+n;
+      return false;
+    }
+  }
 	return true;
-}, false);
+}, true);
 </script>
 </body>
 </html>'

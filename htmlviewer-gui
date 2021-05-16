@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+set -e
+
+cmd=htmlviewer
+if ! command $cmd &>/dev/null; then
+  cmd="$(basename "$0")"/htmlviewer
+  if [[ ! -f "$cmd" ]]; then
+    zenity --error --text 'htmlviewer not found'
+    exit 1
+  fi
+fi
+
+files=()
+ifs="$IFS"
+IFS=$'\n'
+files=($(zenity --title="Select directories" --file-selection --directory --multiple --separator=$'\n')) || exit 1
+IFS="$ifs"
+
+output="$(zenity --title="Html output file" --file-selection --file-filter='*.html' --filename=view.html --confirm-overwrite --save)" || exit 1
+
+exec $cmd -- "${files[@]}" > "$output"
