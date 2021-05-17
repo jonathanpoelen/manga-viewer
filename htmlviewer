@@ -580,7 +580,7 @@ echo '<!DOCTYPE html>
 <img src="" />
 <div id="info" style="display:none;z-index=10"></div>
 <script type="text/javascript">
-const names = ['
+const filenames = ['
 
 {
   if [[ $sort -eq 1 ]]; then
@@ -594,10 +594,10 @@ const names = ['
 
 echo '];
 
-let n = +window.location.search.split("=")[1] || 0;
+let ifile = +window.location.search.split("=")[1] || 0;
 const img = document.getElementsByTagName("img")[0];
 const body = document.documentElement;
-const len = names.length;
+const nbFilename = filenames.length;
 
 const min = Math.min;
 const max = Math.max;
@@ -644,24 +644,24 @@ const scrollOnImageAfterDelay = function(image, delay, addTop) {
 
 const normalMode = {
   start: function() {
-    img.src = names[n];
+    img.src = filenames[ifile];
   },
   stop: function() {},
 	next: function() {
-    if (n !== len) {
-      img.src = names[++n];
+    if (ifile !== nbFilename) {
+      img.src = filenames[++ifile];
       body.scrollTop = 0;
     }
 	},
 	prev: function() {
-    if (n) {
-      img.src = names[--n];
+    if (ifile) {
+      img.src = filenames[--ifile];
       toBottomOnLoad(img);
     }
 	},
 	advance: function(x) {
-    n = max(0, min(n+x, len-1));
-		img.src = names[n];
+    ifile = max(0, min(ifile+x, nbFilename-1));
+		img.src = filenames[ifile];
 		body.scrollTop = 0;
 	},
 };
@@ -673,20 +673,20 @@ const doublePageMode = {
   stop: function() {},
 	next: function() {
 		if (this.dp) {
-      if (n === len) {
+      if (ifile === nbFilename) {
         return;
       }
-			img.src = names[++n];
+			img.src = filenames[++ifile];
 		}
 		this.dp = !this.dp;
 		body.scrollTop = 0;
 	},
 	prev: function() {
 		if (this.dp) {
-      if (!n) {
+      if (!ifile) {
         return;
       }
-			img.src = names[--n];
+			img.src = filenames[--ifile];
       toBottomOnLoad(img);
 		}
 		else {
@@ -696,8 +696,8 @@ const doublePageMode = {
 	},
 	advance: function(x) {
 		this.db = false;
-    n = max(0, min(n+x, len-1));
-		img.src = names[n];
+    ifile = max(0, min(ifile+x, nbFilename-1));
+		img.src = filenames[ifile];
 		body.scrollTop = 0;
 	},
 };
@@ -718,26 +718,26 @@ const removeChildren = function(elem) {
   }
 }
 
-const updateN = function() {
+const UpdateIndexFile = function() {
   const img = document.elementFromPoint(body.clientWidth / 2, 10);
   const i = img.dataset.i;
   if (i) {
-    n = +i;
+    ifile = +i;
   }
 };
 
 const webtoonPageMode = {
   chapterByIndexes: null,
   updateChapter: function(){
-    this.currentChapter = this.chapterByIndexes[n];
+    this.currentChapter = this.chapterByIndexes[ifile];
     removeChildren(this.eimgs);
     appendImages(this.eimgs, this.currentChapter.images);
   },
   chapterByIndexes:null,
 	start: function() {
 		if (!this.chapterByIndexes) {
-      const chaps = new Array(len);
-      let url = names[0];
+      const chaps = new Array(nbFilename);
+      let url = filenames[0];
       let images = [url];
       let seppos = url.lastIndexOf("/");
       let subs = url.substring(0, seppos);
@@ -745,8 +745,8 @@ const webtoonPageMode = {
       let chap = {startIndex, images};
       let seppos2;
       chaps[0] = chap;
-			for (let i = 1; i < len; ++i) {
-        url = names[i];
+			for (let i = 1; i < nbFilename; ++i) {
+        url = filenames[i];
         seppos2 = url.lastIndexOf("/");
         if (seppos2 == seppos && url.startsWith(subs)) {
           images.push(url);
@@ -771,38 +771,38 @@ const webtoonPageMode = {
 
     this.updateChapter();
     const i = this.currentChapter.startIndex;
-    const image = this.eimgs.childNodes[n-i];
+    const image = this.eimgs.childNodes[ifile-i];
     scrollOnImageAfterDelay(image, 100, 0);
 	},
 	stop: function() {
-		updateN();
-		img.src = names[n];
+		UpdateIndexFile();
+		img.src = filenames[ifile];
 		document.body.removeChild(this.eimgs);
 		document.body.appendChild(img);
 		body.scrollTop = 0;
 	},
 	next: function() {
     const i = this.currentChapter.startIndex + this.currentChapter.images.length;
-    if (i !== len) {
-      n = i;
+    if (i !== nbFilename) {
+      ifile = i;
       this.updateChapter();
       body.scrollTop = 0;
     }
   },
 	prev: function() {
     if (this.currentChapter.startIndex) {
-      n = this.currentChapter.startIndex - 1;
+      ifile = this.currentChapter.startIndex - 1;
       this.updateChapter();
       const image = this.eimgs.lastChild;
       scrollOnImageAfterDelay(image, 100, 100);
     }
   },
 	advance: function(x) {
-    updateN();
-    n = max(0, min(n+x, len-1));
-    const chap = this.chapterByIndexes[n];
+    UpdateIndexFile();
+    ifile = max(0, min(ifile+x, nbFilename-1));
+    const chap = this.chapterByIndexes[ifile];
     if (this.currentChapter === chap) {
-      body.scrollTop = this.eimgs.children[n - chap.startIndex].offsetTop;
+      body.scrollTop = this.eimgs.children[ifile - chap.startIndex].offsetTop;
     }
     else {
       body.scrollTop = 0;
@@ -810,7 +810,7 @@ const webtoonPageMode = {
       removeChildren(this.eimgs);
       appendImages(this.eimgs, chap.images);
       const i = chap.startIndex;
-      const image = this.eimgs.childNodes[n-i];
+      const image = this.eimgs.childNodes[ifile-i];
       scrollOnImageAfterDelay(image, 100, 0);
     }
 	},
@@ -820,9 +820,9 @@ const singlePageMode = {
 	start: function() {
 		if (!this.eimgs) {
 			const div = document.createElement("div");
-			for (let i = 0; i < len; ++i) {
+			for (let i = 0; i < nbFilename; ++i) {
 				const e = document.createElement("img");
-				e.src = names[i];
+				e.src = filenames[i];
 				div.appendChild(e);
 			}
 			this.eimgs = div;
@@ -832,11 +832,11 @@ const singlePageMode = {
 		document.body.appendChild(this.eimgs);
 
     // TODO toBottomOnLoad(img)
-		body.scrollTop = this.eimgs.children[n].offsetTop;
+		body.scrollTop = this.eimgs.children[ifile].offsetTop;
 	},
 	stop: function() {
-		updateN();
-		img.src = names[n];
+		UpdateIndexFile();
+		img.src = filenames[ifile];
 		document.body.removeChild(this.eimgs);
 		document.body.appendChild(img);
 		body.scrollTop = 0;
@@ -844,9 +844,9 @@ const singlePageMode = {
 	next: function() {},
 	prev: function() {},
 	advance: function(x) {
-    updateN();
-    n = max(0, min(n+x, len-1));
-		body.scrollTop = this.eimgs.children[n].offsetTop;
+    UpdateIndexFile();
+    ifile = max(0, min(ifile+x, nbFilename-1));
+		body.scrollTop = this.eimgs.children[ifile].offsetTop;
 	},
 };
 
@@ -925,10 +925,10 @@ const showImageInfo = (function() {
       clearInterval(autoScrollTimerId);
       autoScrollTimerId = null;
       resumeAutoScroll = true;
-      info.textContent = `[${n}/${len}][auto-scroll: ${autoScrollDelay}ms] ${names[n]}`;
+      info.textContent = `[${ifile}/${nbFilename}][auto-scroll: ${autoScrollDelay}ms] ${filenames[ifile]}`;
     }
     else {
-      info.textContent = `[${n}/${len}] ${names[n]}`;
+      info.textContent = `[${ifile}/${nbFilename}] ${filenames[ifile]}`;
     }
     info.style.display = "";
     info.style.top = `${body.scrollTop}px`;
@@ -958,7 +958,7 @@ window.addEventListener("keydown", function(e) {
       e.preventDefault();
       e.stopPropagation();
       action();
-      //window.location.search = "?n="+n;
+      //window.location.search = "?n="+ifile;
       return false;
     }
   }
