@@ -33,7 +33,7 @@ b pgup_or_prev
 m rotate -90
 , rotate 90
 
-h mode single
+h mode webtoon
 j mode double
 k mode normal
 
@@ -46,7 +46,7 @@ i add_interval 25
 '
 
 htmlheader='<style>
-body{margin:0;padding:0;background:#000}
+div,body{margin:0;padding:0;background:#000}
 img{display:block;margin:auto;max-width:100%}
 #info{padding:.5em;position:absolute;top:0px;color:#000;background:#eee;}
 </style>'
@@ -59,7 +59,7 @@ default_mode=normalMode
 usage="Generate a html viewer file
 
   htmlviewer: [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
-              [-i <filename>] [-m {normal|single|double}] [-t <title>]
+              [-i <filename>] [-m {normal|webtoon|single|double}] [-t <title>]
               [-x <pixel_distance>] directory...
   htmlviewer: [-p]
   htmlviewer: [-K]
@@ -85,7 +85,7 @@ usage="Generate a html viewer file
   -K
       Generates a html file which displays the name of the keys.
 
-  -m {normal|single|double}
+  -m {normal|webtoon|single|double}
       Specify default mode.
 
   -n
@@ -187,8 +187,9 @@ usage="Generate a html viewer file
       pgup_or_prev
           Previous image when at the top of the page, otherwise scroll up.
 
-      mode {normal|single|double}
-          - single: all images display on one page.
+      mode {normal|webtoon|single|double}
+          - webtoon: all images in a chapter are displayed on one page.
+          - single: all images are displayed on one page.
           - double: once on 2, the commands pgdown_or_next/pgup_or_prev go to
                     top/bottom of the page rather than go to the next/prev
                     image.
@@ -205,7 +206,7 @@ usage="Generate a html viewer file
       add_interval <ms_delay>
           Add delay of auto scroll. Delay can be negative.
 
-      default_mode {normal|single|double}
+      default_mode {normal|webtoon|single|double}
           As mode.
 
           This command is activated when opening the page. You can put a key
@@ -221,6 +222,7 @@ usage="Generate a html viewer file
 
 declare -A modes=(
   [normal]=normalMode
+  [webtoon]=webtoonPageMode
   [single]=singlePageMode
   [double]=doublePageMode
 )
@@ -597,8 +599,6 @@ const img = document.getElementsByTagName("img")[0];
 const body = document.documentElement;
 const len = names.length;
 
-img.src = names[n];
-
 const min = Math.min;
 const max = Math.max;
 
@@ -610,15 +610,42 @@ const rotate = function(deg) {
 	img.setAttribute("style", `transform:rotate(${deg}deg)`);
 };
 
-const toBottomOnLoad = function() {
-  img.onload = function(e) {
-    body.scrollTop = img.clientHeight;
-    img.onload = undefined;
+const toBottomOnLoad = function(image) {
+  image.onload = function(e) {
+    body.scrollTop = image.clientHeight;
+    image.onload = undefined;
+  };
+};
+
+const scrollOnImageAfterDelay = function(image, delay, addTop) {
+  let trigger = false;
+
+  const timerId = setTimeout(function() {
+    if (trigger) {
+      body.scrollTop = image.offsetTop + addTop;
+      image.onload = undefined;
+    }
+    else {
+      trigger = true;
+    }
+  }, delay);
+
+  image.onload = function(e) {
+    if (trigger) {
+      body.scrollTop = image.offsetTop + addTop;
+      clearInterval(timerId);
+    }
+    else {
+      trigger = true;
+    }
+    image.onload = undefined;
   };
 };
 
 const normalMode = {
-  start: function() {},
+  start: function() {
+    img.src = names[n];
+  },
   stop: function() {},
 	next: function() {
     if (n !== len) {
@@ -629,7 +656,7 @@ const normalMode = {
 	prev: function() {
     if (n) {
       img.src = names[--n];
-      toBottomOnLoad();
+      toBottomOnLoad(img);
     }
 	},
 	advance: function(x) {
@@ -660,7 +687,7 @@ const doublePageMode = {
         return;
       }
 			img.src = names[--n];
-      toBottomOnLoad();
+      toBottomOnLoad(img);
 		}
 		else {
       body.scrollTop = img.clientHeight;
@@ -675,27 +702,121 @@ const doublePageMode = {
 	},
 };
 
-const singlePageMode = {
-	updateN: function() {
-		const es = this.eimgs.children;
-		const top = body.scrollTop + body.clientHeight;
-		let pos = (es[n] && es[n].offsetTop <= body.scrollTop) ? n : 0;
-		let count = len - pos;
-		let half, middle, img;
-		while (count > 0) {
-			half = ~~(count / 2);
-			middle = pos + half;
-      img = es[middle];
-			if (img.offsetTop + img.clientHeight < top) {
-				pos = middle + 1;
-				count = count - half - 1;
-			}
-			else {
-				count = half;
-			}
+const appendImages = function(elem, urls) {
+  const nUrl = urls.length;
+  for (let i = 0; i < nUrl; ++i) {
+    const img = document.createElement("img");
+    img.src = urls[i];
+    img.dataset.i = i;
+    elem.appendChild(img);
+  }
+};
+
+const removeChildren = function(elem) {
+  while (elem.lastChild) {
+    elem.removeChild(elem.lastChild);
+  }
+}
+
+const updateN = function() {
+  const img = document.elementFromPoint(body.clientWidth / 2, 10);
+  const i = img.dataset.i;
+  if (i) {
+    n = +i;
+  }
+};
+
+const webtoonPageMode = {
+  chapterByIndexes: null,
+  updateChapter: function(){
+    this.currentChapter = this.chapterByIndexes[n];
+    removeChildren(this.eimgs);
+    appendImages(this.eimgs, this.currentChapter.images);
+  },
+  chapterByIndexes:null,
+	start: function() {
+		if (!this.chapterByIndexes) {
+      const chaps = new Array(len);
+      let url = names[0];
+      let images = [url];
+      let seppos = url.lastIndexOf("/");
+      let subs = url.substring(0, seppos);
+      let startIndex = 0;
+      let chap = {startIndex, images};
+      let seppos2;
+      chaps[0] = chap;
+			for (let i = 1; i < len; ++i) {
+        url = names[i];
+        seppos2 = url.lastIndexOf("/");
+        if (seppos2 == seppos && url.startsWith(subs)) {
+          images.push(url);
+        }
+        else {
+          startIndex += images.length;
+          images = [url];
+          chap = {startIndex, images};
+          subs = url.substring(0, seppos);
+        }
+
+        chaps[i] = chap;
+      }
+
+      this.chapterByIndexes = chaps;
+
+			this.eimgs = document.createElement("div");
 		}
-		n = (pos === count) ? max(0, pos - 1) : pos;
+
+		document.body.removeChild(img);
+		document.body.appendChild(this.eimgs);
+
+    this.updateChapter();
+    const i = this.currentChapter.startIndex;
+    const image = this.eimgs.childNodes[n-i];
+    scrollOnImageAfterDelay(image, 100, 0);
 	},
+	stop: function() {
+		updateN();
+		img.src = names[n];
+		document.body.removeChild(this.eimgs);
+		document.body.appendChild(img);
+		body.scrollTop = 0;
+	},
+	next: function() {
+    const i = this.currentChapter.startIndex + this.currentChapter.images.length;
+    if (i !== len) {
+      n = i;
+      this.updateChapter();
+      body.scrollTop = 0;
+    }
+  },
+	prev: function() {
+    if (this.currentChapter.startIndex) {
+      n = this.currentChapter.startIndex - 1;
+      this.updateChapter();
+      const image = this.eimgs.lastChild;
+      scrollOnImageAfterDelay(image, 100, 100);
+    }
+  },
+	advance: function(x) {
+    updateN();
+    n = max(0, min(n+x, len-1));
+    const chap = this.chapterByIndexes[n];
+    if (this.currentChapter === chap) {
+      body.scrollTop = this.eimgs.children[n - chap.startIndex].offsetTop;
+    }
+    else {
+      body.scrollTop = 0;
+      this.currentChapter = chap;
+      removeChildren(this.eimgs);
+      appendImages(this.eimgs, chap.images);
+      const i = chap.startIndex;
+      const image = this.eimgs.childNodes[n-i];
+      scrollOnImageAfterDelay(image, 100, 0);
+    }
+	},
+};
+
+const singlePageMode = {
 	start: function() {
 		if (!this.eimgs) {
 			const div = document.createElement("div");
@@ -710,10 +831,11 @@ const singlePageMode = {
 		document.body.removeChild(img);
 		document.body.appendChild(this.eimgs);
 
-    this.advance(0);
+    // TODO toBottomOnLoad(img)
+		body.scrollTop = this.eimgs.children[n].offsetTop;
 	},
 	stop: function() {
-		this.updateN();
+		updateN();
 		img.src = names[n];
 		document.body.removeChild(this.eimgs);
 		document.body.appendChild(img);
@@ -722,7 +844,7 @@ const singlePageMode = {
 	next: function() {},
 	prev: function() {},
 	advance: function(x) {
-    this.updateN();
+    updateN();
     n = max(0, min(n+x, len-1));
 		body.scrollTop = this.eimgs.children[n].offsetTop;
 	},
