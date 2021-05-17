@@ -48,15 +48,21 @@ inputconf="$config"/input.conf
 
 usage="Generate a html viewer file
 
-  $0: [-n] [-s] [-S] [-f <filename>] [-i <filename>] [-e <html>] [-c <command>] [-t <title>] directory...
-  $0: [-p]
-  $0: [-K]
+  htmlviewer: [-n] [-s] [-S] [-f <filename>] [-i <filename>] [-e <html>]
+              [-c <command>] [-t <title>] directory...
+  htmlviewer: [-p]
+  htmlviewer: [-K]
 
   -h
       Show this help.
 
   -n
-      Do not load default configuration files. By default load $inputconf.
+      Do not load default configuration files.
+
+      By default load \${XDG_CONFIG_DIRS}/htmlviewer/input.conf with
+      \$HOME/.config as default value when XDG_CONFIG_DIRS is unset.
+
+      Actual value is $inputconf
 
   -s
       Sort input directories (default).
