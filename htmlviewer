@@ -38,7 +38,7 @@ j mode double
 k mode normal
 
 d info
-i info
+o info
 
 t toggle_auto_scroll
 u add_interval -25
@@ -53,36 +53,22 @@ img{display:block;margin:auto;max-width:100%}
 
 config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
 inputconf="$config"/input.conf
+pixel_distance=20
+default_mode=normalMode
 
 usage="Generate a html viewer file
 
-  htmlviewer: [-n] [-s] [-S] [-f <filename>] [-i <filename>] [-e <html>]
-              [-c <command>] [-t <title>] directory...
+  htmlviewer: [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
+              [-i <filename>] [-m {normal|single|double}] [-t <title>]
+              [-x <pixel_distance>] directory...
   htmlviewer: [-p]
   htmlviewer: [-K]
 
-  -h
-      Show this help.
+  -c <command>
+      Add a command. See input.conf syntax.
 
-  -n
-      Do not load default configuration files.
-
-      By default load \${XDG_CONFIG_DIRS}/htmlviewer/input.conf with
-      \$HOME/.config as default value when XDG_CONFIG_DIRS is unset.
-
-      Currently $inputconf
-
-  -s
-      Sort input directories (default).
-
-  -S
-      Do not sort input directories.
-
-  -p
-      Print default keyboard mapping.
-
-  -K
-      Generates a html file which displays the name of the keys.
+  -e <html>
+      Specify content of html header. By default its contains the html style.
 
   -f <filename>
       Read directories from <filename>. If - is specified as filename,
@@ -93,14 +79,37 @@ usage="Generate a html viewer file
   -i <filename>
       Specify configuration file. See input.conf.
 
-  -e <html>
-      Specify content of html header. By default its contains the html style.
+  -h
+      Show this help.
 
-  -c <command>
-      Add a command. See input.conf syntax.
+  -K
+      Generates a html file which displays the name of the keys.
+
+  -m {normal|single|double}
+      Specify default mode.
+
+  -n
+      Do not load default configuration files.
+
+      By default load \${XDG_CONFIG_DIRS}/htmlviewer/input.conf with
+      \$HOME/.config as default value when XDG_CONFIG_DIRS is unset.
+
+      Currently $inputconf
+
+  -p
+      Print default keyboard mapping.
+
+  -s
+      Sort input directories (default).
+
+  -S
+      Do not sort input directories.
 
   -t <title>
       Specify title page.
+
+  -x <pixel_distance>
+      Specify default value for bottom_pixel command.
 
 
   input.conf
@@ -155,10 +164,27 @@ usage="Generate a html viewer file
 
       pgdown
 
-      pgdown_or_next [pixel_distance=20]
+      bottom_pixel <pixel_distance>
+          Number of pixels not displayed to ignore so that pgdown_or_next,
+          auto_scroll and toggle_auto_scroll go to the next image.
+
+          This command is activated when opening the page. You can put a key
+          that does not exist so that no shortcut is associated with it:
+
+            nokey bottom_pixel 100
+
+          Default is 20.
+
+      add_bottom_pixel <pixel_distance>
+          Add pixel_distance. See bottom_pixel.
+
+      set_bottom_pixel <pixel_distance>
+          Set pixel_distance. See bottom_pixel.
+
+      pgdown_or_next [pixel_distance=bottom_pixel]
           Next image when at the bottom of the page, otherwise scroll down.
 
-      pgup_or_prev [pixel_distance=20]
+      pgup_or_prev
           Previous image when at the top of the page, otherwise scroll up.
 
       mode {normal|single|double}
@@ -179,6 +205,14 @@ usage="Generate a html viewer file
       add_interval <ms_delay>
           Add delay of auto scroll. Delay can be negative.
 
+      default_mode {normal|single|double}
+          As mode.
+
+          This command is activated when opening the page. You can put a key
+          that does not exist so that no shortcut is associated with it:
+
+            nokey default_mode double
+
   COPYRIGHT
        By Jonathan Poelen
        License MIT
@@ -198,12 +232,16 @@ declare -A fns=(
   [mode]=1
   [pgup]=1
   [pgdown]=1
+  [bottom_pixel]=1
+  [set_bottom_pixel]=1
+  [add_bottom_pixel]=1
   [pgdown_or_next]=1
   [pgup_or_prev]=1
   [info]=1
   [toggle_auto_scroll]=1
   [auto_scroll]=1
   [add_interval]=1
+  [default_mode]=1
 )
 
 declare -A remap=(
@@ -222,23 +260,26 @@ declare -A remap=(
 
 check_n()
 {
-  local -i n=$(($#-1))
-  if [[ $n -ne $1 ]]; then
-    error="requires $1 argument, $n but were provided"
+  if [[ $2 -ne $1 ]]; then
+    error="requires $1 argument, $2 but were provided"
     return 1
   fi
 }
 
 check_int()
 {
-  if [[ $# -ne 1 ]]; then
-    error="requires 1 argument, $# but were provided"
-    return 1
-  fi
-
   local -i n=$1
   if [[ "$1" != "$n" ]]; then
     error="bad argument: $1 is not a number"
+    return 1
+  fi
+}
+
+check_positive()
+{
+  local -i n=$1
+  if [[ "$1" != "$n" ]] || [[ $n -le 0 ]]; then
+    error="bad argument: $1 is not a positive number"
     return 1
   fi
 }
@@ -248,7 +289,8 @@ next()
   if [[ $# -eq 0 ]]; then
     code='mode.advance(1);'
   else
-    check_int "$@"
+    check_n 1 $#
+    check_int "$1"
     code="mode.advance($1);"
   fi
 }
@@ -258,7 +300,8 @@ prev()
   if [[ $# -eq 0 ]]; then
     code='mode.advance(-1);'
   else
-    check_int "$@"
+    check_n 1 $#
+    check_int "$1"
     local -i n=$1
     ((n=-n))
     code="mode.advance($n);"
@@ -267,51 +310,71 @@ prev()
 
 rotate()
 {
-  check_int "$@"
+  check_n 1 $#
+  check_int "$1"
   code="rotate($1);"
 }
 
 mode()
 {
-  check_n 1 "$@"
-  local mode=${modes[$1]}
+  check_n 1 $# || return 1
+
+  if [[ -z "$1" ]]; then
+    error="mode is empty"
+    return 1
+  fi
+
+  local mode=${modes["$1"]}
   if [[ -z $mode ]]; then
     error="unknown mode '$1'"
+    return 1
   fi
+
   code="if (mode !== $mode) { mode.stop(); mode = $mode; mode.start(); }"
 }
 
 pgup_or_prev()
 {
-  if [[ $# -eq 0 ]]; then
-    code='upOrPrev(20)'
-  else
-    check_int "$@"
-    code="upOrPrev($1)"
-  fi
+  check_n 0 $#
+  code="upOrPrev()"
 }
 
 pgdown_or_next()
 {
   if [[ $# -eq 0 ]]; then
-    code='downOrNext(20)'
+    code='downOrNext(bottomPixelDistance)'
   else
-    check_int "$@"
+    check_n 1 $#
+    check_int "$1"
     code="downOrNext($1)"
   fi
 }
 
-pgup() { check_n 0 ; code='body.scrollTop -= body.clientHeight' ; }
-pgdown() { check_n 0 ; code='body.scrollTop += body.clientHeight' ; }
+pgup()
+{
+  check_n 0 $#
+  code='body.scrollTop -= body.clientHeight'
+}
 
-info() { code='showImageInfo()' ; }
+pgdown()
+{
+  check_n 0 $#
+  code='body.scrollTop += body.clientHeight'
+}
+
+info()
+{
+  check_n 0 $#
+  code='showImageInfo()'
+}
 
 auto_scroll()
 {
   if [[ $# -eq 0 ]]; then
     code='startAutoScroll(800)' ;
   else
-    check_int "$@"
+    check_n 1 $#
+    check_positive "$1"
     code="startAutoScroll($1)"
   fi
 }
@@ -321,34 +384,73 @@ toggle_auto_scroll()
   if [[ $# -eq 0 ]]; then
     code='toggleAutoScroll(800)' ;
   else
-    check_int "$@"
+    check_n 1 $#
+    check_positive "$1"
     code="toggleAutoScroll($1)"
   fi
 }
 
 add_interval()
 {
-  check_int "$@"
+  check_n 1 $#
+  check_int "$1"
   code="addAutoScrollInterval($1)"
+}
+
+bottom_pixel()
+{
+  set_bottom_pixel "$@" &&
+  pixel_distance="$1"
+}
+
+set_bottom_pixel()
+{
+  check_n 1 $# &&
+  check_positive "$1" &&
+  code="bottomPixelDistance = $1"
+}
+
+add_bottom_pixel()
+{
+  check_n 1 $#
+  check_int "$1"
+  code="bottomPixelDistance = max(0, bottomPixelDistance + $1)"
+}
+
+default_mode()
+{
+  mode "$@" && default_mode=${modes[$1]}
 }
 
 inputdirs=''
 hasinput=0
 sort=1
 title="${@:0:200}"
-declare -a keys=()
+declare -a cmds=()
 
-while getopts 'sSnpKi:c:e:t:f:h?' opt ; do
+while getopts 'sSnpKi:c:e:t:f:x:m:h?' opt ; do
   case $opt in
     s) sort=1;;
     S) sort=0;;
-    n) inputconf=''; hasinput=0;;
-    i) inputconf="$OPTARG"; hasinput=1;;
+    n) inputconf=''
+       hasinput=0;;
+    i) inputconf="$OPTARG"
+       hasinput=1;;
     e) htmlheader="$OPTARG";;
-    c) keys+=($OPTIND "$OPTARG");;
+    c) cmds+=($OPTIND "$OPTARG");;
     t) title="$OPTARG";;
     f) inputdirs="$OPTARG";;
-    p) echo -n "$inputs"; exit;;
+    m) default_mode "$OPTARG" || {
+         echo "arg $OPTIND: -m $OPTARG: $error" >&2
+         exit 2
+       };;
+    x) bottom_pixel "$OPTARG" || {
+         echo "arg $OPTIND: -x $OPTARG: $error" >&2
+         exit 2
+       }
+       pixel_distance="$OPTARG";;
+    p) echo -n "$inputs";
+       exit;;
     K) echo '<!DOCTYPE html>
 <html><head><title>Key viewer</title><meta charset="Utf-8"/></head>
 <p>Press keys on the keyboard to see what the KeyboardEvent'\''s key values is for each one.</p>
@@ -359,8 +461,10 @@ window.addEventListener("keydown", function(event) {
   p.textContent = `key="${event.key}"`;
   output.appendChild(p);
 }, true);
-</script></body></html>'; exit;;
-    h|?) echo "$usage"; exit;;
+</script></body></html>';
+       exit;;
+    h|?) echo "$usage";
+         exit;;
   esac
 done
 shift $(($OPTIND - 1))
@@ -423,9 +527,10 @@ elif [[ $hasinput -eq 1 ]]; then
   exit 1
 fi
 
+errors=''
+
 # parse input.conf
 nline=0
-errors=''
 while read -r line ; do
   ((++nline))
   [[ -n $line ]] || continue
@@ -434,11 +539,12 @@ while read -r line ; do
   [[ -z $error ]] || errors+="line $nline: $error in '$line'"$'\n'
 done <<<"$inputs"
 
-for ((i=0; i < ${#keys[@]}; i+=2)); do
+# parse -c options
+for ((i=0; i < ${#cmds[@]}; i+=2)); do
   error=
-  cmd="${keys[$((i+1))]}"
+  cmd="${cmds[$((i+1))]}"
   parse_input_line $cmd ||:
-  [[ -z $error ]] || errors+="arg ${keys[$i]}: $error in '$cmd'"$'\n'
+  [[ -z $error ]] || errors+="arg ${cmds[$i]}: $error in '$cmd'"$'\n'
 done
 
 if [[ -n $errors ]]; then
@@ -622,8 +728,10 @@ const singlePageMode = {
 	},
 };
 
-let mode = normalMode;
-// ctx.start();
+let mode = '$default_mode';
+let bottomPixelDistance = '$pixel_distance';
+
+mode.start();
 
 const downOrNext = function(d) {
   if (body.scrollTop + body.clientHeight >= body.scrollHeight - d) {
@@ -634,7 +742,7 @@ const downOrNext = function(d) {
   }
 };
 
-const upOrPrev = function(d) {
+const upOrPrev = function() {
   if (body.scrollTop == 0) {
     mode.prev();
   }
@@ -651,7 +759,7 @@ const startAutoScroll = function(delay) {
   console.log(`delay: ${delay}`);
   clearInterval(autoScrollTimerId);
   autoScrollDelay = delay;
-  autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, 20);
+  autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
 };
 
 const toggleAutoScroll = function(delay) {
@@ -659,7 +767,7 @@ const toggleAutoScroll = function(delay) {
     startAutoScroll(delay);
   }
   else if (autoScrollTimerId === null) {
-    autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, 20);
+    autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
   }
   else {
     clearInterval(autoScrollTimerId);
@@ -668,23 +776,33 @@ const toggleAutoScroll = function(delay) {
 };
 
 const addAutoScrollInterval = function(delay) {
+  autoScrollDelay = max(1, (autoScrollDelay || 800) + delay);
   if (autoScrollTimerId !== null) {
     clearInterval(autoScrollTimerId);
-    autoScrollDelay = max(0, autoScrollDelay + delay);
-    console.log(`autoScrollDelay: ${autoScrollDelay} (+${delay})`);
-    autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, 20);
+    autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
   }
+  console.log(`autoScrollDelay: ${autoScrollDelay} (+${delay})`);
 };
 //@}
 
 const showImageInfo = (function() {
   const info = document.getElementById("info");
+  let resumeAutoScroll = false;
   const removeInfo = function() {
     info.style.display = "none";
     window.removeEventListener("keydown", removeInfo, true);
+    if (resumeAutoScroll) {
+      resumeAutoScroll = false;
+      if (autoScrollTimerId === null) {
+        autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
+      }
+    }
   };
   return function() {
     if (autoScrollTimerId !== null) {
+      clearInterval(autoScrollTimerId);
+      autoScrollTimerId = null;
+      resumeAutoScroll = true;
       info.textContent = `[${n}/${len}][auto-scroll: ${autoScrollDelay}ms] ${names[n]}`;
     }
     else {
