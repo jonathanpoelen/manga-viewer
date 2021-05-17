@@ -3,41 +3,49 @@
 set -e
 
 inputs='# default input.conf
-p next 100
-c next 30
-d next 12
-e next 5
-q prev 5
-a prev 12
-z prev 30
-i prev 100
-s prev
-v prev
-n prev
-, prev
-; prev
-left prev
-right next
-y rotate -90
-u rotate 90
-l mode single
-j mode double
-k mode normal
-. pgup_or_prev
-\ pgup_or_prev
-m pgup_or_prev
-b pgup_or_prev
-x pgup_or_prev
-] pgup_or_prev
 space pgdown_or_next
 shift+space pgup_or_prev
-g info
-f toggle_auto_scroll
-w add_interval -25
-r add_interval 25
+
+z next -5
+x next 5
+a next -12
+s next 12
+q next -30
+w next 30
+e next -100
+r next 100
+
+left prev
+right next
+
+ctrl+left  next -5
+ctrl+right next 5
+ctrl+up    next 12
+ctrl+down  next -12
+
+| prev
+c pgup_or_prev
+v prev
+b pgup_or_prev
+. prev
+/ pgdown_or_next
+
+m rotate -90
+, rotate 90
+
+h mode single
+j mode double
+k mode normal
+
+d info
+i info
+
+t toggle_auto_scroll
+u add_interval -25
+i add_interval 25
 '
 
-header='<style>
+htmlheader='<style>
 body{margin:0;padding:0;background:#000}
 img{display:block;margin:auto;max-width:100%}
 #info{padding:.5em;position:absolute;top:0px;color:#000;background:#eee;}
@@ -62,7 +70,7 @@ usage="Generate a html viewer file
       By default load \${XDG_CONFIG_DIRS}/htmlviewer/input.conf with
       \$HOME/.config as default value when XDG_CONFIG_DIRS is unset.
 
-      Actual value is $inputconf
+      Currently $inputconf
 
   -s
       Sort input directories (default).
@@ -80,7 +88,7 @@ usage="Generate a html viewer file
       Read directories from <filename>. If - is specified as filename,
       directories are read from the standard input.
 
-        find -type d | fzf | htmlviewer -f-
+        find -type d | fzf | htmlviewer -f- > view.html
 
   -i <filename>
       Specify configuration file. See input.conf.
@@ -336,7 +344,7 @@ while getopts 'sSnpKi:c:e:t:f:h?' opt ; do
     S) sort=0;;
     n) inputconf=''; hasinput=0;;
     i) inputconf="$OPTARG"; hasinput=1;;
-    e) header="$OPTARG";;
+    e) htmlheader="$OPTARG";;
     c) keys+=($OPTIND "$OPTARG");;
     t) title="$OPTARG";;
     f) inputdirs="$OPTARG";;
@@ -458,7 +466,7 @@ echo '<!DOCTYPE html>
   <meta http-equiv="expires" content="0"/>
   <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT"/>
   <meta http-equiv="Pragma" content="no-cache"/>
-	'"$header"'
+	'"$htmlheader"'
 </head>
 <body>
 <img src="" />
@@ -495,20 +503,6 @@ const rotate = function(deg) {
 	}
 	img.setAttribute("style", `transform:rotate(${deg}deg)`);
 };
-
-const showImageInfo = (function() {
-  const info = document.getElementById("info");
-  const removeInfo = function() {
-    info.style.display = "none";
-    window.removeEventListener("keydown", removeInfo, true);
-  };
-  return function() {
-    info.textContent = `[${n}/${len}] ${names[n]}`;
-    info.style.display = "";
-    info.style.top = `${body.scrollTop}px`;
-    window.addEventListener("keydown", removeInfo, true);
-  };
-})();
 
 const toBottomOnLoad = function() {
   img.onload = function(e) {
@@ -682,6 +676,25 @@ const addAutoScrollInterval = function(delay) {
   }
 };
 //@}
+
+const showImageInfo = (function() {
+  const info = document.getElementById("info");
+  const removeInfo = function() {
+    info.style.display = "none";
+    window.removeEventListener("keydown", removeInfo, true);
+  };
+  return function() {
+    if (autoScrollTimerId !== null) {
+      info.textContent = `[${n}/${len}][auto-scroll: ${autoScrollDelay}ms] ${names[n]}`;
+    }
+    else {
+      info.textContent = `[${n}/${len}] ${names[n]}`;
+    }
+    info.style.display = "";
+    info.style.top = `${body.scrollTop}px`;
+    window.addEventListener("keydown", removeInfo, true);
+  };
+})();
 
 const actionsByKeys = (function(){
   const actionsByKeys = {};
