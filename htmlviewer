@@ -592,7 +592,7 @@ const filenames = ['
       find "$d" -type f | sort -V
     done
   fi
-} | sed '/\(Thumbs\.db\|\.directory\)$/d;s/"/\"/;s/^/"/;s/$/",/g'
+} | sed '/\(Thumbs\.db\|\.directory|\.html\)$/d;s/"/\\"/g;s/^/"/;s/$/",/g'
 
 echo '];
 
