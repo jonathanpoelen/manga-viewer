@@ -427,6 +427,8 @@ default_mode()
 inputdirs=''
 hasinput=0
 sort=1
+force_mode=
+force_pixel_distance=
 title="${@:0:200}"
 declare -a cmds=()
 
@@ -445,12 +447,13 @@ while getopts 'sSnpKi:c:e:t:f:x:m:h?' opt ; do
     m) default_mode "$OPTARG" || {
          echo "arg $OPTIND: -m $OPTARG: $error" >&2
          exit 2
-       };;
+       }
+       force_mode=$default_mode;;
     x) bottom_pixel "$OPTARG" || {
          echo "arg $OPTIND: -x $OPTARG: $error" >&2
          exit 2
        }
-       pixel_distance="$OPTARG";;
+       force_pixel_distance=$pixel_distance;;
     p) echo -n "$inputs";
        exit;;
     K) echo '<!DOCTYPE html>
@@ -553,6 +556,9 @@ if [[ -n $errors ]]; then
   echo -n "$errors" >&2
   exit 2
 fi
+
+[[ -z $force_mode ]] || default_mode=$force_mode
+[[ -z $force_pixel_distance ]] || pixel_distance=$force_pixel_distance
 
 # read input directories
 declare -a dirs=()
