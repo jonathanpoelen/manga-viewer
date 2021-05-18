@@ -55,6 +55,7 @@ config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
 inputconf="$config"/input.conf
 pixel_distance=20
 default_mode=normalMode
+startCode=''
 
 usage="Generate a html viewer file
 
@@ -164,23 +165,6 @@ usage="Generate a html viewer file
 
       pgdown
 
-      bottom_pixel <pixel_distance>
-          Number of pixels not displayed to ignore so that pgdown_or_next,
-          auto_scroll and toggle_auto_scroll go to the next image.
-
-          This command is activated when opening the page. You can put a key
-          that does not exist so that no shortcut is associated with it:
-
-            nokey bottom_pixel 100
-
-          Default is 20.
-
-      add_bottom_pixel <pixel_distance>
-          Add pixel_distance. See bottom_pixel.
-
-      set_bottom_pixel <pixel_distance>
-          Set pixel_distance. See bottom_pixel.
-
       pgdown_or_next [pixel_distance=bottom_pixel]
           Next image when at the bottom of the page, otherwise scroll down.
 
@@ -206,13 +190,28 @@ usage="Generate a html viewer file
       add_interval <ms_delay>
           Add delay of auto scroll. Delay can be negative.
 
-      default_mode {normal|webtoon|single|double}
-          As mode.
+      set_bottom_pixel <pixel_distance>
+          Number of pixels at the bottom of the page that can be skipped for
+          so that pgdown_or_next, auto_scroll and toggle_auto_scroll goes to
+          the next image.
 
-          This command is activated when opening the page. You can put a key
-          that does not exist so that no shortcut is associated with it:
+          Default is 20.
 
-            nokey default_mode double
+      add_bottom_pixel <pixel_distance>
+          Add pixel_distance. See set_bottom_pixel.
+
+      trigger [ms_delay=200] <command>
+          Allows to trigger <command> when opening the page after <ms_delay>.
+          The keyboard shortcut is associated with <command>.
+
+          You can put a key that does not exist to make no association:
+
+            nokey trigger auto_scroll 600
+
+            h trigger mode webtoon
+            # equivalent to
+            nokey trigger mode webtoon
+            h mode webtoon
 
   COPYRIGHT
        By Jonathan Poelen
@@ -234,7 +233,6 @@ declare -A fns=(
   [mode]=1
   [pgup]=1
   [pgdown]=1
-  [bottom_pixel]=1
   [set_bottom_pixel]=1
   [add_bottom_pixel]=1
   [pgdown_or_next]=1
@@ -243,7 +241,7 @@ declare -A fns=(
   [toggle_auto_scroll]=1
   [auto_scroll]=1
   [add_interval]=1
-  [default_mode]=1
+  [trigger]=1
 )
 
 declare -A remap=(
@@ -399,12 +397,6 @@ add_interval()
   code="addAutoScrollInterval($1)"
 }
 
-bottom_pixel()
-{
-  set_bottom_pixel "$@" &&
-  pixel_distance="$1"
-}
-
 set_bottom_pixel()
 {
   check_n 1 $# &&
@@ -419,9 +411,20 @@ add_bottom_pixel()
   code="bottomPixelDistance = max(0, bottomPixelDistance + $1)"
 }
 
-default_mode()
+trigger()
 {
-  mode "$@" && default_mode=${modes[$1]}
+  local -i delay=$1
+  [[ "$1" != "$delay" ]] && delay=200 || shift
+
+  local fn=$1
+  if [[ -z ${fns[$fn]} ]]; then
+    error="Unknown command '$fn'"
+    return 1
+  fi
+
+  shift
+  $fn "$@" || return 1
+  startCode+="setTimeout(function(){$code}, $delay);"$'\n'
 }
 
 inputdirs=''
@@ -444,16 +447,14 @@ while getopts 'sSnpKi:c:e:t:f:x:m:h?' opt ; do
     c) cmds+=($OPTIND "$OPTARG");;
     t) title="$OPTARG";;
     f) inputdirs="$OPTARG";;
-    m) default_mode "$OPTARG" || {
+    m) mode "$OPTARG" && force_mode=${modes["$OPTARG"]} || {
          echo "arg $OPTIND: -m $OPTARG: $error" >&2
          exit 2
-       }
-       force_mode=$default_mode;;
-    x) bottom_pixel "$OPTARG" || {
+       };;
+    x) set_bottom_pixel "$OPTARG" && force_pixel_distance="$OPTARG" || {
          echo "arg $OPTIND: -x $OPTARG: $error" >&2
          exit 2
-       }
-       force_pixel_distance=$pixel_distance;;
+       };;
     p) echo -n "$inputs";
        exit;;
     K) echo '<!DOCTYPE html>
@@ -486,11 +487,6 @@ parse_input_line()
     error="key without command"
     return 1
   }
-
-  if [[ -z $fn ]]; then
-    error='Empty command'
-    return 1
-  fi
 
   if [[ -z ${fns[$fn]} ]]; then
     error="Unknown command '$fn'"
@@ -970,6 +966,8 @@ window.addEventListener("keydown", function(e) {
   }
 	return true;
 }, true);
+
+'"$startCode"'
 </script>
 </body>
 </html>'
