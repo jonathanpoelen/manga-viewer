@@ -61,7 +61,7 @@ triggered=''
 usage="Generate a html viewer file
 
   htmlviewer: [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
-              [-i <filename>] [-m {normal|webtoon|single|double}] [-t <title>]
+              [-i <filename>] [-m {normal|double|webtoon|all}] [-t <title>]
               [-x <pixel_distance>] directory...
   htmlviewer: [-p]
   htmlviewer: [-K]
@@ -87,7 +87,7 @@ usage="Generate a html viewer file
   -K
       Generates a html file which displays the name of the keys.
 
-  -m {normal|webtoon|single|double}
+  -m {normal|double|webtoon|all}
       Specify default mode.
 
   -n
@@ -178,13 +178,13 @@ usage="Generate a html viewer file
       pgup_or_prev
           Previous image when at the top of the page, otherwise scroll up.
 
-      mode {normal|webtoon|single|double} [image_limit=0]
-          - normal: one image per page.
-          - webtoon: all images in a chapter are displayed on one page.
-          - single: all images are displayed on one page.
+      mode {normal|double|webtoon|all} [image_limit=0]
+          - normal: one image at a time.
           - double: once on 2, the commands pgdown_or_next/pgup_or_prev go to
                     top/bottom of the page rather than go to the next/prev
                     image.
+          - webtoon: All images in a chapter are displayed one below the other.
+          - all: All images are displayed one below the other.
 
           image_limit specifies the maximum number of images displayed per
           page. 0 for no limit.
@@ -349,11 +349,10 @@ mode()
 {
   local mode image_limit=0
   case "$1" in
-    # TODO single -> all ; normal|+single
     normal)  mode=normalMode;;
-    webtoon) mode=webtoonMode;;
-    single)  mode=singlePageMode;;
     double)  mode=doublePageMode;;
+    webtoon) mode=webtoonMode;;
+    all)     mode=allMode;;
     *) error="Unknown mode '$1'";
        return 1;;
   esac
@@ -911,7 +910,7 @@ const webtoonMode = Object.assign({
   },
 }, groupPageModeBase);
 
-const singlePageMode = Object.assign({
+const allMode = Object.assign({
   chapterByIndexesByImageLimits: {},
   start: function(imageLimit) {
     this._start([{startIndex: 0, images: filenames}], [0], imageLimit);

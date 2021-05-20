@@ -2,10 +2,10 @@
 
 It's main advantage is that it uses one and the same key to scroll and go to the next image (space by default), the behavior of which changes according to 3 reading modes:
 
-- Normal mode (`k` key): Go to the next image when the scroll is at the bottom.
-- Double page mode (`j` key): The first time the scroll is at the bottom, it goes up. The second time goes to the next image.
-- Weebton page mode (`h` key): Displays all images one under the other by chapter.
-- Single page mode: Displays all images one under the other.
+- Normal (`k` key): Display one image at a time.
+- Double page (`j` key): The first time the scroll is at the bottom, it goes up. The second time goes to the next image.
+- Weebton (`h` key): Displays all images in a chapter one below the other.
+- All: Displays all images one below the other.
 
 `htmlviewer` has several commands that can be associated with shortcuts.
 
