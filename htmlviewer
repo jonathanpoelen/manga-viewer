@@ -23,6 +23,9 @@ ctrl+right next 5
 ctrl+up    next 12
 ctrl+down  next -12
 
+< next_chap -1
+> next_chap 1
+
 | prev
 c pgup_or_prev
 v prev
@@ -156,6 +159,12 @@ usage="Generate a html viewer file
       prev [n=1]
           Equivalent to next -n.
 
+      next_chap [n=1]
+          Advance n directories. A negative number goes back n directories.
+
+      prev_chap [n=1]
+          Equivalent to next -n.
+
       rotate <deg>
           Rotate an images.
 
@@ -224,6 +233,8 @@ usage="Generate a html viewer file
 declare -A fns=(
   [next]=1
   [prev]=1
+  [next_chap]=1
+  [prev_chap]=1
   [rotate]=1
   [mode]=1
   [pgup]=1
@@ -300,6 +311,30 @@ prev()
     local -i n=$1
     ((n=-n))
     code="mode.advance($n);"
+  fi
+}
+
+next_chap()
+{
+  if [[ $# -eq 0 ]]; then
+    code='mode.advanceChap(1);'
+  else
+    check_n 1 $#
+    check_int "$1"
+    code="mode.advanceChap($1);"
+  fi
+}
+
+prev_chap()
+{
+  if [[ $# -eq 0 ]]; then
+    code='mode.advanceChap(-1);'
+  else
+    check_n 1 $#
+    check_int "$1"
+    local -i n=$1
+    ((n=-n))
+    code="mode.advanceChap($n);"
   fi
 }
 
@@ -601,7 +636,7 @@ const nbFilename = filenames.length;
 const min = Math.min;
 const max = Math.max;
 
-// chapterByIndexes: [{startIndex: from filenames, images: [filename...]}...]
+// chapterByIndexes: [{startIndex: from filenames, images: [filename...], ichap: Number}...]
 // chapterByIndexes.length == nbFilename
 const [chapterByIndexes, startIndexByChapters] = (function() {
   const chaps = new Array(nbFilename);
@@ -611,7 +646,7 @@ const [chapterByIndexes, startIndexByChapters] = (function() {
   let seppos = filename.lastIndexOf("/");
   let subs = filename.substring(0, seppos);
   let startIndex = 0;
-  let chap = {startIndex, images};
+  let chap = {startIndex, images, ichap: 0};
   let seppos2;
   chaps[0] = chap;
   startIndexes.push(startIndex);
@@ -623,10 +658,10 @@ const [chapterByIndexes, startIndexByChapters] = (function() {
     }
     else {
       startIndex += images.length;
-      startIndexes.push(startIndex);
       images = [filename];
-      chap = {startIndex, images};
+      chap = {startIndex, images, ichap: startIndexes.length};
       subs = filename.substring(0, seppos);
+      startIndexes.push(startIndex);
     }
 
     chaps[i] = chap;
@@ -696,6 +731,14 @@ const normalMode = {
 		img.src = filenames[ifile];
 		body.scrollTop = 0;
 	},
+	advanceChap: function(x) {
+    const chap = chapterByIndexes[ifile];
+    const ichap = max(0, min(chap.ichap + x, startIndexByChapters.length-1));
+    ifile = startIndexByChapters[ichap];
+		img.src = filenames[ifile];
+		body.scrollTop = 0;
+	},
+  syncIFile: function() {},
 };
 
 const doublePageMode = {
@@ -728,10 +771,13 @@ const doublePageMode = {
 	},
 	advance: function(x) {
 		this.db = false;
-    ifile = max(0, min(ifile+x, nbFilename-1));
-		img.src = filenames[ifile];
-		body.scrollTop = 0;
+    normalMode.advance(x);
 	},
+	advanceChap: function(x) {
+		this.db = false;
+    normalMode.advanceChap(x);
+	},
+  syncIFile: function() {},
 };
 
 const appendImages = function(elem, urls, startIndex) {
@@ -750,17 +796,15 @@ const removeChildren = function(elem) {
   }
 }
 
-const UpdateIndexFile = function() {
-  const img = document.elementFromPoint(body.clientWidth / 2, 10);
-  console.log(img)
-  const i = img.dataset.i;
-  if (i) {
-    ifile = +i;
-  }
-};
-
 const groupPageModeBase = {
   eimgs: document.createElement("div"),
+  syncIFile: function() {
+    const img = document.elementFromPoint(body.clientWidth / 2, 10);
+    const i = img.dataset.i;
+    if (i) {
+      ifile = +i;
+    }
+  },
 	_start: function(chapterByIndexes, startIndexByChapters, imageLimit) {
     if (!imageLimit) {
       this.chapterByIndexes = chapterByIndexes;
@@ -806,7 +850,7 @@ const groupPageModeBase = {
     appendImages(this.eimgs, chap.images, chap.startIndex);
   },
 	stop: function() {
-		UpdateIndexFile();
+		this.syncIFile();
 		img.src = filenames[ifile];
 		document.body.removeChild(this.eimgs);
 		document.body.appendChild(img);
@@ -830,7 +874,7 @@ const groupPageModeBase = {
     }
   },
 	advance: function(x) {
-    UpdateIndexFile();
+    this.syncIFile();
     ifile = max(0, min(ifile+x, nbFilename-1));
     const chap = this.chapterByIndexes[ifile];
     if (this.currentChapter === chap) {
@@ -844,6 +888,19 @@ const groupPageModeBase = {
       const image = this.eimgs.childNodes[ifile-chap.startIndex];
       scrollOnImageAfterDelay(image, 100, 0);
     }
+	},
+	advanceChap: function(x) {
+    this.syncIFile();
+    let chap = chapterByIndexes[this.chapterByIndexes[ifile].startIndex];
+    const ichap = max(0, min(chap.ichap + x, startIndexByChapters.length-1));
+    ifile = startIndexByChapters[ichap];
+    chap = this.chapterByIndexes[ifile];
+    body.scrollTop = 0;
+    this.currentChapter = chap;
+    removeChildren(this.eimgs);
+    appendImages(this.eimgs, chap.images, chap.startIndex);
+    const image = this.eimgs.childNodes[ifile-chap.startIndex];
+    scrollOnImageAfterDelay(image, 100, 0);
 	},
 };
 
@@ -862,7 +919,7 @@ const singlePageMode = Object.assign({
 }, groupPageModeBase);
 
 let mode = normalMode;
-let currentImageLimit = 0;
+let currentImageLimit = -1;
 let bottomPixelDistance = 20;
 
 const downOrNext = function(d) {
@@ -931,15 +988,17 @@ const showImageInfo = (function() {
     }
   };
   return function() {
+    let scrollInfo = "";
     if (autoScrollTimerId !== null) {
       clearInterval(autoScrollTimerId);
       autoScrollTimerId = null;
       resumeAutoScroll = true;
-      info.textContent = `[${ifile}/${nbFilename}][auto-scroll: ${autoScrollDelay}ms] ${filenames[ifile]}`;
+      scrollInfo = `[auto-scroll: ${autoScrollDelay}ms]`;
     }
-    else {
-      info.textContent = `[${ifile}/${nbFilename}] ${filenames[ifile]}`;
-    }
+    mode.syncIFile();
+    info.textContent = `[${ifile+1}/${nbFilename}][Chapter: \
+${chapterByIndexes[ifile].ichap+1}/${startIndexByChapters.length}]${scrollInfo} \
+${filenames[ifile]}`;
     info.style.display = "";
     info.style.top = `${body.scrollTop}px`;
     window.addEventListener("keydown", removeInfo, true);
@@ -947,7 +1006,7 @@ const showImageInfo = (function() {
 })();
 
 const selectMode = function(newMode, imageLimit) {
-  if (mode !== newMode && currentImageLimit !== imageLimit) {
+  if (mode !== newMode || currentImageLimit !== imageLimit) {
     currentImageLimit = imageLimit;
     mode.stop();
     mode = newMode;
@@ -970,9 +1029,11 @@ const actionsByKeys = (function(){
 })();
 
 window.addEventListener("keydown", function(e) {
-  let action = actionsByKeys[e.key];
-  if (action) {
-    action = action[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
+  let actions = actionsByKeys[e.key];
+  if (actions) {
+    const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)]
+                  // assume that Shift+Key = Key (ex. Shift+< = <)
+                || actions[e.altKey + (e.ctrlKey << 1) + (e.metaKey << 3)];
     if (action) {
       e.preventDefault();
       e.stopPropagation();
