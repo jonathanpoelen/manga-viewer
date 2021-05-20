@@ -53,9 +53,7 @@ img{display:block;margin:auto;max-width:100%}
 
 config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
 inputconf="$config"/input.conf
-pixel_distance=20
-default_mode=normalMode
-startCode=''
+triggered=''
 
 usage="Generate a html viewer file
 
@@ -171,12 +169,16 @@ usage="Generate a html viewer file
       pgup_or_prev
           Previous image when at the top of the page, otherwise scroll up.
 
-      mode {normal|webtoon|single|double}
+      mode {normal|webtoon|single|double} [image_limit=0]
+          - normal: one image per page.
           - webtoon: all images in a chapter are displayed on one page.
           - single: all images are displayed on one page.
           - double: once on 2, the commands pgdown_or_next/pgup_or_prev go to
                     top/bottom of the page rather than go to the next/prev
                     image.
+
+          image_limit specifies the maximum number of images displayed per
+          page. 0 for no limit.
 
       info
           Show current image position.
@@ -200,13 +202,13 @@ usage="Generate a html viewer file
       add_bottom_pixel <pixel_distance>
           Add pixel_distance. See set_bottom_pixel.
 
-      trigger [ms_delay=200] <command>
+      trigger [ms_delay=0] <command>
           Allows to trigger <command> when opening the page after <ms_delay>.
           The keyboard shortcut is associated with <command>.
 
           You can put a key that does not exist to make no association:
 
-            nokey trigger auto_scroll 600
+            nokey trigger 200 auto_scroll 600
 
             h trigger mode webtoon
             # equivalent to
@@ -218,13 +220,6 @@ usage="Generate a html viewer file
        License MIT
        https://github.com/jonathanpoelen/manga-viewer
 "
-
-declare -A modes=(
-  [normal]=normalMode
-  [webtoon]=webtoonPageMode
-  [single]=singlePageMode
-  [double]=doublePageMode
-)
 
 declare -A fns=(
   [next]=1
@@ -317,20 +312,24 @@ rotate()
 
 mode()
 {
-  check_n 1 $# || return 1
+  local mode image_limit=0
+  case "$1" in
+    # TODO single -> all ; normal|+single
+    normal)  mode=normalMode;;
+    webtoon) mode=webtoonMode;;
+    single)  mode=singlePageMode;;
+    double)  mode=doublePageMode;;
+    *) error="Unknown mode '$1'";
+       return 1;;
+  esac
 
-  if [[ -z "$1" ]]; then
-    error="mode is empty"
-    return 1
+  if [[ $# -gt 1 ]]; then
+    check_n 2 $#
+    check_int "$2"
+    image_limit="$2"
   fi
 
-  local mode=${modes["$1"]}
-  if [[ -z $mode ]]; then
-    error="unknown mode '$1'"
-    return 1
-  fi
-
-  code="if (mode !== $mode) { mode.stop(); mode = $mode; mode.start(); }"
+  code="selectMode($mode, $image_limit);"
 }
 
 pgup_or_prev()
@@ -342,51 +341,51 @@ pgup_or_prev()
 pgdown_or_next()
 {
   if [[ $# -eq 0 ]]; then
-    code='downOrNext(bottomPixelDistance)'
+    code='downOrNext(bottomPixelDistance);'
   else
     check_n 1 $#
     check_int "$1"
-    code="downOrNext($1)"
+    code="downOrNext($1);"
   fi
 }
 
 pgup()
 {
   check_n 0 $#
-  code='body.scrollTop -= body.clientHeight'
+  code='body.scrollTop -= body.clientHeight;'
 }
 
 pgdown()
 {
   check_n 0 $#
-  code='body.scrollTop += body.clientHeight'
+  code='body.scrollTop += body.clientHeight;'
 }
 
 info()
 {
   check_n 0 $#
-  code='showImageInfo()'
+  code='showImageInfo();'
 }
 
 auto_scroll()
 {
   if [[ $# -eq 0 ]]; then
-    code='startAutoScroll(800)' ;
+    code='startAutoScroll(800);' ;
   else
     check_n 1 $#
     check_positive "$1"
-    code="startAutoScroll($1)"
+    code="startAutoScroll($1);"
   fi
 }
 
 toggle_auto_scroll()
 {
   if [[ $# -eq 0 ]]; then
-    code='toggleAutoScroll(800)' ;
+    code='toggleAutoScroll(800);' ;
   else
     check_n 1 $#
     check_positive "$1"
-    code="toggleAutoScroll($1)"
+    code="toggleAutoScroll($1);"
   fi
 }
 
@@ -394,27 +393,27 @@ add_interval()
 {
   check_n 1 $#
   check_int "$1"
-  code="addAutoScrollInterval($1)"
+  code="addAutoScrollInterval($1);"
 }
 
 set_bottom_pixel()
 {
   check_n 1 $# &&
   check_positive "$1" &&
-  code="bottomPixelDistance = $1"
+  code="bottomPixelDistance = $1;"
 }
 
 add_bottom_pixel()
 {
   check_n 1 $#
   check_int "$1"
-  code="bottomPixelDistance = max(0, bottomPixelDistance + $1)"
+  code="bottomPixelDistance = max(0, bottomPixelDistance + $1);"
 }
 
 trigger()
 {
   local -i delay=$1
-  [[ "$1" != "$delay" ]] && delay=200 || shift
+  [[ "$1" != "$delay" ]] && delay=0 || shift
 
   local fn=$1
   if [[ -z ${fns[$fn]} ]]; then
@@ -424,14 +423,15 @@ trigger()
 
   shift
   $fn "$@" || return 1
-  startCode+="setTimeout(function(){$code}, $delay);"$'\n'
+  triggered+="{action: function(){$code}, delay: $delay},"$'\n'
 }
 
 inputdirs=''
 hasinput=0
 sort=1
-force_mode=
-force_pixel_distance=
+mode normal
+force_mode_code=$code
+force_pixel_distance_code=
 title="${@:0:200}"
 declare -a cmds=()
 
@@ -447,11 +447,11 @@ while getopts 'sSnpKi:c:e:t:f:x:m:h?' opt ; do
     c) cmds+=($OPTIND "$OPTARG");;
     t) title="$OPTARG";;
     f) inputdirs="$OPTARG";;
-    m) mode "$OPTARG" && force_mode=${modes["$OPTARG"]} || {
+    m) mode $OPTARG && force_mode_code=$code || {
          echo "arg $OPTIND: -m $OPTARG: $error" >&2
          exit 2
        };;
-    x) set_bottom_pixel "$OPTARG" && force_pixel_distance="$OPTARG" || {
+    x) set_bottom_pixel "$OPTARG" && force_pixel_distance_code="$OPTARG" || {
          echo "arg $OPTIND: -x $OPTARG: $error" >&2
          exit 2
        };;
@@ -553,9 +553,6 @@ if [[ -n $errors ]]; then
   exit 2
 fi
 
-[[ -z $force_mode ]] || default_mode=$force_mode
-[[ -z $force_pixel_distance ]] || pixel_distance=$force_pixel_distance
-
 # read input directories
 declare -a dirs=()
 if [[ -n $inputdirs ]]; then
@@ -603,6 +600,39 @@ const nbFilename = filenames.length;
 
 const min = Math.min;
 const max = Math.max;
+
+// chapterByIndexes: [{startIndex: from filenames, images: [filename...]}...]
+// chapterByIndexes.length == nbFilename
+const [chapterByIndexes, startIndexByChapters] = (function() {
+  const chaps = new Array(nbFilename);
+  const startIndexes = [];
+  let filename = filenames[0];
+  let images = [filename];
+  let seppos = filename.lastIndexOf("/");
+  let subs = filename.substring(0, seppos);
+  let startIndex = 0;
+  let chap = {startIndex, images};
+  let seppos2;
+  chaps[0] = chap;
+  startIndexes.push(startIndex);
+  for (let i = 1; i < nbFilename; ++i) {
+    filename = filenames[i];
+    seppos2 = filename.lastIndexOf("/");
+    if (seppos2 == seppos && filename.startsWith(subs)) {
+      images.push(filename);
+    }
+    else {
+      startIndex += images.length;
+      startIndexes.push(startIndex);
+      images = [filename];
+      chap = {startIndex, images};
+      subs = filename.substring(0, seppos);
+    }
+
+    chaps[i] = chap;
+  }
+  return [chaps, startIndexes];
+})();
 
 const rotate = function(deg) {
 	const r = img.getAttribute("style");
@@ -704,12 +734,12 @@ const doublePageMode = {
 	},
 };
 
-const appendImages = function(elem, urls) {
+const appendImages = function(elem, urls, startIndex) {
   const nUrl = urls.length;
-  for (let i = 0; i < nUrl; ++i) {
+  for (let i = 0; i < nUrl; ++i, ++startIndex) {
     const img = document.createElement("img");
     img.src = urls[i];
-    img.dataset.i = i;
+    img.dataset.i = startIndex;
     elem.appendChild(img);
   }
 };
@@ -722,65 +752,65 @@ const removeChildren = function(elem) {
 
 const UpdateIndexFile = function() {
   const img = document.elementFromPoint(body.clientWidth / 2, 10);
+  console.log(img)
   const i = img.dataset.i;
   if (i) {
     ifile = +i;
   }
 };
 
-const webtoonPageMode = {
-  chapterByIndexes: null,
-  updateChapter: function(){
-    this.currentChapter = this.chapterByIndexes[ifile];
-    removeChildren(this.eimgs);
-    appendImages(this.eimgs, this.currentChapter.images);
-  },
-  chapterByIndexes:null,
-	start: function() {
-		if (!this.chapterByIndexes) {
-      const chaps = new Array(nbFilename);
-      let url = filenames[0];
-      let images = [url];
-      let seppos = url.lastIndexOf("/");
-      let subs = url.substring(0, seppos);
+const groupPageModeBase = {
+  eimgs: document.createElement("div"),
+	_start: function(chapterByIndexes, startIndexByChapters, imageLimit) {
+    if (!imageLimit) {
+      this.chapterByIndexes = chapterByIndexes;
+    }
+    else if (imageLimit in this.chapterByIndexesByImageLimits) {
+      this.chapterByIndexes = this.chapterByIndexesByImageLimits[imageLimit];
+    }
+    else {
+      const chaps = new Array(filenames.length);
       let startIndex = 0;
-      let chap = {startIndex, images};
-      let seppos2;
-      chaps[0] = chap;
-			for (let i = 1; i < nbFilename; ++i) {
-        url = filenames[i];
-        seppos2 = url.lastIndexOf("/");
-        if (seppos2 == seppos && url.startsWith(subs)) {
-          images.push(url);
+      for (const chapIndex of startIndexByChapters) {
+        const images = chapterByIndexes[chapIndex].images;
+        const imageLen = images.length;
+        if (imageLen > imageLimit) {
+          for (let i = 0; i < imageLen; i += imageLimit) {
+            const subImages = images.slice(i, i + imageLimit);
+            const subImageLen = subImages.length;
+            chaps.fill({startIndex, images: subImages}, startIndex, startIndex + subImageLen);
+            startIndex += subImageLen;
+          }
         }
         else {
-          startIndex += images.length;
-          images = [url];
-          chap = {startIndex, images};
-          subs = url.substring(0, seppos);
+          chaps.fill({startIndex, images}, startIndex, startIndex + imageLen);
+          startIndex += imageLen;
         }
-
-        chaps[i] = chap;
       }
-
+      this.chapterByIndexesByImageLimits[imageLimit] = chaps;
       this.chapterByIndexes = chaps;
+    }
 
-			this.eimgs = document.createElement("div");
-		}
-
-		document.body.removeChild(img);
-		document.body.appendChild(this.eimgs);
-
+    document.body.removeChild(img);
+    document.body.appendChild(this.eimgs);
     this.updateChapter();
     const i = this.currentChapter.startIndex;
     const image = this.eimgs.childNodes[ifile-i];
+    // TODO calculate the scroll in relation to the position of the image
     scrollOnImageAfterDelay(image, 100, 0);
-	},
+  },
+  updateChapter: function(){
+    const chap = this.chapterByIndexes[ifile];
+    this.currentChapter = chap;
+    removeChildren(this.eimgs);
+    appendImages(this.eimgs, chap.images, chap.startIndex);
+  },
 	stop: function() {
 		UpdateIndexFile();
 		img.src = filenames[ifile];
 		document.body.removeChild(this.eimgs);
 		document.body.appendChild(img);
+    // TODO calculate the scroll in relation to the position of the image
 		body.scrollTop = 0;
 	},
 	next: function() {
@@ -810,52 +840,30 @@ const webtoonPageMode = {
       body.scrollTop = 0;
       this.currentChapter = chap;
       removeChildren(this.eimgs);
-      appendImages(this.eimgs, chap.images);
-      const i = chap.startIndex;
-      const image = this.eimgs.childNodes[ifile-i];
+      appendImages(this.eimgs, chap.images, chap.startIndex);
+      const image = this.eimgs.childNodes[ifile-chap.startIndex];
       scrollOnImageAfterDelay(image, 100, 0);
     }
 	},
 };
 
-const singlePageMode = {
-	start: function() {
-		if (!this.eimgs) {
-			const div = document.createElement("div");
-			for (let i = 0; i < nbFilename; ++i) {
-				const e = document.createElement("img");
-				e.src = filenames[i];
-				div.appendChild(e);
-			}
-			this.eimgs = div;
-		}
+const webtoonMode = Object.assign({
+  chapterByIndexesByImageLimits: {},
+  start: function(imageLimit) {
+    this._start(chapterByIndexes, startIndexByChapters, imageLimit);
+  },
+}, groupPageModeBase);
 
-		document.body.removeChild(img);
-		document.body.appendChild(this.eimgs);
+const singlePageMode = Object.assign({
+  chapterByIndexesByImageLimits: {},
+  start: function(imageLimit) {
+    this._start([{startIndex: 0, images: filenames}], [0], imageLimit);
+  },
+}, groupPageModeBase);
 
-    // TODO toBottomOnLoad(img)
-		body.scrollTop = this.eimgs.children[ifile].offsetTop;
-	},
-	stop: function() {
-		UpdateIndexFile();
-		img.src = filenames[ifile];
-		document.body.removeChild(this.eimgs);
-		document.body.appendChild(img);
-		body.scrollTop = 0;
-	},
-	next: function() {},
-	prev: function() {},
-	advance: function(x) {
-    UpdateIndexFile();
-    ifile = max(0, min(ifile+x, nbFilename-1));
-		body.scrollTop = this.eimgs.children[ifile].offsetTop;
-	},
-};
-
-let mode = '$default_mode';
-let bottomPixelDistance = '$pixel_distance';
-
-mode.start();
+let mode = normalMode;
+let currentImageLimit = 0;
+let bottomPixelDistance = 20;
 
 const downOrNext = function(d) {
   if (body.scrollTop + body.clientHeight >= body.scrollHeight - d) {
@@ -938,6 +946,15 @@ const showImageInfo = (function() {
   };
 })();
 
+const selectMode = function(newMode, imageLimit) {
+  if (mode !== newMode && currentImageLimit !== imageLimit) {
+    currentImageLimit = imageLimit;
+    mode.stop();
+    mode = newMode;
+    mode.start(imageLimit);
+  }
+};
+
 const actionsByKeys = (function(){
   const actionsByKeys = {};
   for (const d of [
@@ -967,7 +984,18 @@ window.addEventListener("keydown", function(e) {
 	return true;
 }, true);
 
-'"$startCode"'
+for (const d of [
+'"$triggered"'
+]) {
+  if (d.delay)
+    setTimeout(d.action, d.delay);
+  else
+    d.action();
+}
+
+'"$force_pixel_distance_code"'
+'"$force_mode_code"'
+
 </script>
 </body>
 </html>'
