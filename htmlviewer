@@ -176,14 +176,14 @@ usage="Generate a html viewer file
       rotate <deg>
           Rotate an images.
 
-      pgup
+      pgup [percent=100]
 
-      pgdown
+      pgdown [percent=100]
 
-      pgdown_or_next [pixel_distance=bottom_pixel]
+      pgdown_or_next [percent=100] [pixel_distance=bottom_pixel]
           Next image when at the bottom of the page, otherwise scroll down.
 
-      pgup_or_prev
+      pgup_or_prev [percent=100]
           Previous image when at the top of the page, otherwise scroll up.
 
       mode {normal|double|webtoon|all} [image_limit=0]
@@ -406,31 +406,50 @@ mode()
 
 pgup_or_prev()
 {
-  check_n 0 $#
-  code="upOrPrev()"
+  if [[ $# -eq 0 ]]; then
+    code='upOrPrev(body.clientHeight);'
+  else
+    check_n 1 $#
+    check_int "$1"
+    code="upOrPrev(body.clientHeight * ($1 / 100));"
+  fi
 }
 
 pgdown_or_next()
 {
   if [[ $# -eq 0 ]]; then
-    code='downOrNext(bottomPixelDistance);'
-  else
-    check_n 1 $#
+    code='downOrNext(bottomPixelDistance, body.clientHeight);'
+  elif [[ $# -eq 1 ]]; then
     check_int "$1"
-    code="downOrNext($1);"
+    code="downOrNext(bottomPixelDistance, body.clientHeight * ($1 / 100));"
+  else
+    check_n 2 $#
+    check_int "$1"
+    check_positive "$2"
+    code="downOrNext($2, body.clientHeight * ($1 / 100));"
   fi
 }
 
 pgup()
 {
-  check_n 0 $#
-  code='body.scrollTop -= body.clientHeight;'
+  if [[ $# -eq 0 ]]; then
+    code='body.scrollTop -= body.clientHeight;'
+  else
+    check_n 1 $#
+    check_int "$1"
+    code="body.scrollTop -= body.clientHeight * ($1 / 100);"
+  fi
 }
 
 pgdown()
 {
-  check_n 0 $#
-  code='body.scrollTop += body.clientHeight;'
+  if [[ $# -eq 0 ]]; then
+    code='body.scrollTop += body.clientHeight;'
+  else
+    check_n 1 $#
+    check_int "$1"
+    code="body.scrollTop += body.clientHeight * ($1 / 100);"
+  fi
 }
 
 info()
@@ -1052,21 +1071,21 @@ let bottomPixelDistance = 20;
 
 mode.start();
 
-const downOrNext = function(d) {
+const downOrNext = function(d, height) {
   if (body.scrollTop + body.clientHeight >= body.scrollHeight - d) {
     mode.next();
   }
   else {
-    body.scrollTop += body.clientHeight;
+    body.scrollTop += height || body.clientHeight;
   }
 };
 
-const upOrPrev = function() {
+const upOrPrev = function(height) {
   if (body.scrollTop == 0) {
     mode.prev();
   }
   else {
-    body.scrollTop -= body.clientHeight;
+    body.scrollTop -= height || body.clientHeight;
   }
 };
 
