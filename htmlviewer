@@ -733,6 +733,10 @@ const normalMode = {
     const chap = chapterByIndexes[ifile];
     const ichap = max(0, min(chap.ichap + x, startIndexByChapters.length-1));
     ifile = startIndexByChapters[ichap];
+    // when last chapter, go to end image
+    if (x > 0 && ichap === chap.ichap) {
+      ifile += chap.images.length - 1;
+    }
 		img.src = filenames[ifile];
 		body.scrollTop = 0;
 	},
@@ -890,8 +894,13 @@ const groupPageModeBase = {
 	advanceChap: function(x) {
     this.syncIFile();
     let chap = chapterByIndexes[this.chapterByIndexes[ifile].startIndex];
-    const ichap = max(0, min(chap.ichap + x, startIndexByChapters.length-1));
+    const prevIChap = chap.ichap;
+    const ichap = max(0, min(prevIChap + x, startIndexByChapters.length-1));
     ifile = startIndexByChapters[ichap];
+    // when last chapter, go to end image
+    if (x > 0 && ichap === prevIChap) {
+      ifile += chap.images.length - 1;
+    }
     chap = this.chapterByIndexes[ifile];
     body.scrollTop = 0;
     this.currentChapter = chap;
