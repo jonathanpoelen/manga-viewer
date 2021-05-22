@@ -11,12 +11,15 @@ if ! command $cmd &>/dev/null; then
   fi
 fi
 
-files=()
 ifs="$IFS"
 IFS=$'\n'
-files=($(zenity --title="Select directories" --file-selection --directory --multiple --separator=$'\n')) || exit 1
+files=($(zenity --title='Select directories' --file-selection --directory --multiple --separator=$'\n')) || exit 1
 IFS="$ifs"
 
-output="$(zenity --title="Html output file" --file-selection --file-filter='*.html' --filename=view.html --confirm-overwrite --save)" || exit 1
+mode=$(zenity --title='Select mode' --list --column='' --text='Default mode' --hide-header normal 'double page' webtoon all) || exit 1
+[[ $mode != 'double page' ]] || mode=double
 
-exec $cmd -- "${files[@]}" > "$output"
+output=${TMPDIR:-/tmp}/htmlviewer.html
+
+"$cmd" -m $mode -- "${files[@]}" > "$output"
+xdg-open "$output"
