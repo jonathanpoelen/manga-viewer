@@ -122,7 +122,7 @@ usage="Generate a html viewer file
 
       Each line maps a key to an input command.
 
-      In general, keys can be combined with Shift, Ctrl and Alt:
+      In general, keys can be combined with Shift, Ctrl, Alt and Meta:
 
         shift+Space pgup_or_prev
 
