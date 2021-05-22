@@ -463,8 +463,7 @@ trigger()
 inputdirs=''
 hasinput=0
 sort=1
-mode normal
-force_mode_code=$code
+force_mode_code=
 force_pixel_distance_code=
 title="${@:0:200}"
 declare -a cmds=()
@@ -921,6 +920,8 @@ let mode = normalMode;
 let currentImageLimit = -1;
 let bottomPixelDistance = 20;
 
+mode.start();
+
 const downOrNext = function(d) {
   if (body.scrollTop + body.clientHeight >= body.scrollHeight - d) {
     mode.next();
@@ -1055,7 +1056,6 @@ for (const d of [
 
 '"$force_pixel_distance_code"'
 '"$force_mode_code"'
-
 </script>
 </body>
 </html>'
