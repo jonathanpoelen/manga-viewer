@@ -62,14 +62,16 @@ config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
 inputconf="$config"/input.conf
 triggered=''
 
-usage="Generate a html viewer file
+usage='Generate a html viewer file
 
-  htmlviewer: [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
-              [-i <filename>] [-m {normal|double|webtoon|all}] [-t <title>]
-              [-x <pixel_distance>] directory...
-  htmlviewer: [-p]
-  htmlviewer: [-K]
+  htmlviewer [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
+             [-i <filename>] [-m {normal|double|webtoon|all}] [-t <title>]
+             [-x <pixel_distance>] directory...
+  htmlviewer -p
+  htmlviewer -K
+  htmlviewer -h'
 
+help="
   -c <command>
       Add a command. See input.conf syntax.
 
@@ -228,7 +230,7 @@ usage="Generate a html viewer file
             nokey trigger 200 auto_scroll 600
 
             h trigger mode webtoon
-            # equivalent to
+            # is equivalent to
             nokey trigger mode webtoon
             h mode webtoon
 
@@ -542,6 +544,19 @@ mouse_assistance()
   code='toggleMouseAssistance()'
 }
 
+
+minihelp()
+{
+  echo "$usage"
+  echo
+  echo "input.conf path: $inputconf"
+  if [[ ! -f "$inputconf" ]]; then
+    echo '  But not found, a default configuration will be used (see -p).'
+  fi
+  echo
+  echo 'Use -h for more information.'
+}
+
 inputdirs=''
 hasinput=0
 sort=1
@@ -592,11 +607,19 @@ window.addEventListener("click", mouseEvent, true);
 window.addEventListener("auxclick", mouseEvent, true);
 </script></body></html>';
        exit;;
-    h|?) echo "$usage";
-         exit;;
+    h) echo "$usage";
+       echo "$help"
+       exit;;
+    ?) minihelp;
+       exit 2;;
   esac
 done
 shift $(($OPTIND - 1))
+
+if [[ $# -eq 0 ]]; then
+  minihelp
+  exit 1
+fi
 
 shortcuts=()
 
