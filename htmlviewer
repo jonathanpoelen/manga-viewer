@@ -6,6 +6,11 @@ inputs='# default input.conf
 space pgdown_or_next
 shift+space pgup_or_prev
 
+space restrict webtoon pgdown_or_next 98
+space restrict all pgdown_or_next 98
+shift+space restrict webtoon pgup_or_prev 98
+shift+space restrict all pgup_or_prev 98
+
 z next -5
 x next 5
 a next -12
@@ -91,7 +96,8 @@ help="
       Show this help.
 
   -K
-      Generates a html file which displays the name of the keys.
+      Generates a html file which displays the name of the keys and
+      mouse buttons.
 
   -m {normal|double|webtoon|all}
       Specify default mode.
@@ -242,6 +248,9 @@ help="
       mouse_assistance
           Enable or disable the display of mouse area.
 
+      restrict {normal|double|webtoon|all} <command>
+          Enable a shortcut for a specific mode.
+
 
   COPYRIGHT
        By Jonathan Poelen
@@ -269,6 +278,7 @@ declare -A fns=(
   [trigger]=1
   [mouse]=1
   [mouse_assistance]=1
+  [restrict]=1
 )
 
 declare -A remap=(
@@ -330,6 +340,31 @@ check_positive()
   fi
 }
 
+init_local_mode()
+{
+  case "$1" in
+    normal)  mode=normalMode;;
+    double)  mode=doublePageMode;;
+    webtoon) mode=webtoonMode;;
+    all)     mode=allMode;;
+    *) error="Unknown mode '$1'";
+       return 1;;
+  esac
+}
+
+subcomand()
+{
+  local fn=$1
+  if [[ -z ${fns[$fn]} ]]; then
+    error="Unknown command '$fn'"
+    return 1
+  fi
+
+  shift
+  $fn "$@"
+}
+
+
 next()
 {
   if [[ $# -eq 0 ]]; then
@@ -388,14 +423,7 @@ rotate()
 mode()
 {
   local mode image_limit=0
-  case "$1" in
-    normal)  mode=normalMode;;
-    double)  mode=doublePageMode;;
-    webtoon) mode=webtoonMode;;
-    all)     mode=allMode;;
-    *) error="Unknown mode '$1'";
-       return 1;;
-  esac
+  init_local_mode "$1"
 
   if [[ $# -gt 1 ]]; then
     check_n 2 $#
@@ -508,14 +536,7 @@ trigger()
   local -i delay=$1
   [[ "$1" != "$delay" ]] && delay=0 || shift
 
-  local fn=$1
-  if [[ -z ${fns[$fn]} ]]; then
-    error="Unknown command '$fn'"
-    return 1
-  fi
-
-  shift
-  $fn "$@" || return 1
+  subcomand "$@"
   triggered+="{action: function(){$code}, delay: $delay},"$'\n'
 }
 
@@ -527,14 +548,8 @@ mouse()
     return 1
   fi
 
-  local fn=$2
-  if [[ -z ${fns[$fn]} ]]; then
-    error="Unknown command '$fn'"
-    return 1
-  fi
-
-  shift 2
-  $fn "$@" || return 1
+  shift
+  subcomand "$@"
   code="if (isInZone(arguments[0], $zone)) { $code }"
 }
 
@@ -542,6 +557,13 @@ mouse_assistance()
 {
   check_n 0 $#
   code='toggleMouseAssistance()'
+}
+
+restrict()
+{
+  init_local_mode "$1"
+  shift
+  subcomand "$@"
 }
 
 
@@ -622,6 +644,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 shortcuts=()
+declare -A shortcuts_by_mode=()
 
 parse_input_line()
 {
@@ -648,6 +671,7 @@ parse_input_line()
     args+=("$arg")
   done
 
+  local mode # set by restrict
   $fn "${args[@]}" || error="$fn: $error"
 
   # extract controls and convert key to lowercase
@@ -663,7 +687,13 @@ parse_input_line()
 
   local newkey="${remap[$key]}"
   [[ -z $newkey ]] || key="$newkey"
-  shortcuts+=("{alt: ${control[alt]}, ctrl: ${control[ctrl]}, shift: ${control[shift]}, meta: ${control[meta]}, key: '$key', action: function(){ $code }},"$'\n')
+  local shortcut="{alt: ${control[alt]}, ctrl: ${control[ctrl]}, shift: ${control[shift]}, meta: ${control[meta]}, key: '$key', action: function(){ $code }},"$'\n'
+
+  if [[ -z $mode ]]; then
+    shortcuts+=("$shortcut")
+  else
+    shortcuts_by_mode[$mode]+="$shortcut"
+  fi
 }
 
 # read input.conf
@@ -775,6 +805,8 @@ img {
 <div id="info"></div>
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
 <script type="text/javascript">
+"use strict";
+
 const filenames = ['
 
 {
@@ -1231,17 +1263,16 @@ const selectMode = function(newMode, imageLimit) {
     mode.stop();
     mode = newMode;
     mode.start(imageLimit);
+    updateShortcuts(mode);
   }
 };
 
-// contains key and mouse actions
-const [actionsByKeys, actionsByClicks] = (function(){
-  const actionsByKeys = {};
-  const actionsByClicks = [];
-  const rgxClickName = /^click\d+$/
+const rgxClickName = /^click\d+$/
+const createActions = function(shortcuts, actionsByKeys, actionsByClicks){
+  actionsByKeys = actionsByKeys || {};
+  actionsByClicks = actionsByClicks || [];
 
-  for (const d of [
-'"${shortcuts[@]}"']) {
+  for (const d of shortcuts) {
     let actionsByControls = actionsByKeys[d.key];
     if (!actionsByControls) {
       actionsByControls = {};
@@ -1254,7 +1285,27 @@ const [actionsByKeys, actionsByClicks] = (function(){
   }
 
   return [actionsByKeys, actionsByClicks];
-})();
+};
+
+// contains key and mouse actions
+const [globalActionsByKeys, globalActionsByClicks] = createActions(['"${shortcuts[@]}"']);
+
+const createModActions = function(shortcuts) {
+  const actionsByKeys = {};
+  for (const d in globalActionsByKeys) {
+    actionsByKeys[d] = Object.assign({}, globalActionsByKeys[d]);
+  }
+  return createActions(shortcuts, actionsByKeys, Array.from(globalActionsByClicks));
+};
+'
+for mode in "${!shortcuts_by_mode[@]}"; do
+  echo "${mode}.shortcuts = createModActions([${shortcuts_by_mode[$mode]}]);"
+done
+echo '
+
+let actionsByKeys = globalActionsByKeys;
+let actionsByClicks = globalActionsByClicks;
+let actionsForPrimaryClick = actionsByClicks[0];
 
 window.addEventListener("keydown", function(e) {
   let actions = actionsByKeys[e.key];
@@ -1272,36 +1323,49 @@ window.addEventListener("keydown", function(e) {
   return true;
 }, true);
 
-if (0 in actionsByClicks) {
-  const actions = actionsByClicks[0];
-  window.addEventListener("click", function(e) {
+const clickEvent = function(e) {
+  const action = actionsForPrimaryClick[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
+  if (action) {
+    e.preventDefault();
+    e.stopPropagation();
+    action();
+    return false;
+  }
+  return true;
+};
+
+const auxClickEvent = function(e) {
+  let actions = actionsByClicks[e.button];
+  if (actions) {
     const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
     if (action) {
       e.preventDefault();
       e.stopPropagation();
-      action();
+      action(e);
       return false;
     }
     return true;
-  }, true);
+  }
+};
+
+function updateShortcuts(mode) {
+  window.removeEventListener("click", clickEvent);
+  window.removeEventListener("auxclick", auxClickEvent);
+
+  actionsByKeys = mode.shortcuts ? mode.shortcuts[0] : globalActionsByKeys;
+  actionsByClicks = mode.shortcuts ? mode.shortcuts[1] : globalActionsByClicks;
+
+  if (0 in actionsByClicks) {
+    actionsForPrimaryClick = actionsByClicks[0];
+    window.addEventListener("click", clickEvent, true);
+  }
+
+  if (actionsByClicks.length > 1) {
+    window.addEventListener("auxclick", auxClickEvent, true);
+  }
 }
 
-if (actionsByClicks.length > 1) {
-  window.addEventListener("auxclick", function(e) {
-    let actions = actionsByClicks[e.button];
-    console.log(e, actionsByClicks)
-    if (actions) {
-      const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
-      if (action) {
-        e.preventDefault();
-        e.stopPropagation();
-        action(e);
-        return false;
-      }
-      return true;
-    }
-  }, true);
-}
+updateShortcuts(mode);
 
 for (const d of [
 '"$triggered"'

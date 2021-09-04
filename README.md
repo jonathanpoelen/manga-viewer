@@ -27,6 +27,11 @@ Read `htmlviewer -h` for more options.
 space pgdown_or_next
 shift+space pgup_or_prev
 
+space restrict webtoon pgdown_or_next 98
+space restrict all pgdown_or_next 98
+shift+space restrict webtoon pgup_or_prev 98
+shift+space restrict all pgup_or_prev 98
+
 z next -5
 x next 5
 a next -12
