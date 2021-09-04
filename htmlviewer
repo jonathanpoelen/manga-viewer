@@ -818,6 +818,7 @@ const [chapterByIndexes, startIndexByChapters] = (function() {
       images.push(filename);
     }
     else {
+      seppos = seppos2;
       startIndex += images.length;
       images = [filename];
       chap = {startIndex, images, ichap: startIndexes.length};
