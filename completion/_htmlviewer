@@ -1,0 +1,104 @@
+#compdef htmlviewer
+
+# zsh completion function for htmlviewer
+
+#fpath+=($PWD) ; compinit
+
+_htmlviewer_cmd() {
+  compset -q
+
+  if (( $#words <= 1 )); then
+    _values -s + \
+      space sharp plus pgup pgdown up down left right left_click middle_click \
+      right_click shift ctrl alt meta
+  else
+    typeset -i i=2
+    local sepopt=()
+    if [[ $QIPREFIX[1] == "'" || $QIPREFIX[1] == '"' ]]; then
+      sepopt=(-s ' ')
+    fi
+    while; do
+      if (( $#words == i )); then
+        _values $sepopt[@] \
+          next prev next_chap prev_chap rotate pgup pgdown pgdown_or_next \
+          pgup_or_prev mode info auto_scroll toggle_auto_scroll add_interval \
+          set_bottom_pixel add_bottom_pixel trigger mouse mouse_assistance \
+          restrict
+      else
+        case $words[i] in
+          next|prev|next_chap|prev_chap) _message '[n=1]';;
+          rotate) _message '<deg>';;
+          pgup|pgdown|pgup_or_prev) _message '[percent=100]';;
+          pgdown_or_next) (( $#words == i+1 )) && _message '[percent=100]' || _message '[pixel_distance=bottom_pixel]';;
+          auto_scroll|toggle_auto_scroll) _message '[ms_delay=800]';;
+          add_interval) _message '<ms_delay>';;
+          set_bottom_pixel|add_bottom_pixel) _message '<pixel_distance>';;
+          mouse)
+            if (( $#words == i+1 )); then
+              _values $sepopt[@] top bottom left right top_left top_right bottom_left bottom_right
+            else
+              i+=2
+              continue
+            fi;;
+          mode|restrict)
+            if (( $#words == i+1 )); then
+              _values $sepopt[@] normal double webtoon all
+            else
+              i+=2
+              continue
+            fi;;
+          trigger)
+            ((i++))
+            if (( $#words > i )); then
+              typeset -i n=$words[i]
+              if [[ $n == $words[i] ]]; then
+                ((i++))
+              fi
+            fi
+            continue;;
+        esac
+      fi
+      break
+    done
+  fi
+}
+
+local curcontext=$curcontext descr ret=1
+local -a context line state state_descr args tmp suf
+local -A opt_args
+
+args=(
+  + '(exclusive)'
+  '(: * -)-h[display help information]'
+  '(: * -)-p[Print default keyboard mapping]'
+  '(: * -)-K[Generates a html file which displays the name of the keys]'
+
+  + 'command'
+  '*-c+[Add a command]:gui-command:_htmlviewer_cmd'
+
+  + '(sort)'
+  '-s[Sort input directories (default)]'
+  '-S[Do not sort input directories]'
+
+  + input.conf
+  '-i+[Specify configuration file]: :_files'
+  '-n[Do not load default configuration files]'
+
+  + misc
+  '-e[Specify content of html header]'
+  '-f+[Read directories from file]: :_files'
+  '-m+[Specify default mode]:mode:((
+    normal\:one\ image\ at\ a\ time
+    double\:bottom\ then\ top\ then\ next\ image
+    webtoon\:all\ images\ in\ a\ chapter\ one\ below\ the\ other
+    all\:all\ images\ one\ below\ the\ other
+  ))'
+  '-t[Specify title page]'
+  '-x[Specify default value for bottom_pixel command]'
+)
+
+# Strip out argument groups where unsupported
+[[ $ZSH_VERSION == (4|5.<0-3>)(.*)# ]] &&
+args=( ${(@)args:#(#i)(+|[a-z0-9][a-z0-9_-]#|\([a-z0-9][a-z0-9_-]#\))} )
+
+_arguments -s -S : $args '*:directory:_files -/'
