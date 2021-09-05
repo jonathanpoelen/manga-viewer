@@ -61,6 +61,10 @@ ctrl+left_click next_chap
 shift+ctrl+left_click next_chap -1
 
 @ mouse_assistance
+
+# extra
+
+F1 shortcuts
 '
 
 config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
@@ -251,6 +255,8 @@ help="
       restrict {normal|double|webtoon|all} <command>
           Enable a shortcut for a specific mode.
 
+      shortcuts
+          Show shortcuts.
 
   COPYRIGHT
        By Jonathan Poelen
@@ -279,6 +285,7 @@ declare -A fns=(
   [mouse]=1
   [mouse_assistance]=1
   [restrict]=1
+  [shortcuts]=1
 )
 
 declare -A remap=(
@@ -361,11 +368,11 @@ subcomand()
   fi
 
   shift
-  $fn "$@"
+  cmd_$fn "$@"
 }
 
 
-next()
+cmd_next()
 {
   if [[ $# -eq 0 ]]; then
     code='mode.advance(1);'
@@ -376,7 +383,7 @@ next()
   fi
 }
 
-prev()
+cmd_prev()
 {
   if [[ $# -eq 0 ]]; then
     code='mode.advance(-1);'
@@ -389,7 +396,7 @@ prev()
   fi
 }
 
-next_chap()
+cmd_next_chap()
 {
   if [[ $# -eq 0 ]]; then
     code='mode.advanceChap(1);'
@@ -400,7 +407,7 @@ next_chap()
   fi
 }
 
-prev_chap()
+cmd_prev_chap()
 {
   if [[ $# -eq 0 ]]; then
     code='mode.advanceChap(-1);'
@@ -413,14 +420,14 @@ prev_chap()
   fi
 }
 
-rotate()
+cmd_rotate()
 {
   check_n 1 $#
   check_int "$1"
   code="rotate($1);"
 }
 
-mode()
+cmd_mode()
 {
   local mode image_limit=0
   init_local_mode "$1"
@@ -434,7 +441,7 @@ mode()
   code="selectMode($mode, $image_limit);"
 }
 
-pgup_or_prev()
+cmd_pgup_or_prev()
 {
   if [[ $# -eq 0 ]]; then
     code='upOrPrev(body.clientHeight);'
@@ -445,7 +452,7 @@ pgup_or_prev()
   fi
 }
 
-pgdown_or_next()
+cmd_pgdown_or_next()
 {
   if [[ $# -eq 0 ]]; then
     code='downOrNext(bottomPixelDistance, body.clientHeight);'
@@ -460,7 +467,7 @@ pgdown_or_next()
   fi
 }
 
-pgup()
+cmd_pgup()
 {
   if [[ $# -eq 0 ]]; then
     code='body.scrollTop -= body.clientHeight;'
@@ -471,7 +478,7 @@ pgup()
   fi
 }
 
-pgdown()
+cmd_pgdown()
 {
   if [[ $# -eq 0 ]]; then
     code='body.scrollTop += body.clientHeight;'
@@ -482,13 +489,13 @@ pgdown()
   fi
 }
 
-info()
+cmd_info()
 {
   check_n 0 $#
   code='showImageInfo();'
 }
 
-auto_scroll()
+cmd_auto_scroll()
 {
   if [[ $# -eq 0 ]]; then
     code='startAutoScroll(800);' ;
@@ -499,7 +506,7 @@ auto_scroll()
   fi
 }
 
-toggle_auto_scroll()
+cmd_toggle_auto_scroll()
 {
   if [[ $# -eq 0 ]]; then
     code='toggleAutoScroll(800);' ;
@@ -510,28 +517,28 @@ toggle_auto_scroll()
   fi
 }
 
-add_interval()
+cmd_add_interval()
 {
   check_n 1 $#
   check_int "$1"
   code="addAutoScrollInterval($1);"
 }
 
-set_bottom_pixel()
+cmd_set_bottom_pixel()
 {
   check_n 1 $# &&
   check_positive "$1" &&
   code="bottomPixelDistance = $1;"
 }
 
-add_bottom_pixel()
+cmd_add_bottom_pixel()
 {
   check_n 1 $#
   check_int "$1"
   code="bottomPixelDistance = max(0, bottomPixelDistance + $1);"
 }
 
-trigger()
+cmd_trigger()
 {
   local -i delay=$1
   [[ "$1" != "$delay" ]] && delay=0 || shift
@@ -540,7 +547,7 @@ trigger()
   triggered+="{action: function(){$code}, delay: $delay},"$'\n'
 }
 
-mouse()
+cmd_mouse()
 {
   local zone=${mousezone["x$1"]}
   if [[ -z $zone ]]; then
@@ -553,17 +560,23 @@ mouse()
   code="if (isInZone(arguments[0], $zone)) { $code }"
 }
 
-mouse_assistance()
+cmd_mouse_assistance()
 {
   check_n 0 $#
   code='toggleMouseAssistance()'
 }
 
-restrict()
+cmd_restrict()
 {
   init_local_mode "$1"
   shift
   subcomand "$@"
+}
+
+cmd_shortcuts()
+{
+  check_n 0 $#
+  code='showShorcuts();'
 }
 
 
@@ -600,11 +613,11 @@ while getopts 'sSnpKi:c:e:t:f:x:m:h?' opt ; do
     c) cmds+=($OPTIND "$OPTARG");;
     t) title="$OPTARG";;
     f) inputdirs="$OPTARG";;
-    m) mode $OPTARG && force_mode_code=$code || {
+    m) cmd_mode $OPTARG && force_mode_code=$code || {
          echo "arg $OPTIND: -m $OPTARG: $error" >&2
          exit 2
        };;
-    x) set_bottom_pixel "$OPTARG" && force_pixel_distance_code="$OPTARG" || {
+    x) cmd_set_bottom_pixel "$OPTARG" && force_pixel_distance_code="$OPTARG" || {
          echo "arg $OPTIND: -x $OPTARG: $error" >&2
          exit 2
        };;
@@ -644,6 +657,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 shortcuts=()
+raw_shortcuts=()
 declare -A shortcuts_by_mode=()
 
 parse_input_line()
@@ -672,7 +686,7 @@ parse_input_line()
   done
 
   local mode # set by restrict
-  $fn "${args[@]}" || error="$fn: $error"
+  cmd_$fn "${args[@]}" || error="$fn: $error"
 
   # extract controls and convert key to lowercase
   local -A control=([alt]=0 [ctrl]=0 [shift]=0 [meta]=0)
@@ -680,6 +694,32 @@ parse_input_line()
   IFS=+
   local -a keys=($key)
   IFS="$ifs"
+
+  if [[ $key != nokey ]]; then
+    local htmlized="${keys[@]^}"
+    htmlized="${htmlized//_click/Click}"
+    htmlized="${htmlized//&/&amp;}"
+    htmlized="${htmlized//</&lt;}"
+    htmlized="${htmlized// /+}"
+    htmlized="${htmlized/sharp/#}"
+    htmlized="${htmlized/plus/#}"
+    local cmdraw
+    # remove trigger prefix
+    if [[ $fn = trigger ]]; then
+      # remove delay prefix
+      if [[ ${args[@]} =~ [0-9] ]]; then
+        local tmp=("${args[@]}")
+        tmp[0]=''
+        cmdraw="${tmp[@]}"
+      else
+        cmdraw="${args[@]}"
+      fi
+    else
+      cmdraw="$fn ${args[@]}"
+    fi
+    raw_shortcuts+=("<tr><td>$htmlized</td><td>$cmdraw</td></tr>")
+  fi
+
   for key in "${keys[@]}"; do
     key=${key,,}
     control["$key"]=1
@@ -797,17 +837,47 @@ img {
 #mouseAssistance > span:nth-child(1), #mouseAssistance > span:nth-child(2) {
   border-top:0;
 }
+
+#shortcuts {
+  display:none;
+  width: 100%;
+}
+
+#shortcuts > table {
+  background:#eee;
+  margin: auto;
+  padding: 2em;
+  // border-collapse: collapse;
+  border-spacing: 0;
+}
+
+#shortcuts > table tr:nth-child(even) {
+  background:#ddd;
+}
+
+#shortcuts > table td {
+  padding: .5em;
+}
+
+#shortcuts > table td:first-child {
+  text-align:right;
+}
+
+#shortcuts table tr {
+  border-bottom: 1px solid black;
+}
   </style>
   '"$htmlheader"'
 </head>
 <body>
-<img src="" />
+<img src="" class="imgWrapper"/>
 <div id="info"></div>
+<div id="shortcuts"><table>'"${raw_shortcuts[@]}"'</table></div>
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
 <script type="text/javascript">
 "use strict";
 
-const filenames = ['
+const defaultFileNameList = ['
 
 {
   if [[ $sort -eq 1 ]]; then
@@ -823,17 +893,26 @@ echo '];
 
 let ifile = +window.location.search.split("=")[1] || 0;
 const img = document.getElementsByTagName("img")[0];
+const info = document.getElementById("info");
+const shortcutsDesc = document.getElementById("shortcuts");
 const body = document.documentElement;
-const nbFilename = filenames.length;
 
 const min = Math.min;
 const max = Math.max;
 
+let filenames;
+let nbFilename;
 // chapterByIndexes: [{startIndex: from filenames, images: [filename...], ichap: Number}...]
 // chapterByIndexes.length == nbFilename
-const [chapterByIndexes, startIndexByChapters] = (function() {
-  const chaps = new Array(nbFilename);
-  const startIndexes = [];
+let chapterByIndexes;
+let startIndexByChapters;
+
+const initFilenames = function(fileNameList) {
+  filenames = fileNameList;
+  nbFilename = filenames.length;
+  chapterByIndexes = new Array(nbFilename);
+  startIndexByChapters = [];
+
   let filename = filenames[0];
   let images = [filename];
   let seppos = filename.lastIndexOf("/");
@@ -841,8 +920,8 @@ const [chapterByIndexes, startIndexByChapters] = (function() {
   let startIndex = 0;
   let chap = {startIndex, images, ichap: 0};
   let seppos2;
-  chaps[0] = chap;
-  startIndexes.push(startIndex);
+  chapterByIndexes[0] = chap;
+  startIndexByChapters.push(startIndex);
   for (let i = 1; i < nbFilename; ++i) {
     filename = filenames[i];
     seppos2 = filename.lastIndexOf("/");
@@ -853,15 +932,14 @@ const [chapterByIndexes, startIndexByChapters] = (function() {
       seppos = seppos2;
       startIndex += images.length;
       images = [filename];
-      chap = {startIndex, images, ichap: startIndexes.length};
+      chap = {startIndex, images, ichap: startIndexByChapters.length};
       subs = filename.substring(0, seppos);
-      startIndexes.push(startIndex);
+      startIndexByChapters.push(startIndex);
     }
 
-    chaps[i] = chap;
+    chapterByIndexes[i] = chap;
   }
-  return [chaps, startIndexes];
-})();
+};
 
 const rotate = function(deg) {
   const r = img.getAttribute("style");
@@ -995,7 +1073,11 @@ const removeChildren = function(elem) {
 }
 
 const groupPageModeBase = {
-  eimgs: document.createElement("div"),
+  eimgs: (function(){
+    const div = document.createElement("div");
+    div.className = "imgWrapper";
+    return div;
+  })(),
   syncIFile: function() {
     const img = document.elementFromPoint(body.clientWidth / 2, 10);
     const i = img.dataset.i;
@@ -1125,7 +1207,9 @@ let mode = normalMode;
 let currentImageLimit = -1;
 let bottomPixelDistance = 20;
 
-mode.start();
+let actionsByKeys;
+let actionsByClicks;
+let actionsForPrimaryClick;
 
 const downOrNext = function(d, height) {
   if (body.scrollTop + body.clientHeight >= body.scrollHeight - d) {
@@ -1179,37 +1263,105 @@ const addAutoScrollInterval = function(delay) {
 };
 //@}
 
-const showImageInfo = (function() {
-  const info = document.getElementById("info");
+const osd = (function() {
   let resumeAutoScroll = false;
-  const removeInfo = function() {
-    info.style.display = "none";
-    window.removeEventListener("keydown", removeInfo, true);
-    if (resumeAutoScroll) {
-      resumeAutoScroll = false;
-      if (autoScrollTimerId === null) {
-        autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
+  const removeOSD = function(ev) {
+    if (!osd.stopCallback(ev)) {
+      window.removeEventListener("keydown", removeOSD, true);
+      if (resumeAutoScroll) {
+        resumeAutoScroll = false;
+        if (autoScrollTimerId === null) {
+          autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
+        }
       }
     }
   };
-  return function() {
-    let scrollInfo = "";
+  const start = function(stopCallback) {
     if (autoScrollTimerId !== null) {
       clearInterval(autoScrollTimerId);
       autoScrollTimerId = null;
       resumeAutoScroll = true;
-      scrollInfo = `[auto-scroll: ${autoScrollDelay}ms]`;
     }
-    mode.syncIFile();
-    const chap = chapterByIndexes[ifile];
-    info.textContent = `[${ifile+1}/${nbFilename}][Chapter: \
+    osd.stopCallback = stopCallback;
+    window.addEventListener("keydown", removeOSD, true);
+  }
+  start.stop = removeOSD;
+  return start;
+})();
+
+const showImageInfo = function() {
+  let scrollInfo = "";
+  if (autoScrollTimerId !== null) {
+    scrollInfo = `[auto-scroll: ${autoScrollDelay}ms]`;
+  }
+  mode.syncIFile();
+  const chap = chapterByIndexes[ifile];
+  info.textContent = `[${ifile+1}/${nbFilename}][Chapter: \
 ${chap.ichap+1}/${startIndexByChapters.length}][Img: ${ifile-chap.startIndex+1}/${chap.images.length}]${scrollInfo} \
 ${filenames[ifile]}`;
-    info.style.display = "block";
-    info.style.top = `${body.scrollTop}px`;
-    window.addEventListener("keydown", removeInfo, true);
-  };
+  info.style.display = "block";
+  info.style.top = `${body.scrollTop}px`;
+  osd(() => { info.style.display = "none"; });
+};
+
+const [enableShortcuts, disableShortcuts] = (function() {
+  let savedActionsByKeys;
+  let savedActionsByClicks;
+  let savedActionsForPrimaryClick;
+  return [
+    function() {
+      actionsByKeys = savedActionsByKeys;
+      actionsByClicks = savedActionsByClicks;
+      actionsForPrimaryClick = savedActionsForPrimaryClick;
+    },
+    function() {
+      savedActionsByKeys = actionsByKeys;
+      savedActionsByClicks = actionsByClicks;
+      savedActionsForPrimaryClick = actionsForPrimaryClick;
+      actionsByKeys = {};
+      actionsByClicks = {};
+      actionsForPrimaryClick = {};
+    },
+  ];
 })();
+
+const showShorcuts = function() {
+  disableShortcuts();
+  shortcutsDesc.style.display = "block";
+  const img = document.getElementsByClassName("imgWrapper")[0];
+  const display = img.style.display;
+  const scrollTop = body.scrollTop;
+  body.scrollTop = 0;
+  img.style.display = "none";
+  osd((e) => {
+    switch (e.key) {
+      case "ArrowUp":
+      case "ArrowDown":
+      case "ArrowLeft":
+      case "ArrowRight":
+      case "PageDown":
+      case "PageUp":
+      case "Home":
+      case "End":
+      case "Ctrl":
+      case "OS":
+      case "Control":
+      case "Shift":
+      case "Alt":
+      case "AltGraph":
+      case " ":
+      // browser search shortcut
+      case "/":
+      case "f"/* + ctrl */:
+      case "F3":
+        return true;
+    }
+    img.style.display = display;
+    body.scrollTop = scrollTop;
+    shortcutsDesc.style.display = "none";
+    enableShortcuts();
+  });
+}
 
 const toggleMouseAssistance = (function() {
   const style = document.getElementById("mouseAssistance").style;
@@ -1303,12 +1455,12 @@ for mode in "${!shortcuts_by_mode[@]}"; do
 done
 echo '
 
-let actionsByKeys = globalActionsByKeys;
-let actionsByClicks = globalActionsByClicks;
-let actionsForPrimaryClick = actionsByClicks[0];
+actionsByKeys = globalActionsByKeys;
+actionsByClicks = globalActionsByClicks;
+actionsForPrimaryClick = actionsByClicks[0];
 
 window.addEventListener("keydown", function(e) {
-  let actions = actionsByKeys[e.key];
+  const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
   if (actions) {
     const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)]
                   // assume that Shift+Key = Key (ex. Shift+< = <)
@@ -1366,6 +1518,9 @@ function updateShortcuts(mode) {
 }
 
 updateShortcuts(mode);
+
+initFilenames(defaultFileNameList);
+mode.start();
 
 for (const d of [
 '"$triggered"'
