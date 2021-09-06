@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Viewer: ./htmlviewer -a</title>
+  <meta charset="Utf-8"/>
+  <meta http-equiv="cache-control" content="max-age=0"/>
+  <meta http-equiv="cache-control" content="no-cache"/>
+  <meta http-equiv="expires" content="0"/>
+  <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <style>
+div, body {
+  margin:0;
+  padding:0;
+  background:#000;
+}
+
+img {
+  display:block;
+  margin:auto;
+  max-width:100%;
+}
+
+#info, #mouseAssistance {
+  display:none;
+  z-index:10;
+  position:absolute;
+  top:0px;
+}
+
+#info {
+  padding:.5em;
+  color:#000;
+  background:#eee;
+  border:1px #000 solid;
+}
+
+#mouseAssistance {
+  width:100%;
+  height:100%;
+  grid-template-columns:auto auto;
+  background:transparent;
+}
+#mouseAssistance > span {
+  margin:0;
+  padding:0;
+  display:block;
+  background:transparent;
+  border:1px yellow solid;
+  border-left:0;
+  border-bottom:0;
+}
+#mouseAssistance > span:hover {
+  background: rgba(0,0,0,.2);
+}
+#mouseAssistance > span:nth-child(1), #mouseAssistance > span:nth-child(2) {
+  border-top:0;
+}
+
+#shortcuts, #loader {
+  display:none;
+  width: 100%;
+}
+
+#loaderForm {
+  display: table;
+  background:#eee;
+  margin: auto;
+  padding: 2em;
+  text-align:center;
+}
+
+#loaderForm > p {
+  color: #777;
+}
+
+#loaderForm > label, #loaderForm > input {
+  display: block;
+  margin: 1em;
+}
+
+#loaderForm > input {
+  display: inline-block;
+}
+
+#shortcuts > table {
+  background:#eee;
+  margin: auto;
+  padding: 2em;
+  // border-collapse: collapse;
+  border-spacing: 0;
+}
+
+#shortcuts > table tr:nth-child(even) {
+  background:#ddd;
+}
+
+#shortcuts > table td {
+  padding: .5em;
+}
+
+#shortcuts > table td:first-child {
+  text-align:right;
+}
+
+#shortcuts table tr {
+  border-bottom: 1px solid black;
+}
+  </style>
+  
+</head>
+<body>
+<img src="" class="imgWrapper"/>
+<div id="info"></div>
+<div id="loader">
+  <form id="loaderForm">
+    <p>Due to browser security limitations, a web page cannot know the full path of files.<br/>For this reason, it may be necessary to specify it in the prefix field so that files are found.</p>
+    <label>Prefix: <input id="prefix" type="text"/></label>
+    <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
+    <p id="finalpath"></p>
+    <input type="submit"/>
+    <input id="closeLoader" type="button" value="Cancel"/>
+  </form>
+</div>
+<div id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>Z</td><td>next -5</td></tr> <tr><td>X</td><td>next 5</td></tr> <tr><td>A</td><td>next -12</td></tr> <tr><td>S</td><td>next 12</td></tr> <tr><td>Q</td><td>next -30</td></tr> <tr><td>W</td><td>next 30</td></tr> <tr><td>E</td><td>next -100</td></tr> <tr><td>R</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>C</td><td>pgup_or_prev </td></tr> <tr><td>V</td><td>prev </td></tr> <tr><td>B</td><td>pgup_or_prev </td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>M</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>H</td><td>mode webtoon</td></tr> <tr><td>J</td><td>mode double</td></tr> <tr><td>K</td><td>mode normal</td></tr> <tr><td>D</td><td>info </td></tr> <tr><td>O</td><td>info </td></tr> <tr><td>T</td><td>toggle_auto_scroll </td></tr> <tr><td>U</td><td>add_interval -25</td></tr> <tr><td>I</td><td>add_interval 25</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Shift+Ctrl+LeftClick</td><td>next_chap -1</td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F10</td><td>open </td></tr></table></div>
+<div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
+<script type="text/javascript">
+"use strict";
+
+const defaultFileNameList = [
+];
+
+let ifile = +window.location.search.split("=")[1] || 0;
+const img = document.getElementsByTagName("img")[0];
+const info = document.getElementById("info");
+const body = document.documentElement;
+
+const min = Math.min;
+const max = Math.max;
+
+let filenames;
+let nbFilename;
+// chapterByIndexes: [{startIndex: from filenames, images: [filename...], ichap: Number}...]
+// chapterByIndexes.length == nbFilename
+let chapterByIndexes;
+let startIndexByChapters;
+
+const rotate = function(deg) {
+  const r = img.getAttribute("style");
+  if (r) {
+    deg += Number(r.substring(25, r.length-4));
+  }
+  img.setAttribute("style", `transform:rotate(${deg}deg)`);
+};
+
+const toBottomOnLoad = function(image) {
+  image.onload = function(e) {
+    body.scrollTop = image.clientHeight;
+    image.onload = undefined;
+  };
+};
+
+const scrollOnImageAfterDelay = function(image, delay, addTop) {
+  let trigger = false;
+
+  const timerId = setTimeout(function() {
+    if (trigger) {
+      body.scrollTop = image.offsetTop + addTop;
+      image.onload = undefined;
+    }
+    else {
+      trigger = true;
+    }
+  }, delay);
+
+  image.onload = function(e) {
+    if (trigger) {
+      body.scrollTop = image.offsetTop + addTop;
+      clearInterval(timerId);
+    }
+    else {
+      trigger = true;
+    }
+    image.onload = undefined;
+  };
+};
+
+const normalMode = {
+  start: function() {
+    img.src = filenames[ifile];
+  },
+  stop: function() {},
+  next: function() {
+    if (ifile !== nbFilename) {
+      img.src = filenames[++ifile];
+      body.scrollTop = 0;
+    }
+  },
+  prev: function() {
+    if (ifile) {
+      img.src = filenames[--ifile];
+      toBottomOnLoad(img);
+    }
+  },
+  advance: function(x) {
+    ifile = max(0, min(ifile+x, nbFilename-1));
+    img.src = filenames[ifile];
+    body.scrollTop = 0;
+  },
+  advanceChap: function(x) {
+    const chap = chapterByIndexes[ifile];
+    const ichap = max(0, min(chap.ichap + x, startIndexByChapters.length-1));
+    ifile = startIndexByChapters[ichap];
+    // when last chapter, go to end image
+    if (x > 0 && ichap === chap.ichap) {
+      ifile += chap.images.length - 1;
+    }
+    img.src = filenames[ifile];
+    body.scrollTop = 0;
+  },
+  syncIFile: function() {},
+};
+
+const doublePageMode = {
+  start: function() {
+    this.db = false;
+  },
+  stop: function() {},
+  next: function() {
+    if (this.dp) {
+      if (ifile === nbFilename) {
+        return;
+      }
+      img.src = filenames[++ifile];
+    }
+    this.dp = !this.dp;
+    body.scrollTop = 0;
+  },
+  prev: function() {
+    if (this.dp) {
+      if (!ifile) {
+        return;
+      }
+      img.src = filenames[--ifile];
+      toBottomOnLoad(img);
+    }
+    else {
+      body.scrollTop = img.clientHeight;
+    }
+    this.dp = !this.dp;
+  },
+  advance: function(x) {
+    this.db = false;
+    normalMode.advance(x);
+  },
+  advanceChap: function(x) {
+    this.db = false;
+    normalMode.advanceChap(x);
+  },
+  syncIFile: function() {},
+};
+
+const appendImages = function(elem, urls, startIndex) {
+  const nUrl = urls.length;
+  for (let i = 0; i < nUrl; ++i, ++startIndex) {
+    const img = document.createElement("img");
+    img.src = urls[i];
+    img.dataset.i = startIndex;
+    elem.appendChild(img);
+  }
+};
+
+const removeChildren = function(elem) {
+  while (elem.lastChild) {
+    elem.removeChild(elem.lastChild);
+  }
+}
+
+const groupPageModeBase = {
+  eimgs: (function(){
+    const div = document.createElement("div");
+    div.className = "imgWrapper";
+    return div;
+  })(),
+  syncIFile: function() {
+    const img = document.elementFromPoint(body.clientWidth / 2, 10);
+    const i = img.dataset.i;
+    if (i) {
+      ifile = +i;
+    }
+  },
+  _start: function(chapterByIndexes, startIndexByChapters, imageLimit) {
+    if (!imageLimit) {
+      this.chapterByIndexes = chapterByIndexes;
+    }
+    else if (imageLimit in this.chapterByIndexesByImageLimits) {
+      this.chapterByIndexes = this.chapterByIndexesByImageLimits[imageLimit];
+    }
+    else {
+      const chaps = new Array(filenames.length);
+      let startIndex = 0;
+      for (const chapIndex of startIndexByChapters) {
+        const images = chapterByIndexes[chapIndex].images;
+        const imageLen = images.length;
+        if (imageLen > imageLimit) {
+          for (let i = 0; i < imageLen; i += imageLimit) {
+            const subImages = images.slice(i, i + imageLimit);
+            const subImageLen = subImages.length;
+            chaps.fill({startIndex, images: subImages}, startIndex, startIndex + subImageLen);
+            startIndex += subImageLen;
+          }
+        }
+        else {
+          chaps.fill({startIndex, images}, startIndex, startIndex + imageLen);
+          startIndex += imageLen;
+        }
+      }
+      this.chapterByIndexesByImageLimits[imageLimit] = chaps;
+      this.chapterByIndexes = chaps;
+    }
+
+    document.body.removeChild(img);
+    document.body.appendChild(this.eimgs);
+    this.updateChapter();
+    const i = this.currentChapter.startIndex;
+    const image = this.eimgs.childNodes[ifile-i];
+    // TODO calculate the scroll in relation to the position of the image
+    scrollOnImageAfterDelay(image, 100, 0);
+  },
+  updateChapter: function(){
+    const chap = this.chapterByIndexes[ifile];
+    this.currentChapter = chap;
+    removeChildren(this.eimgs);
+    appendImages(this.eimgs, chap.images, chap.startIndex);
+  },
+  stop: function() {
+    this.syncIFile();
+    img.src = filenames[ifile];
+    document.body.removeChild(this.eimgs);
+    document.body.appendChild(img);
+    // TODO calculate the scroll in relation to the position of the image
+    body.scrollTop = 0;
+  },
+  next: function() {
+    const i = this.currentChapter.startIndex + this.currentChapter.images.length;
+    if (i !== nbFilename) {
+      ifile = i;
+      this.updateChapter();
+      body.scrollTop = 0;
+    }
+  },
+  prev: function() {
+    if (this.currentChapter.startIndex) {
+      ifile = this.currentChapter.startIndex - 1;
+      this.updateChapter();
+      const image = this.eimgs.lastChild;
+      scrollOnImageAfterDelay(image, 100, 100);
+    }
+  },
+  advance: function(x) {
+    this.syncIFile();
+    ifile = max(0, min(ifile+x, nbFilename-1));
+    const chap = this.chapterByIndexes[ifile];
+    if (this.currentChapter === chap) {
+      body.scrollTop = this.eimgs.children[ifile - chap.startIndex].offsetTop;
+    }
+    else {
+      body.scrollTop = 0;
+      this.currentChapter = chap;
+      removeChildren(this.eimgs);
+      appendImages(this.eimgs, chap.images, chap.startIndex);
+      const image = this.eimgs.childNodes[ifile-chap.startIndex];
+      scrollOnImageAfterDelay(image, 100, 0);
+    }
+  },
+  advanceChap: function(x) {
+    this.syncIFile();
+    let chap = chapterByIndexes[this.chapterByIndexes[ifile].startIndex];
+    const prevIChap = chap.ichap;
+    const ichap = max(0, min(prevIChap + x, startIndexByChapters.length-1));
+    ifile = startIndexByChapters[ichap];
+    // when last chapter, go to end image
+    if (x > 0 && ichap === prevIChap) {
+      ifile += chap.images.length - 1;
+    }
+    chap = this.chapterByIndexes[ifile];
+    body.scrollTop = 0;
+    this.currentChapter = chap;
+    removeChildren(this.eimgs);
+    appendImages(this.eimgs, chap.images, chap.startIndex);
+    const image = this.eimgs.childNodes[ifile-chap.startIndex];
+    scrollOnImageAfterDelay(image, 100, 0);
+  },
+};
+
+const webtoonMode = Object.assign({
+  chapterByIndexesByImageLimits: {},
+  start: function(imageLimit) {
+    this._start(chapterByIndexes, startIndexByChapters, imageLimit);
+  },
+}, groupPageModeBase);
+
+const allMode = Object.assign({
+  chapterByIndexesByImageLimits: {},
+  start: function(imageLimit) {
+    this._start([{startIndex: 0, images: filenames}], [0], imageLimit);
+  },
+}, groupPageModeBase);
+
+let mode = normalMode;
+let currentImageLimit = -1;
+let bottomPixelDistance = 20;
+
+const downOrNext = function(d, height) {
+  if (body.scrollTop + body.clientHeight >= body.scrollHeight - d) {
+    mode.next();
+  }
+  else {
+    body.scrollTop += height || body.clientHeight;
+  }
+};
+
+const upOrPrev = function(height) {
+  if (body.scrollTop == 0) {
+    mode.prev();
+  }
+  else {
+    body.scrollTop -= height || body.clientHeight;
+  }
+};
+
+//@{
+let autoScrollDelay = null;
+let autoScrollTimerId = null;
+
+const startAutoScroll = function(delay) {
+  console.log(`delay: ${delay}`);
+  clearInterval(autoScrollTimerId);
+  autoScrollDelay = delay;
+  autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
+};
+
+const toggleAutoScroll = function(delay) {
+  if (autoScrollDelay === null) {
+    startAutoScroll(delay);
+  }
+  else if (autoScrollTimerId === null) {
+    autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
+  }
+  else {
+    clearInterval(autoScrollTimerId);
+    autoScrollTimerId = null;
+  }
+};
+
+const addAutoScrollInterval = function(delay) {
+  autoScrollDelay = max(1, (autoScrollDelay || 800) + delay);
+  if (autoScrollTimerId !== null) {
+    clearInterval(autoScrollTimerId);
+    autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
+  }
+  console.log(`autoScrollDelay: ${autoScrollDelay} (+${delay})`);
+};
+//@}
+
+const osd = (function() {
+  let resumeAutoScroll = false;
+  let close;
+  const removeOSD = function(ev) {
+    if (!close(ev)) {
+      window.removeEventListener("keydown", removeOSD, true);
+      if (resumeAutoScroll) {
+        resumeAutoScroll = false;
+        if (autoScrollTimerId === null) {
+          autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
+        }
+      }
+    }
+  };
+  const open = function(closeCallback) {
+    if (autoScrollTimerId !== null) {
+      clearInterval(autoScrollTimerId);
+      autoScrollTimerId = null;
+      resumeAutoScroll = true;
+    }
+
+    close = closeCallback;
+    window.addEventListener("keydown", removeOSD, true);
+  }
+  open.close = removeOSD;
+  return open;
+})();
+
+const showImageInfo = function() {
+  let scrollInfo = "";
+  if (autoScrollTimerId !== null) {
+    scrollInfo = `[auto-scroll: ${autoScrollDelay}ms]`;
+  }
+  mode.syncIFile();
+  const chap = chapterByIndexes[ifile];
+  info.textContent = `[${ifile+1}/${nbFilename}][Chapter: \
+${chap.ichap+1}/${startIndexByChapters.length}][Img: ${ifile-chap.startIndex+1}/${chap.images.length}]${scrollInfo} \
+${filenames[ifile]}`;
+  info.style.display = "block";
+  info.style.top = `${body.scrollTop}px`;
+  osd(() => { info.style.display = "none"; });
+};
+
+const modal = function(closeCallback) {
+  const img = document.getElementsByClassName("imgWrapper")[0];
+  const display = img.style.display;
+  const scrollTop = body.scrollTop;
+  body.scrollTop = 0;
+  img.style.display = "none";
+  disableShortcuts();
+  osd(function(e){
+    if (!closeCallback(e)) {
+      img.style.display = display;
+      body.scrollTop = scrollTop;
+      enableShortcuts();
+      return false;
+    }
+    return true;
+  });
+};
+modal.close = osd.close;
+
+const showShorcuts = (function() {
+  const shortcutsDesc = document.getElementById("shortcuts");
+  return function() {
+    modal((e) => {
+      switch (e.key) {
+        case "ArrowUp":
+        case "ArrowDown":
+        case "ArrowLeft":
+        case "ArrowRight":
+        case "PageDown":
+        case "PageUp":
+        case "Home":
+        case "End":
+        case "Ctrl":
+        case "OS":
+        case "Control":
+        case "Shift":
+        case "Alt":
+        case "AltGraph":
+        case " ":
+        // browser search shortcut
+        case "/":
+        case "f"/* + ctrl */:
+        case "F3":
+        // dev
+        case "F12":
+          return true;
+      }
+      shortcutsDesc.style.display = "none";
+    });
+    shortcutsDesc.style.display = "block";
+  }
+})();
+
+const showLoader = (function() {
+  const loader = document.getElementById("loader");
+  const closeLoader = document.getElementById("closeLoader");
+  const loaderForm = document.getElementById("loaderForm");
+  const prefixElement = document.getElementById("prefix");
+  const dirsElement = document.getElementById("dirs");
+  const pathElement = document.getElementById("finalpath");
+  const files = dirs.files;
+  const closeEvent = {key: "Escape"};
+  const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
+  const regDigit = /^[0-9]/;
+
+  const getPrefix = function() {
+    let prefix = prefixElement.value;
+    if (prefix && !prefix.endsWith("/")) {
+      prefix += "/";
+    }
+    return prefix;
+  };
+
+  const updateFinalPath = function() {
+    const file = files[0];
+    if (file) {
+      const path = document.createElement("b");
+      path.textContent = getPrefix() + file.webkitRelativePath;
+      pathElement.textContent = "Final path of one of the files: ";
+      pathElement.appendChild(path);
+    }
+  };
+
+  prefixElement.addEventListener("keyup", updateFinalPath, true);
+  dirsElement.addEventListener("change", updateFinalPath, true);
+
+  loaderForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const prefix = getPrefix();
+    if (localStorage) {
+      localStorage.setItem("prefix", prefix);
+    }
+
+    const filenames = [];
+    for (let i = 0; i < files.length; ++i) {
+      const parts = [];
+      const path = files[i].webkitRelativePath;
+      // split by string and number
+      for (const m of path.matchAll(regSplit)) {
+        // m[0]
+        parts.push(regDigit.test(m[0]) ? Number(m[0]) : m[0]);
+      }
+      filenames.push([path, parts]);
+    }
+
+    // natural sort
+    filenames.sort(function(a, b) {
+      a = a[1];
+      b = b[1];
+      const alen = a.length;
+      const blen = b.length;
+      if (alen < blen) return -1;
+      if (alen > blen) return 1;
+      for (let i = 0; i < alen; ++i) {
+        const x = a[i];
+        const y = b[i];
+        if (x < y) return -1;
+        if (x > y) return 1;
+      }
+      return 0;
+    });
+
+    const filenameLength = filenames.length;
+    for (let i = 0; i < filenameLength; ++i) {
+      filenames[i] = prefix + filenames[i][0];
+    }
+
+    initFilenames(filenames);
+    modal.close(closeEvent);
+    body.scrollTop = 0;
+  }, true);
+
+  closeLoader.addEventListener("click", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    modal.close(closeEvent);
+  }, true);
+
+  return function() {
+    prefixElement.value = (localStorage && localStorage.getItem("prefix")) || "";
+    updateFinalPath();
+    modal((e) => {
+      if (e.key == "Escape") {
+        loader.style.display = "none";
+        prefixElement.blur();
+        return false;
+      }
+      return true;
+    });
+    loader.style.display = "block";
+    prefixElement.focus();
+  }
+})();
+
+const toggleMouseAssistance = (function() {
+  const style = document.getElementById("mouseAssistance").style;
+  let timerId = null;
+  let enabled = false;
+
+  const hideAssistance = function() {
+    clearInterval(timerId);
+    timerId = null;
+    style.display = "none";
+  };
+
+  const showAssistance = function(e) {
+    style.top = `${body.scrollTop}px`;
+    style.display = "grid";
+    clearInterval(timerId);
+    timerId = setTimeout(hideAssistance, 200);
+  };
+
+  return function() {
+    if (enabled) {
+      enabled = false;
+      window.removeEventListener("mousemove", showAssistance, true);
+    }
+    else {
+      enabled = true;
+      window.addEventListener("mousemove", showAssistance, true);
+    }
+  };
+})();
+
+const isInZone = function(e, zone) {
+  const isTop = (e.clientY < window.innerHeight / 2);
+  const isLeft = (e.clientX < window.innerWidth / 2);
+  // top=1 bottom=2 left=4 right=8
+  switch (zone) {
+    case 1: return isTop;
+    case 2: return !isTop;
+    case 4: return isLeft;
+    case 8: return !isLeft;
+    case 5: return isTop && isLeft;
+    case 9: return isTop && !isLeft;
+    case 6: return !isTop && isLeft;
+    case 10: return !isTop && !isLeft;
+  }
+};
+
+const selectMode = function(newMode, imageLimit) {
+  if (mode !== newMode || currentImageLimit !== imageLimit) {
+    currentImageLimit = imageLimit;
+    mode.stop();
+    mode = newMode;
+    mode.start(imageLimit);
+    updateShortcuts(mode);
+  }
+};
+
+const rgxClickName = /^click\d+$/
+const createActions = function(shortcuts, actionsByKeys, actionsByClicks){
+  actionsByKeys = actionsByKeys || {};
+  actionsByClicks = actionsByClicks || [];
+
+  for (const d of shortcuts) {
+    let actionsByControls = actionsByKeys[d.key];
+    if (!actionsByControls) {
+      actionsByControls = {};
+      actionsByKeys[d.key] = actionsByControls;
+      if (rgxClickName.test(d.key)) {
+        actionsByClicks[d.key.substr(5)] = actionsByControls
+      }
+    }
+    actionsByControls[d.alt + (d.ctrl << 1) + (d.shift << 2) + (d.meta << 3)] = d.action;
+  }
+
+  return [actionsByKeys, actionsByClicks];
+};
+
+// contains key and mouse actions
+const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 1, meta: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'z', action: function(){ mode.advance(-5); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'x', action: function(){ mode.advance(5); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'a', action: function(){ mode.advance(-12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 's', action: function(){ mode.advance(12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'q', action: function(){ mode.advance(-30); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'w', action: function(){ mode.advance(30); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'e', action: function(){ mode.advance(-100); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'r', action: function(){ mode.advance(100); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'ArrowLeft', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'ArrowRight', action: function(){ mode.advance(1); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'ArrowLeft', action: function(){ mode.advance(-5); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'ArrowRight', action: function(){ mode.advance(5); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'ArrowUp', action: function(){ mode.advance(12); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'ArrowDown', action: function(){ mode.advance(-12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '<', action: function(){ mode.advanceChap(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '>', action: function(){ mode.advanceChap(1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '|', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'c', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'v', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'b', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '.', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '/', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'm', action: function(){ rotate(-90); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: ',', action: function(){ rotate(90); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'h', action: function(){ selectMode(webtoonMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'j', action: function(){ selectMode(doublePageMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'k', action: function(){ selectMode(normalMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'd', action: function(){ showImageInfo(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'o', action: function(){ showImageInfo(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 't', action: function(){ toggleAutoScroll(800); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'u', action: function(){ addAutoScrollInterval(-25); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'i', action: function(){ addAutoScrollInterval(25); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'click0', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 1, meta: 0, key: 'click0', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'click0', action: function(){ mode.advanceChap(1); }},
+ {alt: 0, ctrl: 1, shift: 1, meta: 0, key: 'click0', action: function(){ mode.advanceChap(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '@', action: function(){ toggleMouseAssistance() }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f1', action: function(){ showShorcuts(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f10', action: function(){ showLoader(); }},
+]);
+
+const createModActions = function(shortcuts) {
+  const actionsByKeys = {};
+  for (const d in globalActionsByKeys) {
+    actionsByKeys[d] = Object.assign({}, globalActionsByKeys[d]);
+  }
+  return createActions(shortcuts, actionsByKeys, Array.from(globalActionsByClicks));
+};
+
+allMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 1, meta: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+]);
+webtoonMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 1, meta: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+]);
+
+
+let actionsByKeys = globalActionsByKeys;
+let actionsByClicks = globalActionsByClicks;
+let actionsForPrimaryClick = actionsByClicks[0];
+
+const keydownEvent = function(e) {
+  const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
+  if (actions) {
+    const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)]
+                  // assume that Shift+Key = Key (ex. Shift+< = <)
+                || actions[e.altKey + (e.ctrlKey << 1) + (e.metaKey << 3)];
+    if (action) {
+      e.preventDefault();
+      e.stopPropagation();
+      action();
+      return false;
+    }
+  }
+  return true;
+};
+
+const clickEvent = function(e) {
+  const action = actionsForPrimaryClick[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
+  if (action) {
+    e.preventDefault();
+    e.stopPropagation();
+    action();
+    return false;
+  }
+  return true;
+};
+
+const auxClickEvent = function(e) {
+  let actions = actionsByClicks[e.button];
+  if (actions) {
+    const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
+    if (action) {
+      e.preventDefault();
+      e.stopPropagation();
+      action(e);
+      return false;
+    }
+    return true;
+  }
+};
+
+function updateShortcuts(mode) {
+  window.removeEventListener("click", clickEvent, true);
+  window.removeEventListener("auxclick", auxClickEvent, true);
+
+  actionsByKeys = mode.shortcuts ? mode.shortcuts[0] : globalActionsByKeys;
+  actionsByClicks = mode.shortcuts ? mode.shortcuts[1] : globalActionsByClicks;
+
+  if (0 in actionsByClicks) {
+    actionsForPrimaryClick = actionsByClicks[0];
+    window.addEventListener("click", clickEvent, true);
+  }
+
+  if (actionsByClicks.length > 1) {
+    window.addEventListener("auxclick", auxClickEvent, true);
+  }
+}
+
+function enableShortcuts() {
+  window.addEventListener("keydown", keydownEvent, true);
+  updateShortcuts(mode);
+}
+
+function disableShortcuts() {
+  window.removeEventListener("click", clickEvent, true);
+  window.removeEventListener("auxclick", auxClickEvent, true);
+  window.removeEventListener("keydown", keydownEvent, true);
+}
+
+function initFilenames(fileNameList) {
+  filenames = fileNameList;
+  nbFilename = filenames.length;
+  chapterByIndexes = new Array(nbFilename);
+  startIndexByChapters = [];
+
+  let filename = filenames[0];
+
+  if (!filename) {
+    mode.start();
+    return;
+  }
+
+  let images = [filename];
+  let seppos = filename.lastIndexOf("/");
+  let subs = filename.substring(0, seppos);
+  let startIndex = 0;
+  let chap = {startIndex, images, ichap: 0};
+  let seppos2;
+  chapterByIndexes[0] = chap;
+  startIndexByChapters.push(startIndex);
+  for (let i = 1; i < nbFilename; ++i) {
+    filename = filenames[i];
+    seppos2 = filename.lastIndexOf("/");
+    if (seppos2 == seppos && filename.startsWith(subs)) {
+      images.push(filename);
+    }
+    else {
+      seppos = seppos2;
+      startIndex += images.length;
+      images = [filename];
+      chap = {startIndex, images, ichap: startIndexByChapters.length};
+      subs = filename.substring(0, seppos);
+      startIndexByChapters.push(startIndex);
+    }
+
+    chapterByIndexes[i] = chap;
+  }
+
+  mode.start();
+}
+
+enableShortcuts();
+
+initFilenames(defaultFileNameList);
+
+for (const d of [
+
+]) {
+  if (d.delay)
+    setTimeout(d.action, d.delay);
+  else
+    d.action();
+}
+
+
+
+
+showLoader();
+
+</script>
+</body>
+</html>
