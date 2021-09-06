@@ -65,6 +65,7 @@ shift+ctrl+left_click next_chap -1
 # extra
 
 F1 shortcuts
+F10 open
 '
 
 config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
@@ -73,7 +74,7 @@ triggered=''
 
 usage='Generate a html viewer file
 
-  htmlviewer [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
+  htmlviewer [-a] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
              [-i <filename>] [-m {normal|double|webtoon|all}] [-t <title>]
              [-x <pixel_distance>] directory...
   htmlviewer -p
@@ -81,6 +82,10 @@ usage='Generate a html viewer file
   htmlviewer -h'
 
 help="
+  -a
+      Allows the creation of html view without file. They can be opened
+      directly from the viewer.
+
   -c <command>
       Add a command. See input.conf syntax.
 
@@ -258,6 +263,9 @@ help="
       shortcuts
           Show shortcuts.
 
+      open
+          Open directories.
+
   COPYRIGHT
        By Jonathan Poelen
        License MIT
@@ -286,6 +294,7 @@ declare -A fns=(
   [mouse_assistance]=1
   [restrict]=1
   [shortcuts]=1
+  [open]=1
 )
 
 declare -A remap=(
@@ -579,6 +588,12 @@ cmd_shortcuts()
   code='showShorcuts();'
 }
 
+cmd_open()
+{
+  check_n 0 $#
+  code='showLoader();'
+}
+
 
 minihelp()
 {
@@ -592,6 +607,7 @@ minihelp()
   echo 'Use -h for more information.'
 }
 
+standalone=0
 inputdirs=''
 hasinput=0
 sort=1
@@ -601,7 +617,7 @@ force_pixel_distance_code=
 title="${@:0:200}"
 declare -a cmds=()
 
-while getopts 'sSnpKi:c:e:t:f:x:m:h?' opt ; do
+while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
   case $opt in
     s) sort=1;;
     S) sort=0;;
@@ -642,6 +658,7 @@ window.addEventListener("click", mouseEvent, true);
 window.addEventListener("auxclick", mouseEvent, true);
 </script></body></html>';
        exit;;
+    a) standalone=1 ;;
     h) echo "$usage";
        echo "$help"
        exit;;
@@ -651,8 +668,8 @@ window.addEventListener("auxclick", mouseEvent, true);
 done
 shift $(($OPTIND - 1))
 
-if [[ $# -eq 0 ]]; then
-  minihelp
+if [[ $# -eq 0 ]] && [[ $standalone != 1 ]]; then
+  minihelp >&2
   exit 1
 fi
 
@@ -838,9 +855,26 @@ img {
   border-top:0;
 }
 
-#shortcuts {
+#shortcuts, #loader {
   display:none;
   width: 100%;
+}
+
+#loaderForm, #loaderForm {
+  display: table;
+  background:#eee;
+  margin: auto;
+  padding: 2em;
+  text-align:center;
+}
+
+#loaderForm > label, #loaderForm > input {
+  display: block;
+  margin: 1em;
+}
+
+#loaderForm > input {
+  display: inline-block;
 }
 
 #shortcuts > table {
@@ -872,6 +906,14 @@ img {
 <body>
 <img src="" class="imgWrapper"/>
 <div id="info"></div>
+<div id="loader">
+  <form id="loaderForm">
+    <label>Prefix: <input id="prefix" type="text"/></label>
+    <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
+    <input type="submit"/>
+    <input id="closeLoader" type="button" value="Cancel"/>
+  </form>
+</div>
 <div id="shortcuts"><table>'"${raw_shortcuts[@]}"'</table></div>
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
 <script type="text/javascript">
@@ -879,22 +921,23 @@ img {
 
 const defaultFileNameList = ['
 
-{
-  if [[ $sort -eq 1 ]]; then
-    find "$@" "${dirs[@]}" -type f | sort -V
-  else
-    for d in "$@" "${dirs[@]}"; do
-      find "$d" -type f | sort -V
-    done
-  fi
-} | sed '/\(Thumbs\.db\|\.directory|\.html\)$/d;s/"/\\"/g;s/^/"/;s/$/",/g'
+if [[ $# -ne 0 ]]; then
+  {
+    if [[ $sort -eq 1 ]]; then
+      find "$@" "${dirs[@]}" -type f | sort -V
+    else
+      for d in "$@" "${dirs[@]}"; do
+        find "$d" -type f | sort -V
+      done
+    fi
+  } | sed '/\(Thumbs\.db\|\.directory|\.html\)$/d;s/"/\\"/g;s/^/"/;s/$/",/g'
+fi
 
 echo '];
 
 let ifile = +window.location.search.split("=")[1] || 0;
 const img = document.getElementsByTagName("img")[0];
 const info = document.getElementById("info");
-const shortcutsDesc = document.getElementById("shortcuts");
 const body = document.documentElement;
 
 const min = Math.min;
@@ -906,40 +949,6 @@ let nbFilename;
 // chapterByIndexes.length == nbFilename
 let chapterByIndexes;
 let startIndexByChapters;
-
-const initFilenames = function(fileNameList) {
-  filenames = fileNameList;
-  nbFilename = filenames.length;
-  chapterByIndexes = new Array(nbFilename);
-  startIndexByChapters = [];
-
-  let filename = filenames[0];
-  let images = [filename];
-  let seppos = filename.lastIndexOf("/");
-  let subs = filename.substring(0, seppos);
-  let startIndex = 0;
-  let chap = {startIndex, images, ichap: 0};
-  let seppos2;
-  chapterByIndexes[0] = chap;
-  startIndexByChapters.push(startIndex);
-  for (let i = 1; i < nbFilename; ++i) {
-    filename = filenames[i];
-    seppos2 = filename.lastIndexOf("/");
-    if (seppos2 == seppos && filename.startsWith(subs)) {
-      images.push(filename);
-    }
-    else {
-      seppos = seppos2;
-      startIndex += images.length;
-      images = [filename];
-      chap = {startIndex, images, ichap: startIndexByChapters.length};
-      subs = filename.substring(0, seppos);
-      startIndexByChapters.push(startIndex);
-    }
-
-    chapterByIndexes[i] = chap;
-  }
-};
 
 const rotate = function(deg) {
   const r = img.getAttribute("style");
@@ -1207,10 +1216,6 @@ let mode = normalMode;
 let currentImageLimit = -1;
 let bottomPixelDistance = 20;
 
-let actionsByKeys;
-let actionsByClicks;
-let actionsForPrimaryClick;
-
 const downOrNext = function(d, height) {
   if (body.scrollTop + body.clientHeight >= body.scrollHeight - d) {
     mode.next();
@@ -1265,8 +1270,9 @@ const addAutoScrollInterval = function(delay) {
 
 const osd = (function() {
   let resumeAutoScroll = false;
+  let close;
   const removeOSD = function(ev) {
-    if (!osd.stopCallback(ev)) {
+    if (!close(ev)) {
       window.removeEventListener("keydown", removeOSD, true);
       if (resumeAutoScroll) {
         resumeAutoScroll = false;
@@ -1276,17 +1282,18 @@ const osd = (function() {
       }
     }
   };
-  const start = function(stopCallback) {
+  const open = function(closeCallback) {
     if (autoScrollTimerId !== null) {
       clearInterval(autoScrollTimerId);
       autoScrollTimerId = null;
       resumeAutoScroll = true;
     }
-    osd.stopCallback = stopCallback;
+
+    close = closeCallback;
     window.addEventListener("keydown", removeOSD, true);
   }
-  start.stop = removeOSD;
-  return start;
+  open.close = removeOSD;
+  return open;
 })();
 
 const showImageInfo = function() {
@@ -1304,64 +1311,141 @@ ${filenames[ifile]}`;
   osd(() => { info.style.display = "none"; });
 };
 
-const [enableShortcuts, disableShortcuts] = (function() {
-  let savedActionsByKeys;
-  let savedActionsByClicks;
-  let savedActionsForPrimaryClick;
-  return [
-    function() {
-      actionsByKeys = savedActionsByKeys;
-      actionsByClicks = savedActionsByClicks;
-      actionsForPrimaryClick = savedActionsForPrimaryClick;
-    },
-    function() {
-      savedActionsByKeys = actionsByKeys;
-      savedActionsByClicks = actionsByClicks;
-      savedActionsForPrimaryClick = actionsForPrimaryClick;
-      actionsByKeys = {};
-      actionsByClicks = {};
-      actionsForPrimaryClick = {};
-    },
-  ];
-})();
-
-const showShorcuts = function() {
-  disableShortcuts();
-  shortcutsDesc.style.display = "block";
+const modal = function(closeCallback) {
   const img = document.getElementsByClassName("imgWrapper")[0];
   const display = img.style.display;
   const scrollTop = body.scrollTop;
   body.scrollTop = 0;
   img.style.display = "none";
-  osd((e) => {
-    switch (e.key) {
-      case "ArrowUp":
-      case "ArrowDown":
-      case "ArrowLeft":
-      case "ArrowRight":
-      case "PageDown":
-      case "PageUp":
-      case "Home":
-      case "End":
-      case "Ctrl":
-      case "OS":
-      case "Control":
-      case "Shift":
-      case "Alt":
-      case "AltGraph":
-      case " ":
-      // browser search shortcut
-      case "/":
-      case "f"/* + ctrl */:
-      case "F3":
-        return true;
+  disableShortcuts();
+  osd(function(e){
+    if (!closeCallback(e)) {
+      img.style.display = display;
+      body.scrollTop = scrollTop;
+      enableShortcuts();
+      return false;
     }
-    img.style.display = display;
-    body.scrollTop = scrollTop;
-    shortcutsDesc.style.display = "none";
-    enableShortcuts();
+    return true;
   });
-}
+};
+modal.close = osd.close;
+
+const showShorcuts = (function() {
+  const shortcutsDesc = document.getElementById("shortcuts");
+  return function() {
+    modal((e) => {
+      switch (e.key) {
+        case "ArrowUp":
+        case "ArrowDown":
+        case "ArrowLeft":
+        case "ArrowRight":
+        case "PageDown":
+        case "PageUp":
+        case "Home":
+        case "End":
+        case "Ctrl":
+        case "OS":
+        case "Control":
+        case "Shift":
+        case "Alt":
+        case "AltGraph":
+        case " ":
+        // browser search shortcut
+        case "/":
+        case "f"/* + ctrl */:
+        case "F3":
+        // dev
+        case "F12":
+          return true;
+      }
+      shortcutsDesc.style.display = "none";
+    });
+    shortcutsDesc.style.display = "block";
+  }
+})();
+
+const showLoader = (function() {
+  const loader = document.getElementById("loader");
+  const closeLoader = document.getElementById("closeLoader");
+  const loaderForm = document.getElementById("loaderForm");
+  const prefixElement = document.getElementById("prefix");
+  const dirsElement = document.getElementById("dirs");
+  const files = dirs.files;
+  const closeEvent = {key: "Escape"};
+  const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
+  const regDigit = /^[0-9]/;
+
+  loaderForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    let prefix = prefixElement.value;
+    if (prefix && !prefix.endsWith("/")) {
+      prefix += "/";
+    }
+    if (localStorage) {
+      localStorage.setItem("prefix", prefix);
+    }
+
+    const filenames = [];
+    for (let i = 0; i < files.length; ++i) {
+      const parts = [];
+      const path = files[i].webkitRelativePath;
+      // split by string and number
+      for (const m of path.matchAll(regSplit)) {
+        // m[0]
+        parts.push(regDigit.test(m[0]) ? Number(m[0]) : m[0]);
+      }
+      filenames.push([path, parts]);
+    }
+
+    // natural sort
+    filenames.sort(function(a, b) {
+      a = a[1];
+      b = b[1];
+      const alen = a.length;
+      const blen = b.length;
+      if (alen < blen) return -1;
+      if (alen > blen) return 1;
+      for (let i = 0; i < alen; ++i) {
+        const x = a[i];
+        const y = b[i];
+        if (x < y) return -1;
+        if (x > y) return 1;
+      }
+      return 0;
+    });
+
+    const filenameLength = filenames.length;
+    for (let i = 0; i < filenameLength; ++i) {
+      filenames[i] = prefix + filenames[i][0];
+    }
+
+    initFilenames(filenames);
+    modal.close(closeEvent);
+    body.scrollTop = 0;
+  }, true);
+
+  closeLoader.addEventListener("click", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    modal.close(closeEvent);
+  }, true);
+
+  return function() {
+    prefixElement.value = (localStorage && localStorage.getItem("prefix")) || "";
+    modal((e) => {
+      if (e.key == "Escape") {
+        loader.style.display = "none";
+        prefixElement.blur();
+        return false;
+      }
+      return true;
+    });
+    loader.style.display = "block";
+    prefixElement.focus();
+  }
+})();
 
 const toggleMouseAssistance = (function() {
   const style = document.getElementById("mouseAssistance").style;
@@ -1455,11 +1539,11 @@ for mode in "${!shortcuts_by_mode[@]}"; do
 done
 echo '
 
-actionsByKeys = globalActionsByKeys;
-actionsByClicks = globalActionsByClicks;
-actionsForPrimaryClick = actionsByClicks[0];
+let actionsByKeys = globalActionsByKeys;
+let actionsByClicks = globalActionsByClicks;
+let actionsForPrimaryClick = actionsByClicks[0];
 
-window.addEventListener("keydown", function(e) {
+const keydownEvent = function(e) {
   const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
   if (actions) {
     const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)]
@@ -1473,7 +1557,7 @@ window.addEventListener("keydown", function(e) {
     }
   }
   return true;
-}, true);
+};
 
 const clickEvent = function(e) {
   const action = actionsForPrimaryClick[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
@@ -1501,8 +1585,8 @@ const auxClickEvent = function(e) {
 };
 
 function updateShortcuts(mode) {
-  window.removeEventListener("click", clickEvent);
-  window.removeEventListener("auxclick", auxClickEvent);
+  window.removeEventListener("click", clickEvent, true);
+  window.removeEventListener("auxclick", auxClickEvent, true);
 
   actionsByKeys = mode.shortcuts ? mode.shortcuts[0] : globalActionsByKeys;
   actionsByClicks = mode.shortcuts ? mode.shortcuts[1] : globalActionsByClicks;
@@ -1517,10 +1601,62 @@ function updateShortcuts(mode) {
   }
 }
 
-updateShortcuts(mode);
+function enableShortcuts() {
+  window.addEventListener("keydown", keydownEvent, true);
+  updateShortcuts(mode);
+}
+
+function disableShortcuts() {
+  window.removeEventListener("click", clickEvent, true);
+  window.removeEventListener("auxclick", auxClickEvent, true);
+  window.removeEventListener("keydown", keydownEvent, true);
+}
+
+function initFilenames(fileNameList) {
+  filenames = fileNameList;
+  nbFilename = filenames.length;
+  chapterByIndexes = new Array(nbFilename);
+  startIndexByChapters = [];
+
+  let filename = filenames[0];
+
+  if (!filename) {
+    mode.start();
+    return;
+  }
+
+  let images = [filename];
+  let seppos = filename.lastIndexOf("/");
+  let subs = filename.substring(0, seppos);
+  let startIndex = 0;
+  let chap = {startIndex, images, ichap: 0};
+  let seppos2;
+  chapterByIndexes[0] = chap;
+  startIndexByChapters.push(startIndex);
+  for (let i = 1; i < nbFilename; ++i) {
+    filename = filenames[i];
+    seppos2 = filename.lastIndexOf("/");
+    if (seppos2 == seppos && filename.startsWith(subs)) {
+      images.push(filename);
+    }
+    else {
+      seppos = seppos2;
+      startIndex += images.length;
+      images = [filename];
+      chap = {startIndex, images, ichap: startIndexByChapters.length};
+      subs = filename.substring(0, seppos);
+      startIndexByChapters.push(startIndex);
+    }
+
+    chapterByIndexes[i] = chap;
+  }
+
+  mode.start();
+}
+
+enableShortcuts();
 
 initFilenames(defaultFileNameList);
-mode.start();
 
 for (const d of [
 '"$triggered"'
@@ -1533,6 +1669,13 @@ for (const d of [
 
 '"$force_pixel_distance_code"'
 '"$force_mode_code"'
+'
+
+if [[ $# -eq 0 ]]; then
+  echo 'showLoader();'
+fi
+
+echo '
 </script>
 </body>
 </html>'
