@@ -604,6 +604,9 @@ minihelp()
     echo '  But not found, a default configuration will be used (see -p).'
   fi
   echo
+  echo 'Use -a for create a view without directory. Directories to be loaded'
+  echo 'will be asked when opening the html file.'
+  echo
   echo 'Use -h for more information.'
 }
 
@@ -860,12 +863,16 @@ img {
   width: 100%;
 }
 
-#loaderForm, #loaderForm {
+#loaderForm {
   display: table;
   background:#eee;
   margin: auto;
   padding: 2em;
   text-align:center;
+}
+
+#loaderForm > p {
+  color: #777;
 }
 
 #loaderForm > label, #loaderForm > input {
@@ -908,8 +915,10 @@ img {
 <div id="info"></div>
 <div id="loader">
   <form id="loaderForm">
+    <p>Due to browser security limitations, a web page cannot know the full path of files.<br/>For this reason, it may be necessary to specify it in the prefix field so that files are found.</p>
     <label>Prefix: <input id="prefix" type="text"/></label>
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
+    <p id="finalpath"></p>
     <input type="submit"/>
     <input id="closeLoader" type="button" value="Cancel"/>
   </form>
@@ -1370,19 +1379,38 @@ const showLoader = (function() {
   const loaderForm = document.getElementById("loaderForm");
   const prefixElement = document.getElementById("prefix");
   const dirsElement = document.getElementById("dirs");
+  const pathElement = document.getElementById("finalpath");
   const files = dirs.files;
   const closeEvent = {key: "Escape"};
   const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
   const regDigit = /^[0-9]/;
 
-  loaderForm.addEventListener("submit", function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const getPrefix = function() {
     let prefix = prefixElement.value;
     if (prefix && !prefix.endsWith("/")) {
       prefix += "/";
     }
+    return prefix;
+  };
+
+  const updateFinalPath = function() {
+    const file = files[0];
+    if (file) {
+      const path = document.createElement("b");
+      path.textContent = getPrefix() + file.webkitRelativePath;
+      pathElement.textContent = "Final path of one of the files: ";
+      pathElement.appendChild(path);
+    }
+  };
+
+  prefixElement.addEventListener("keyup", updateFinalPath, true);
+  dirsElement.addEventListener("change", updateFinalPath, true);
+
+  loaderForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const prefix = getPrefix();
     if (localStorage) {
       localStorage.setItem("prefix", prefix);
     }
@@ -1434,6 +1462,7 @@ const showLoader = (function() {
 
   return function() {
     prefixElement.value = (localStorage && localStorage.getItem("prefix")) || "";
+    updateFinalPath();
     modal((e) => {
       if (e.key == "Escape") {
         loader.style.display = "none";
