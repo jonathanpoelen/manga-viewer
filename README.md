@@ -16,9 +16,18 @@ It's main advantage is that it uses one and the same key to scroll and go to the
 htmlviewer ${directories} > view.html
 ```
 
-The default shortcuts are displayed with `htmlviewer -p`.
+Or a version which asks for the files to load when opening the html file:
+
+```
+htmlviewer -a > view.html
+```
+
+Note: This file can be directly downloaded [here](https://jonathanpoelen.github.io/jln.mp/index.html) (right click -> save link as...).
+
+The default shortcuts are displayed with `htmlviewer -p` or `F1`.
 
 Read `htmlviewer -h` for more options.
+
 
 # Default input.conf
 
@@ -82,4 +91,9 @@ ctrl+left_click next_chap
 shift+ctrl+left_click next_chap -1
 
 @ mouse_assistance
+
+# extra
+
+F1 shortcuts
+F10 open
 ```

@@ -1,0 +1,30 @@
+name: Standalone
+
+on: [push]
+
+jobs:
+  standalone:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build standalone
+        run: ./htmlviewer -a > index.html
+
+      - uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          path: standalone
+
+      - name: Push changes
+        run: |
+          mv index.html standalone/
+          cd standalone
+          if ! git diff --quiet ; then
+            git config --global user.name 'Jonathan Poelen'
+            git config --global user.email 'jonathan.poelen@gmail.com'
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+            git commit -am "update standalone"
+            git push
+          fi
