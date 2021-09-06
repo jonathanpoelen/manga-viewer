@@ -22,7 +22,7 @@ Or a version which asks for the files to load when opening the html file:
 htmlviewer -a > view.html
 ```
 
-Note: This file can be directly downloaded [here](https://jonathanpoelen.github.io/jln.mp/index.html) (right click -> save link as...).
+Note: This file can be directly downloaded [here](https://jonathanpoelen.github.io/manga-viewer) (right click -> save link as...).
 
 The default shortcuts are displayed with `htmlviewer -p` or `F1`.
 
