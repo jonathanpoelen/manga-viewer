@@ -1,7 +1,8 @@
 <!DOCTYPE html>
+<!-- https://github.com/jonathanpoelen/manga-viewer -->
 <html>
 <head>
-  <title>Viewer: ./htmlviewer -a</title>
+  <title>Viewer: ./htmlviewer -A</title>
   <meta charset="Utf-8"/>
   <meta http-equiv="cache-control" content="max-age=0"/>
   <meta http-equiv="cache-control" content="no-cache"/>
@@ -114,6 +115,7 @@ img {
 <div id="info"></div>
 <div id="loader">
   <form id="loaderForm">
+    <label><input id="useGOpen" type="checkbox">Use the generic method (takes more memory and is slower).</label>
     <p>Due to browser security limitations, a web page cannot know the full path of files.<br/>For this reason, it may be necessary to specify it in the prefix field so that files are found.</p>
     <label>Prefix: <input id="prefix" type="text"/></label>
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
@@ -122,7 +124,7 @@ img {
     <input id="closeLoader" type="button" value="Cancel"/>
   </form>
 </div>
-<div id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>Z</td><td>next -5</td></tr> <tr><td>X</td><td>next 5</td></tr> <tr><td>A</td><td>next -12</td></tr> <tr><td>S</td><td>next 12</td></tr> <tr><td>Q</td><td>next -30</td></tr> <tr><td>W</td><td>next 30</td></tr> <tr><td>E</td><td>next -100</td></tr> <tr><td>R</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>C</td><td>pgup_or_prev </td></tr> <tr><td>V</td><td>prev </td></tr> <tr><td>B</td><td>pgup_or_prev </td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>M</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>H</td><td>mode webtoon</td></tr> <tr><td>J</td><td>mode double</td></tr> <tr><td>K</td><td>mode normal</td></tr> <tr><td>D</td><td>info </td></tr> <tr><td>O</td><td>info </td></tr> <tr><td>T</td><td>toggle_auto_scroll </td></tr> <tr><td>U</td><td>add_interval -25</td></tr> <tr><td>I</td><td>add_interval 25</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Shift+Ctrl+LeftClick</td><td>next_chap -1</td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F10</td><td>open </td></tr></table></div>
+<div id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>Z</td><td>next -5</td></tr> <tr><td>X</td><td>next 5</td></tr> <tr><td>A</td><td>next -12</td></tr> <tr><td>S</td><td>next 12</td></tr> <tr><td>Q</td><td>next -30</td></tr> <tr><td>W</td><td>next 30</td></tr> <tr><td>E</td><td>next -100</td></tr> <tr><td>R</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>C</td><td>pgup_or_prev </td></tr> <tr><td>V</td><td>prev </td></tr> <tr><td>B</td><td>pgup_or_prev </td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>M</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>H</td><td>mode webtoon</td></tr> <tr><td>J</td><td>mode double</td></tr> <tr><td>K</td><td>mode normal</td></tr> <tr><td>D</td><td>info </td></tr> <tr><td>O</td><td>info </td></tr> <tr><td>T</td><td>toggle_auto_scroll </td></tr> <tr><td>U</td><td>add_interval -25</td></tr> <tr><td>I</td><td>add_interval 25</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Shift+Ctrl+LeftClick</td><td>next_chap -1</td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F10</td><td>open </td></tr> <tr><td>F8</td><td>gopen </td></tr></table></div>
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
 <script type="text/javascript">
 "use strict";
@@ -138,6 +140,7 @@ const body = document.documentElement;
 const min = Math.min;
 const max = Math.max;
 
+let fileByFilename;
 let filenames;
 let nbFilename;
 // chapterByIndexes: [{startIndex: from filenames, images: [filename...], ichap: Number}...]
@@ -185,26 +188,39 @@ const scrollOnImageAfterDelay = function(image, delay, addTop) {
   };
 };
 
+const setImage = function(img, filename) {
+  if (fileByFilename) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(fileByFilename[filename]);
+  }
+  else {
+    img.src = filename;
+  }
+};
+
 const normalMode = {
   start: function() {
-    img.src = filenames[ifile];
+    setImage(img, filenames[ifile]);
   },
   stop: function() {},
   next: function() {
     if (ifile !== nbFilename) {
-      img.src = filenames[++ifile];
+      setImage(img, filenames[++ifile]);
       body.scrollTop = 0;
     }
   },
   prev: function() {
     if (ifile) {
-      img.src = filenames[--ifile];
+      setImage(img, filenames[--ifile]);
       toBottomOnLoad(img);
     }
   },
   advance: function(x) {
     ifile = max(0, min(ifile+x, nbFilename-1));
-    img.src = filenames[ifile];
+    setImage(img, filenames[ifile]);
     body.scrollTop = 0;
   },
   advanceChap: function(x) {
@@ -215,7 +231,7 @@ const normalMode = {
     if (x > 0 && ichap === chap.ichap) {
       ifile += chap.images.length - 1;
     }
-    img.src = filenames[ifile];
+    setImage(img, filenames[ifile]);
     body.scrollTop = 0;
   },
   syncIFile: function() {},
@@ -231,7 +247,7 @@ const doublePageMode = {
       if (ifile === nbFilename) {
         return;
       }
-      img.src = filenames[++ifile];
+      setImage(img, filenames[++ifile]);
     }
     this.dp = !this.dp;
     body.scrollTop = 0;
@@ -241,7 +257,7 @@ const doublePageMode = {
       if (!ifile) {
         return;
       }
-      img.src = filenames[--ifile];
+      setImage(img, filenames[--ifile]);
       toBottomOnLoad(img);
     }
     else {
@@ -264,7 +280,7 @@ const appendImages = function(elem, urls, startIndex) {
   const nUrl = urls.length;
   for (let i = 0; i < nUrl; ++i, ++startIndex) {
     const img = document.createElement("img");
-    img.src = urls[i];
+    setImage(img, urls[i]);
     img.dataset.i = startIndex;
     elem.appendChild(img);
   }
@@ -335,7 +351,7 @@ const groupPageModeBase = {
   },
   stop: function() {
     this.syncIFile();
-    img.src = filenames[ifile];
+    setImage(img, filenames[ifile]);
     document.body.removeChild(this.eimgs);
     document.body.appendChild(img);
     // TODO calculate the scroll in relation to the position of the image
@@ -566,10 +582,13 @@ const showLoader = (function() {
   const prefixElement = document.getElementById("prefix");
   const dirsElement = document.getElementById("dirs");
   const pathElement = document.getElementById("finalpath");
+  const useGOpenElement = document.getElementById("useGOpen");
   const files = dirs.files;
   const closeEvent = {key: "Escape"};
   const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
   const regDigit = /^[0-9]/;
+
+  let isFilenameMode = true;
 
   const getPrefix = function() {
     let prefix = prefixElement.value;
@@ -592,29 +611,29 @@ const showLoader = (function() {
   prefixElement.addEventListener("keyup", updateFinalPath, true);
   dirsElement.addEventListener("change", updateFinalPath, true);
 
+  useGOpenElement.addEventListener("click", function(e) {
+    showLoader(!useGOpenElement.checked);
+  })
+
   loaderForm.addEventListener("submit", function(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    const prefix = getPrefix();
-    if (localStorage) {
-      localStorage.setItem("prefix", prefix);
-    }
-
-    const filenames = [];
+    const filenameDatas = [];
     for (let i = 0; i < files.length; ++i) {
       const parts = [];
-      const path = files[i].webkitRelativePath;
+      const file = files[i];
+      const path = file.webkitRelativePath;
       // split by string and number
       for (const m of path.matchAll(regSplit)) {
         // m[0]
         parts.push(regDigit.test(m[0]) ? Number(m[0]) : m[0]);
       }
-      filenames.push([path, parts]);
+      filenameDatas.push([path, parts, file]);
     }
 
     // natural sort
-    filenames.sort(function(a, b) {
+    filenameDatas.sort(function(a, b) {
       a = a[1];
       b = b[1];
       const alen = a.length;
@@ -630,12 +649,36 @@ const showLoader = (function() {
       return 0;
     });
 
-    const filenameLength = filenames.length;
-    for (let i = 0; i < filenameLength; ++i) {
-      filenames[i] = prefix + filenames[i][0];
+    if (isFilenameMode) {
+      const prefix = getPrefix();
+      if (localStorage) {
+        localStorage.setItem("prefix", prefix);
+      }
+
+      const filenameLength = filenameDatas.length;
+      for (let i = 0; i < filenameLength; ++i) {
+        filenameDatas[i] = prefix + filenameDatas[i][0];
+      }
+
+      initFilenames(filenameDatas);
+    }
+    else {
+      const prefix = getPrefix();
+      if (localStorage) {
+        localStorage.setItem("prefix", prefix);
+      }
+
+      const filenameLength = filenameDatas.length;
+      const filenames = new Array(filenameLength);
+      const fileByFilename = {};
+      for (let i = 0; i < filenameLength; ++i) {
+        filenames[i] = filenameDatas[i][0];
+        fileByFilename[filenames[i]] = filenameDatas[i][2];
+      }
+
+      initFilenames(filenames, fileByFilename);
     }
 
-    initFilenames(filenames);
     modal.close(closeEvent);
     body.scrollTop = 0;
   }, true);
@@ -646,9 +689,8 @@ const showLoader = (function() {
     modal.close(closeEvent);
   }, true);
 
-  return function() {
-    prefixElement.value = (localStorage && localStorage.getItem("prefix")) || "";
-    updateFinalPath();
+  return function(mode) {
+    isFilenameMode = mode;
     modal((e) => {
       if (e.key == "Escape") {
         loader.style.display = "none";
@@ -657,8 +699,17 @@ const showLoader = (function() {
       }
       return true;
     });
+    const notice = loader.firstElementChild.firstElementChild;
+    notice.nextElementSibling.style.display = isFilenameMode ? "block" : "none";
+    notice.nextElementSibling.nextElementSibling.style.display = isFilenameMode ? "inline" : "none";
+    pathElement.style.display = isFilenameMode ? "block" : "none";
+    useGOpenElement.checked = !isFilenameMode;
     loader.style.display = "block";
-    prefixElement.focus();
+    if (isFilenameMode) {
+      prefixElement.value = (localStorage && localStorage.getItem("prefix")) || "";
+      updateFinalPath();
+      prefixElement.focus();
+    }
   }
 })();
 
@@ -779,7 +830,8 @@ const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctr
  {alt: 0, ctrl: 1, shift: 1, meta: 0, key: 'click0', action: function(){ mode.advanceChap(-1); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '@', action: function(){ toggleMouseAssistance() }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f1', action: function(){ showShorcuts(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f10', action: function(){ showLoader(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f10', action: function(){ showLoader(true); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f8', action: function(){ showLoader(false); }},
 ]);
 
 const createModActions = function(shortcuts) {
@@ -871,7 +923,8 @@ function disableShortcuts() {
   window.removeEventListener("keydown", keydownEvent, true);
 }
 
-function initFilenames(fileNameList) {
+function initFilenames(fileNameList, fileByFileName) {
+  fileByFilename = fileByFileName;
   filenames = fileNameList;
   nbFilename = filenames.length;
   chapterByIndexes = new Array(nbFilename);
@@ -929,7 +982,7 @@ for (const d of [
 
 
 
-showLoader();
+showLoader(false);
 
 </script>
 </body>
