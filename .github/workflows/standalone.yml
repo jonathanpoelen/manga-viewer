@@ -10,7 +10,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build standalone
-        run: ./htmlviewer -a > index.html
+        run: |
+          ./htmlviewer -A > index.html
+          ./htmlviewer -a > view.html
 
       - uses: actions/checkout@v2
         with:
@@ -19,7 +21,7 @@ jobs:
 
       - name: Push changes
         run: |
-          mv index.html standalone/
+          mv index.html view.html standalone/
           cd standalone
           if ! git diff --quiet ; then
             git config --global user.name 'Jonathan Poelen'

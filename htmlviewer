@@ -66,6 +66,7 @@ shift+ctrl+left_click next_chap -1
 
 F1 shortcuts
 F10 open
+F8 gopen
 '
 
 config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
@@ -74,7 +75,7 @@ triggered=''
 
 usage='Generate a html viewer file
 
-  htmlviewer [-a] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
+  htmlviewer [-a|-A] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
              [-i <filename>] [-m {normal|double|webtoon|all}] [-t <title>]
              [-x <pixel_distance>] directory...
   htmlviewer -p
@@ -85,6 +86,9 @@ help="
   -a
       Allows the creation of html view without file. They can be opened
       directly from the viewer.
+
+  -A
+      same as -a, but use gopen command.
 
   -c <command>
       Add a command. See input.conf syntax.
@@ -266,6 +270,10 @@ help="
       open
           Open directories.
 
+      gopen
+          Open directories. This is a generic version of open which unfortunately
+          is less efficient and consumes more memory.
+
   COPYRIGHT
        By Jonathan Poelen
        License MIT
@@ -295,6 +303,7 @@ declare -A fns=(
   [restrict]=1
   [shortcuts]=1
   [open]=1
+  [gopen]=1
 )
 
 declare -A remap=(
@@ -591,7 +600,13 @@ cmd_shortcuts()
 cmd_open()
 {
   check_n 0 $#
-  code='showLoader();'
+  code='showLoader(true);'
+}
+
+cmd_gopen()
+{
+  check_n 0 $#
+  code='showLoader(false);'
 }
 
 
@@ -610,7 +625,7 @@ minihelp()
   echo 'Use -h for more information.'
 }
 
-standalone=0
+typeset -i standalone=0
 inputdirs=''
 hasinput=0
 sort=1
@@ -620,7 +635,7 @@ force_pixel_distance_code=
 title="${@:0:200}"
 declare -a cmds=()
 
-while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
+while getopts 'aAsSnpKi:c:e:t:f:x:m:h?' opt ; do
   case $opt in
     s) sort=1;;
     S) sort=0;;
@@ -662,6 +677,7 @@ window.addEventListener("auxclick", mouseEvent, true);
 </script></body></html>';
        exit;;
     a) standalone=1 ;;
+    A) standalone=2 ;;
     h) echo "$usage";
        echo "$help"
        exit;;
@@ -671,7 +687,7 @@ window.addEventListener("auxclick", mouseEvent, true);
 done
 shift $(($OPTIND - 1))
 
-if [[ $# -eq 0 ]] && [[ $standalone != 1 ]]; then
+if [[ $# -eq 0 ]] && (( $standalone == 0 )); then
   minihelp >&2
   exit 1
 fi
@@ -800,6 +816,7 @@ fi
 
 
 echo '<!DOCTYPE html>
+<!-- https://github.com/jonathanpoelen/manga-viewer -->
 <html>
 <head>
   <title>Viewer: '"$title"'</title>
@@ -915,6 +932,7 @@ img {
 <div id="info"></div>
 <div id="loader">
   <form id="loaderForm">
+    <label><input id="useGOpen" type="checkbox">Use the generic method (takes more memory and is slower).</label>
     <p>Due to browser security limitations, a web page cannot know the full path of files.<br/>For this reason, it may be necessary to specify it in the prefix field so that files are found.</p>
     <label>Prefix: <input id="prefix" type="text"/></label>
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
@@ -952,6 +970,7 @@ const body = document.documentElement;
 const min = Math.min;
 const max = Math.max;
 
+let fileByFilename;
 let filenames;
 let nbFilename;
 // chapterByIndexes: [{startIndex: from filenames, images: [filename...], ichap: Number}...]
@@ -999,26 +1018,39 @@ const scrollOnImageAfterDelay = function(image, delay, addTop) {
   };
 };
 
+const setImage = function(img, filename) {
+  if (fileByFilename) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(fileByFilename[filename]);
+  }
+  else {
+    img.src = filename;
+  }
+};
+
 const normalMode = {
   start: function() {
-    img.src = filenames[ifile];
+    setImage(img, filenames[ifile]);
   },
   stop: function() {},
   next: function() {
     if (ifile !== nbFilename) {
-      img.src = filenames[++ifile];
+      setImage(img, filenames[++ifile]);
       body.scrollTop = 0;
     }
   },
   prev: function() {
     if (ifile) {
-      img.src = filenames[--ifile];
+      setImage(img, filenames[--ifile]);
       toBottomOnLoad(img);
     }
   },
   advance: function(x) {
     ifile = max(0, min(ifile+x, nbFilename-1));
-    img.src = filenames[ifile];
+    setImage(img, filenames[ifile]);
     body.scrollTop = 0;
   },
   advanceChap: function(x) {
@@ -1029,7 +1061,7 @@ const normalMode = {
     if (x > 0 && ichap === chap.ichap) {
       ifile += chap.images.length - 1;
     }
-    img.src = filenames[ifile];
+    setImage(img, filenames[ifile]);
     body.scrollTop = 0;
   },
   syncIFile: function() {},
@@ -1045,7 +1077,7 @@ const doublePageMode = {
       if (ifile === nbFilename) {
         return;
       }
-      img.src = filenames[++ifile];
+      setImage(img, filenames[++ifile]);
     }
     this.dp = !this.dp;
     body.scrollTop = 0;
@@ -1055,7 +1087,7 @@ const doublePageMode = {
       if (!ifile) {
         return;
       }
-      img.src = filenames[--ifile];
+      setImage(img, filenames[--ifile]);
       toBottomOnLoad(img);
     }
     else {
@@ -1078,7 +1110,7 @@ const appendImages = function(elem, urls, startIndex) {
   const nUrl = urls.length;
   for (let i = 0; i < nUrl; ++i, ++startIndex) {
     const img = document.createElement("img");
-    img.src = urls[i];
+    setImage(img, urls[i]);
     img.dataset.i = startIndex;
     elem.appendChild(img);
   }
@@ -1149,7 +1181,7 @@ const groupPageModeBase = {
   },
   stop: function() {
     this.syncIFile();
-    img.src = filenames[ifile];
+    setImage(img, filenames[ifile]);
     document.body.removeChild(this.eimgs);
     document.body.appendChild(img);
     // TODO calculate the scroll in relation to the position of the image
@@ -1380,10 +1412,13 @@ const showLoader = (function() {
   const prefixElement = document.getElementById("prefix");
   const dirsElement = document.getElementById("dirs");
   const pathElement = document.getElementById("finalpath");
+  const useGOpenElement = document.getElementById("useGOpen");
   const files = dirs.files;
   const closeEvent = {key: "Escape"};
   const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
   const regDigit = /^[0-9]/;
+
+  let isFilenameMode = true;
 
   const getPrefix = function() {
     let prefix = prefixElement.value;
@@ -1406,29 +1441,29 @@ const showLoader = (function() {
   prefixElement.addEventListener("keyup", updateFinalPath, true);
   dirsElement.addEventListener("change", updateFinalPath, true);
 
+  useGOpenElement.addEventListener("click", function(e) {
+    showLoader(!useGOpenElement.checked);
+  })
+
   loaderForm.addEventListener("submit", function(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    const prefix = getPrefix();
-    if (localStorage) {
-      localStorage.setItem("prefix", prefix);
-    }
-
-    const filenames = [];
+    const filenameDatas = [];
     for (let i = 0; i < files.length; ++i) {
       const parts = [];
-      const path = files[i].webkitRelativePath;
+      const file = files[i];
+      const path = file.webkitRelativePath;
       // split by string and number
       for (const m of path.matchAll(regSplit)) {
         // m[0]
         parts.push(regDigit.test(m[0]) ? Number(m[0]) : m[0]);
       }
-      filenames.push([path, parts]);
+      filenameDatas.push([path, parts, file]);
     }
 
     // natural sort
-    filenames.sort(function(a, b) {
+    filenameDatas.sort(function(a, b) {
       a = a[1];
       b = b[1];
       const alen = a.length;
@@ -1444,12 +1479,36 @@ const showLoader = (function() {
       return 0;
     });
 
-    const filenameLength = filenames.length;
-    for (let i = 0; i < filenameLength; ++i) {
-      filenames[i] = prefix + filenames[i][0];
+    if (isFilenameMode) {
+      const prefix = getPrefix();
+      if (localStorage) {
+        localStorage.setItem("prefix", prefix);
+      }
+
+      const filenameLength = filenameDatas.length;
+      for (let i = 0; i < filenameLength; ++i) {
+        filenameDatas[i] = prefix + filenameDatas[i][0];
+      }
+
+      initFilenames(filenameDatas);
+    }
+    else {
+      const prefix = getPrefix();
+      if (localStorage) {
+        localStorage.setItem("prefix", prefix);
+      }
+
+      const filenameLength = filenameDatas.length;
+      const filenames = new Array(filenameLength);
+      const fileByFilename = {};
+      for (let i = 0; i < filenameLength; ++i) {
+        filenames[i] = filenameDatas[i][0];
+        fileByFilename[filenames[i]] = filenameDatas[i][2];
+      }
+
+      initFilenames(filenames, fileByFilename);
     }
 
-    initFilenames(filenames);
     modal.close(closeEvent);
     body.scrollTop = 0;
   }, true);
@@ -1460,9 +1519,8 @@ const showLoader = (function() {
     modal.close(closeEvent);
   }, true);
 
-  return function() {
-    prefixElement.value = (localStorage && localStorage.getItem("prefix")) || "";
-    updateFinalPath();
+  return function(mode) {
+    isFilenameMode = mode;
     modal((e) => {
       if (e.key == "Escape") {
         loader.style.display = "none";
@@ -1471,8 +1529,17 @@ const showLoader = (function() {
       }
       return true;
     });
+    const notice = loader.firstElementChild.firstElementChild;
+    notice.nextElementSibling.style.display = isFilenameMode ? "block" : "none";
+    notice.nextElementSibling.nextElementSibling.style.display = isFilenameMode ? "inline" : "none";
+    pathElement.style.display = isFilenameMode ? "block" : "none";
+    useGOpenElement.checked = !isFilenameMode;
     loader.style.display = "block";
-    prefixElement.focus();
+    if (isFilenameMode) {
+      prefixElement.value = (localStorage && localStorage.getItem("prefix")) || "";
+      updateFinalPath();
+      prefixElement.focus();
+    }
   }
 })();
 
@@ -1641,7 +1708,8 @@ function disableShortcuts() {
   window.removeEventListener("keydown", keydownEvent, true);
 }
 
-function initFilenames(fileNameList) {
+function initFilenames(fileNameList, fileByFileName) {
+  fileByFilename = fileByFileName;
   filenames = fileNameList;
   nbFilename = filenames.length;
   chapterByIndexes = new Array(nbFilename);
@@ -1701,7 +1769,11 @@ for (const d of [
 '
 
 if [[ $# -eq 0 ]]; then
-  echo 'showLoader();'
+  if (( $standalone == 1 )); then
+    echo 'showLoader(true);'
+  else
+    echo 'showLoader(false);'
+  fi
 fi
 
 echo '

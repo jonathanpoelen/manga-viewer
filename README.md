@@ -22,7 +22,9 @@ Or a version which asks for the files to load when opening the html file:
 htmlviewer -a > view.html
 ```
 
-Note: This file can be directly downloaded [here](https://jonathanpoelen.github.io/manga-viewer) (right click -> save link as...).
+`view.html` can be directly downloaded [here](https://jonathanpoelen.github.io/manga-viewer/view.html) (right click -> save link as...).
+
+A version that runs from a server but less efficient and taking more memory is available [here](https://jonathanpoelen.github.io/manga-viewer).
 
 The default shortcuts are displayed with `htmlviewer -p` or `F1`.
 
@@ -96,4 +98,5 @@ shift+ctrl+left_click next_chap -1
 
 F1 shortcuts
 F10 open
+F8 gopen
 ```
