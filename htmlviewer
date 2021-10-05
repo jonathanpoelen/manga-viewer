@@ -41,6 +41,8 @@ b pgup_or_prev
 m rotate -90
 , rotate 90
 
+g goto
+
 h mode webtoon
 j mode double
 k mode normal
@@ -194,9 +196,6 @@ help="
       prev_chap [n=1]
           Equivalent to next -n.
 
-      rotate <deg>
-          Rotate an images.
-
       pgup [percent=100]
 
       pgdown [percent=100]
@@ -206,6 +205,12 @@ help="
 
       pgup_or_prev [percent=100]
           Previous image when at the top of the page, otherwise scroll up.
+
+      goto
+          Opens a page selection window.
+
+      rotate <deg>
+          Rotate an images.
 
       mode {normal|double|webtoon|all} [image_limit=0]
           - normal: one image at a time.
@@ -313,18 +318,19 @@ declare -A fns=(
   [prev]=1
   [next_chap]=1
   [prev_chap]=1
-  [rotate]=1
   [mode]=1
   [pgup]=1
   [pgdown]=1
-  [set_bottom_pixel]=1
-  [add_bottom_pixel]=1
+  [goto]=1
+  [rotate]=1
   [pgdown_or_next]=1
   [pgup_or_prev]=1
   [info]=1
   [toggle_auto_scroll]=1
   [auto_scroll]=1
   [add_interval]=1
+  [set_bottom_pixel]=1
+  [add_bottom_pixel]=1
   [trigger]=1
   [mouse]=1
   [mouse_assistance]=1
@@ -464,6 +470,12 @@ cmd_prev_chap()
     ((n=-n))
     code="mode.advanceChap($n);"
   fi
+}
+
+cmd_goto()
+{
+  check_n 0 $#
+  code='showGoto();'
 }
 
 cmd_rotate()
@@ -890,14 +902,14 @@ img {
   max-width:100%;
 }
 
-#info, #mouseAssistance {
+#info, #goto, #mouseAssistance {
   display:none;
   z-index:10;
   position:absolute;
   top:0px;
 }
 
-#info {
+#info, #goto {
   padding:.5em;
   color:#000;
   background:#eee;
@@ -1056,6 +1068,14 @@ img {
 <img src="" class="imgWrapper"/>
 
 <section id="info"></section>
+
+<section id="goto">
+  <form id="gotoForm">
+    <p><label>Image: <input type="number" id="gotoImage" min="1"/> / <span id="gotoImageMax"></span></label> <span id="gotoImageInChapter"></span></p>
+    <p><label>Chapter: <input type="number" id="gotoChapter" min="1"/> / <span id="gotoChapterMax"></span></label> <span id="gotoNameOfChapter"></span></p>
+    <p><input type="button" value="Cancel (or escape)" id="gotoCancel"/> <input type="submit"/></p>
+  </form>
+</section>
 
 <section id="loader">
   <form id="loaderForm">
@@ -1288,7 +1308,7 @@ const appendImages = function(elem, urls, startIndex) {
 
 const removeChildren = function(elem) {
   while (elem.lastChild) {
-    elem.removeChild(elem.lastChild);
+    elem.lastChild.remove();
   }
 }
 
@@ -1522,6 +1542,121 @@ ${filenames[ifile]}`;
   info.style.top = `${body.scrollTop}px`;
   osd(() => { info.style.display = "none"; });
 };
+
+const showGoto = (function() {
+  const goto = document.getElementById("goto");
+  const gotoForm = document.getElementById("gotoForm");
+  const gotoCancel = document.getElementById("gotoCancel");
+  const gotoImageInput = document.getElementById("gotoImage");
+  const gotoChapterInput = document.getElementById("gotoChapter");
+  const gotoImageMax = document.getElementById("gotoImageMax");
+  const gotoChapterMax = document.getElementById("gotoChapterMax");
+  const gotoImageInChapter = document.getElementById("gotoImageInChapter");
+  const gotoNameOfChapter = document.getElementById("gotoNameOfChapter");
+  const closeEvent = {key: "Escape"};
+
+  let lastInput = gotoImageInput;
+
+  const validateGoto = function(e, input) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    lastInput = input;
+    const n = input.value - 1;
+    if (input === gotoImageInput) {
+      mode.advance(n - ifile);
+    }
+    else {
+      mode.advanceChap(n - chapterByIndexes[ifile].ichap);
+    }
+    osd.close(closeEvent);
+  };
+
+  gotoForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    let elem = document.activeElement;
+    if (elem !== gotoImageInput && elem !== gotoChapterInput) {
+      elem = lastInput;
+    }
+    validateGoto(e, lastInput);
+  }, false);
+
+  gotoCancel.addEventListener("click", function(e) {
+    validateGoto(e, lastInput);
+  }, false);
+
+  let chapStartIndex;
+
+  const updateLastInput = function(e) {
+    lastInput = e.target;
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const updateChapElement = function() {
+    let filename = filenames[chapStartIndex];
+
+    const index = filename.lastIndexOf("/");
+    if (index !== -1) {
+      filename = filename.substring(0, index);
+    }
+    gotoNameOfChapter.textContent = `(dirname: ${filename})`;
+  };
+
+  const updateImageElement = function() {
+    const n = +gotoImageInput.value;
+    const currentChap = chapterByIndexes[n-1];
+    const startIndex = currentChap.startIndex;
+
+    gotoImageInChapter.textContent = `(in the chapter: ${n-startIndex}/${currentChap.images.length})`;
+
+    return startIndex;
+  };
+
+  gotoImageInput.addEventListener("change", function(e) {
+    updateLastInput(e);
+    const startIndex = updateImageElement();
+    if (startIndex !== chapStartIndex) {
+      chapStartIndex = startIndex;
+      gotoChapterInput.value = chapterByIndexes[startIndex].ichap+1;
+      updateChapElement();
+    }
+  });
+  gotoChapterInput.addEventListener("change", function(e) {
+    chapStartIndex = startIndexByChapters[gotoChapterInput.value-1];
+    updateLastInput(e);
+    updateChapElement();
+    updateImageElement();
+    gotoImageInput.value = chapterByIndexes[chapStartIndex].startIndex + 1;
+  });
+
+  return function() {
+    const chap = chapterByIndexes[ifile];
+    chapStartIndex = chap.startIndex;
+    gotoImageInput.max = nbFilename;
+    gotoImageInput.value = ifile+1;
+    gotoChapterInput.value = chap.ichap+1;
+    gotoChapterInput.max = startIndexByChapters.length;
+    gotoImageMax.textContent = nbFilename;
+    gotoChapterMax.textContent = startIndexByChapters.length;
+    updateImageElement();
+    updateChapElement();
+    goto.style.display = "block";
+    goto.style.top = `${body.scrollTop}px`;
+    lastInput.focus();
+    disableShortcuts();
+    osd(function(e) {
+      if (e.key !== "Escape") {
+        return true;
+      }
+      goto.style.display = "none";
+      enableShortcuts();
+      gotoImageInput.blur();
+      gotoChapterInput.blur();
+    });
+  };
+})();
 
 const modal = function(closeCallback) {
   const img = document.getElementsByClassName("imgWrapper")[0];
