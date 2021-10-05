@@ -20,10 +20,10 @@ _htmlviewer_cmd() {
     while; do
       if (( $#words == i )); then
         _values $sepopt[@] \
-          next prev next_chap prev_chap rotate pgup pgdown pgdown_or_next \
-          pgup_or_prev mode info auto_scroll toggle_auto_scroll add_interval \
-          set_bottom_pixel add_bottom_pixel trigger mouse mouse_assistance \
-          restrict
+          next prev next_chap prev_chap pgup pgdown pgdown_or_next \
+          pgup_or_prev goto rotate mode info auto_scroll \
+          toggle_auto_scroll add_interval set_bottom_pixel add_bottom_pixel \
+          trigger mouse mouse_assistance restrict shortcuts open search
       else
         case $words[i] in
           next|prev|next_chap|prev_chap) _message '[n=1]';;
@@ -56,6 +56,8 @@ _htmlviewer_cmd() {
               fi
             fi
             continue;;
+          search)
+            _values chapter image then_by_img case_sensitive case_insensitive uppercase_only accent_sensitive accent_insensitive accent_only fuzzy plain_text regex;;
         esac
       fi
       break
