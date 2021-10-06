@@ -69,6 +69,9 @@ shift+ctrl+left_click next_chap -1
 F1 shortcuts
 F8 search
 F10 open
+
+F6 save
+F7 load
 '
 
 config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
@@ -306,6 +309,12 @@ help="
           - fuzzy, plain_text, regex:
               Algorithm used for the filter.
 
+      save
+          Save position and mode.
+
+      load
+          Load saved position and mode.
+
 
   COPYRIGHT
        By Jonathan Poelen
@@ -338,6 +347,8 @@ declare -A fns=(
   [shortcuts]=1
   [open]=1
   [search]=1
+  [save]=1
+  [load]=1
 )
 
 declare -A remap=(
@@ -672,6 +683,16 @@ cmd_search()
     shift
   done
   code+='showSearcher(options);'
+}
+
+cmd_save() {
+  check_n 0 $#
+  code='savePosition();'
+}
+
+cmd_load() {
+  check_n 0 $#
+  code='loadPosition();'
 }
 
 
@@ -2491,6 +2512,39 @@ const showSearcher = (function() {
   };
   return searcher;
 }());
+
+// save and load
+// @{
+const savePosition = function() {
+  let modeName;
+  switch (mode) {
+    case normalMode: modeName = "normal"; break;
+    case doublePageMode: modeName = "double"; break;
+    case webtoonMode: modeName = "webtoon"; break;
+    case allMode: modeName = "all"; break;
+  }
+  localStorage.setItem("ifile", ifile);
+  localStorage.setItem("modeName", modeName);
+  localStorage.setItem("imageLimit", currentImageLimit);
+};
+
+const loadPosition = function() {
+  let mode;
+  switch (localStorage.getItem("modeName")) {
+    case "normal": mode = normalMode; break;
+    case "double": mode = doublePageMode; break;
+    case "webtoon": mode = webtoonMode; break;
+    case "all": mode = allMode; break;
+    default: return;
+  }
+  selectMode(mode, +localStorage.getItem("imageLimit"));
+
+  // webtoon and may take time to load images
+  setTimeout(function() {
+    mode.advance(localStorage.getItem("ifile") - ifile);
+  }, 200);
+};
+// @}
 
 const toggleMouseAssistance = (function() {
   const style = document.getElementById("mouseAssistance").style;

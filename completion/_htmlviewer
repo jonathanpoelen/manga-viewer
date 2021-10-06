@@ -23,7 +23,8 @@ _htmlviewer_cmd() {
           next prev next_chap prev_chap pgup pgdown pgdown_or_next \
           pgup_or_prev goto rotate mode info auto_scroll \
           toggle_auto_scroll add_interval set_bottom_pixel add_bottom_pixel \
-          trigger mouse mouse_assistance restrict shortcuts open search
+          trigger mouse mouse_assistance restrict shortcuts open search save \
+          load
       else
         case $words[i] in
           next|prev|next_chap|prev_chap) _message '[n=1]';;
