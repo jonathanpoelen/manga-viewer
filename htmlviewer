@@ -1168,7 +1168,14 @@ if (( $# != 0 )); then
         find "$d" -type f | sort -V
       done
     fi
-  } | sed '/\(Thumbs\.db\|\.directory|\.html\)$/d;s/\\/\\\\/g;s/"/\\"/g;s/^/encodeURIComponent("/;s/$/"),/g'
+  } | sed '/\(Thumbs\.db\|\.directory|\.html\)$/d
+  s/\\/\\\\/g
+  s/"/\\"/g
+  s/#/%23/g
+  s/\?/%3F/g
+  s/\&/%26/g
+  s/^/"/
+  s/$/",/'
 fi
 
 echo '];
