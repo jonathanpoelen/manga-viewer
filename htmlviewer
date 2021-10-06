@@ -1601,7 +1601,7 @@ const showGoto = (function() {
 
   const validateGoto = function(e, input) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
 
     lastInput = input;
     const n = input.value - 1;
@@ -1616,7 +1616,7 @@ const showGoto = (function() {
 
   gotoForm.addEventListener("submit", function(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
     let elem = document.activeElement;
     if (elem !== gotoImageInput && elem !== gotoChapterInput) {
       elem = lastInput;
@@ -1633,7 +1633,7 @@ const showGoto = (function() {
   const updateLastInput = function(e) {
     lastInput = e.target;
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
   };
 
   const updateChapElement = function() {
@@ -1798,7 +1798,7 @@ const showLoader = (function() {
 
   loaderForm.addEventListener("submit", function(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
 
     const filenameDatas = [];
     for (let i = 0; i < files.length; ++i) {
@@ -1865,7 +1865,7 @@ const showLoader = (function() {
 
   closeLoader.addEventListener("click", function(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
     modal.close(closeEvent);
   }, true);
 
@@ -2248,7 +2248,7 @@ const showSearcher = (function() {
 
   searchCloseElement.addEventListener("click", function(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
     modal.close(closeEvent);
   }, true);
 
@@ -2285,7 +2285,7 @@ const showSearcher = (function() {
       case "PageUp":
       case "PageDown": {
         e.preventDefault();
-        e.stopPropagation();
+        e.stopImmediatePropagation();
 
         if (results.length === 0) {
           return;
@@ -2319,7 +2319,7 @@ const showSearcher = (function() {
       // validate element
       case "Enter": {
         e.preventDefault();
-        e.stopPropagation();
+        e.stopImmediatePropagation();
 
         let i;
         if (activeElement.parentNode) {
@@ -2342,14 +2342,14 @@ const showSearcher = (function() {
     // update when pasted
     if (e.inputType === "insertFromPaste") {
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       updateResults();
     }
   }, true);
 
   searchResultListElement.addEventListener("click", function(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
     let elem = e.target;
     if (elem.tagName === "B") {
       elem = elem.parentNode;
@@ -2675,7 +2675,7 @@ const keydownEvent = function(e) {
                 || actions[e.altKey + (e.ctrlKey << 1) + (e.metaKey << 3)];
     if (action) {
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       action();
       return false;
     }
@@ -2687,7 +2687,7 @@ const clickEvent = function(e) {
   const action = actionsForPrimaryClick[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
   if (action) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
     action();
     return false;
   }
@@ -2700,7 +2700,7 @@ const auxClickEvent = function(e) {
     const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
     if (action) {
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       action(e);
       return false;
     }
