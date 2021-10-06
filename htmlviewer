@@ -909,6 +909,8 @@ if [[ -n $inputdirs ]]; then
   done <"$inputdirs"
 fi
 
+title="${title//&/&amp;}"
+title="${title//</&lt;}"
 
 echo '<!DOCTYPE html>
 <!-- https://github.com/jonathanpoelen/manga-viewer -->
@@ -1166,7 +1168,7 @@ if (( $# != 0 )); then
         find "$d" -type f | sort -V
       done
     fi
-  } | sed '/\(Thumbs\.db\|\.directory|\.html\)$/d;s/"/\\"/g;s/^/"/;s/$/",/g'
+  } | sed '/\(Thumbs\.db\|\.directory|\.html\)$/d;s/\\/\\\\/g;s/"/\\"/g;s/^/encodeURIComponent("/;s/$/"),/g'
 fi
 
 echo '];
@@ -1532,6 +1534,8 @@ const addAutoScrollInterval = function(delay) {
 };
 //@}
 
+const closeEvent = {key: "Escape"};
+
 const osd = (function() {
   let resumeAutoScroll = false;
   let close;
@@ -1585,7 +1589,6 @@ const showGoto = (function() {
   const gotoChapterMax = document.getElementById("gotoChapterMax");
   const gotoImageInChapter = document.getElementById("gotoImageInChapter");
   const gotoNameOfChapter = document.getElementById("gotoNameOfChapter");
-  const closeEvent = {key: "Escape"};
 
   let lastInput = gotoImageInput;
 
@@ -1758,7 +1761,6 @@ const showLoader = (function() {
   const dirsElement = document.getElementById("dirs");
   const pathElement = document.getElementById("finalpath");
   const files = dirs.files;
-  const closeEvent = {key: "Escape"};
   const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
   const regDigit = /^[0-9]/;
 
@@ -2236,8 +2238,6 @@ const showSearcher = (function() {
     updateResultScroll();
   };
 
-
-  const closeEvent = {key: "Escape"};
 
   searchCloseElement.addEventListener("click", function(e) {
     e.preventDefault();
