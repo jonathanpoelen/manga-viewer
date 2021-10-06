@@ -28,6 +28,7 @@ _htmlviewer_cmd() {
       else
         case $words[i] in
           next|prev|next_chap|prev_chap) _message '[n=1]';;
+          goto) _message '[image_position]';;
           rotate) _message '<deg>';;
           pgup|pgdown|pgup_or_prev) _message '[percent=100]';;
           pgdown_or_next) (( $#words == i+1 )) && _message '[percent=100]' || _message '[pixel_distance=bottom_pixel]';;

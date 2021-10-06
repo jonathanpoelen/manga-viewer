@@ -42,6 +42,8 @@ m rotate -90
 , rotate 90
 
 g goto
+^ goto 0
+$ goto -1
 
 h mode webtoon
 j mode double
@@ -209,8 +211,12 @@ help="
       pgup_or_prev [percent=100]
           Previous image when at the top of the page, otherwise scroll up.
 
-      goto
+      goto [image_position]
           Opens a page selection window.
+
+          When 'image_position' is specified, the nth image is opened directly.
+          A negative number begins at the end and too large a number selects
+          the last frame.
 
       rotate <deg>
           Rotate an images.
@@ -485,8 +491,13 @@ cmd_prev_chap()
 
 cmd_goto()
 {
-  check_n 0 $#
-  code='showGoto();'
+  if (( $# == 0 )); then
+    code='showGoto();'
+  else
+    check_n 1 $#
+    check_int "$1"
+    code="gotoImage($1);"
+  fi
 }
 
 cmd_rotate()
@@ -1678,6 +1689,13 @@ const showGoto = (function() {
     });
   };
 })();
+
+const gotoImage = function(i) {
+  if (i < 0) {
+    i += nbFilename;
+  }
+  mode.advance(i - ifile);
+};
 
 const modal = function(closeCallback) {
   const img = document.getElementsByClassName("imgWrapper")[0];
