@@ -22,14 +22,14 @@ img {
   max-width:100%;
 }
 
-#info, #mouseAssistance {
+#info, #goto, #mouseAssistance {
   display:none;
   z-index:10;
   position:absolute;
   top:0px;
 }
 
-#info {
+#info, #goto {
   padding:.5em;
   color:#000;
   background:#eee;
@@ -58,7 +58,7 @@ img {
   border-top:0;
 }
 
-#shortcuts, #loader {
+#shortcuts, #loader, #searcher {
   display:none;
   width: 100%;
 }
@@ -107,30 +107,147 @@ img {
 #shortcuts table tr {
   border-bottom: 1px solid black;
 }
+
+#searcher {
+  background:#eee;
+  padding: 0 10%;
+  margin: 0;
+  width: 80%
+}
+
+#searchInputMode, #searchResultList, #searchClose, #searchOptions {
+  display: block;
+  width: 100%;
+  margin: .5em 0;
+}
+#searchInputMode {
+  width: calc(100% - .5em);
+}
+
+#searchResultList {
+  background: #ddd;
+}
+
+#searchResultList > a {
+  display: block;
+  margin: 0;
+  padding: .2em .5em;
+  border: 1px solid black;
+  border-top: 0;
+  text-decoration: none;
+  color: black;
+}
+
+#searchResultList > a:first-child {
+  border-top: 1px solid black;
+}
+
+#searchResultList > a:nth-child(even) {
+  background: #eee;
+}
+
+#searchResultList > a:hover {
+  background: #e5efe5;
+}
+
+#searchResultList > a:focus, #searchResultList > a:active, #searchResultList > a#activeSearch {
+  text-decoration: underline;
+  color: #d81a2f;
+}
+
+#searchOptions > label {
+  border-left: 1px solid black;
+  padding: 0 .5em;
+}
+
+#searcher {
+  flex-flow: column;
+  height: 100vh;
+}
+#searchInputMode {
+  flex: 0 1 unset;
+}
+#searchInputError {
+  flex: 2 1 unset;
+}
+#searchOptions {
+  flex: 3 1 unset;
+}
+#searchClose {
+  flex: 4 1 unset;
+}
+#searchResultList {
+  flex: 5 1 auto;
+  overflow: auto;
+}
   </style>
   
 </head>
 <body>
+
 <img src="" class="imgWrapper"/>
-<div id="info"></div>
-<div id="loader">
+
+<section id="info"></section>
+
+<section id="goto">
+  <form id="gotoForm">
+    <p><label>Image: <input type="number" id="gotoImage" min="1"/> / <span id="gotoImageMax"></span></label> <span id="gotoImageInChapter"></span></p>
+    <p><label>Chapter: <input type="number" id="gotoChapter" min="1"/> / <span id="gotoChapterMax"></span></label> <span id="gotoNameOfChapter"></span></p>
+    <p><input type="button" value="Cancel (or escape)" id="gotoCancel"/> <input type="submit"/></p>
+  </form>
+</section>
+
+<section id="loader">
   <form id="loaderForm">
-    <label><input id="useGOpen" type="checkbox">Use the generic method (takes more memory and is slower).</label>
-    <p>Due to browser security limitations, a web page cannot know the full path of files.<br/>For this reason, it may be necessary to specify it in the prefix field so that files are found.</p>
     <label>Prefix: <input id="prefix" type="text"/></label>
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
     <p id="finalpath"></p>
     <input type="submit"/>
-    <input id="closeLoader" type="button" value="Cancel"/>
+    <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
-</div>
-<div id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>Z</td><td>next -5</td></tr> <tr><td>X</td><td>next 5</td></tr> <tr><td>A</td><td>next -12</td></tr> <tr><td>S</td><td>next 12</td></tr> <tr><td>Q</td><td>next -30</td></tr> <tr><td>W</td><td>next 30</td></tr> <tr><td>E</td><td>next -100</td></tr> <tr><td>R</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>C</td><td>pgup_or_prev </td></tr> <tr><td>V</td><td>prev </td></tr> <tr><td>B</td><td>pgup_or_prev </td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>M</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>H</td><td>mode webtoon</td></tr> <tr><td>J</td><td>mode double</td></tr> <tr><td>K</td><td>mode normal</td></tr> <tr><td>D</td><td>info </td></tr> <tr><td>O</td><td>info </td></tr> <tr><td>T</td><td>toggle_auto_scroll </td></tr> <tr><td>U</td><td>add_interval -25</td></tr> <tr><td>I</td><td>add_interval 25</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Shift+Ctrl+LeftClick</td><td>next_chap -1</td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F10</td><td>open </td></tr> <tr><td>F8</td><td>gopen </td></tr></table></div>
+</section>
+
+<section id="searcher">
+  <input id="searchInputMode" type="text"/>
+  <div id="searchInputError" type="text"></div>
+  <section id="searchOptions">
+    <select id="searchBy">
+      <option>By Chapter</option>
+      <option>By Image</option>
+    </select>
+    <label><input type="checkbox" id="searchThenBy">Then by Image</option></label>
+    <label>Mode: <select id="searchMode">
+      <option>Fuzzy</option>
+      <option>Plain Text</option>
+      <option>Regex</option>
+    </select></label>
+    <label>Case sensitivity: <select id="searchCaseSensitivity">
+      <option>Sensitive</option>
+      <option>Insensitive</option>
+      <option>Upper Only</option>
+    </select></label>
+    <label>Accent sensitivity: <select id="searchAccentSensitivity">
+      <option>Sensitive</option>
+      <option>Insensitive</option>
+      <option>Accent Only</option>
+    </select></label>
+  </section>
+  <input id="searchClose" type="button" value="Cancel (or escape)"/>
+  <div id="searchResultList"></div>
+</section>
+
+<section id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>Z</td><td>next -5</td></tr> <tr><td>X</td><td>next 5</td></tr> <tr><td>A</td><td>next -12</td></tr> <tr><td>S</td><td>next 12</td></tr> <tr><td>Q</td><td>next -30</td></tr> <tr><td>W</td><td>next 30</td></tr> <tr><td>E</td><td>next -100</td></tr> <tr><td>R</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>C</td><td>pgup_or_prev </td></tr> <tr><td>V</td><td>prev </td></tr> <tr><td>B</td><td>pgup_or_prev </td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>M</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>G</td><td>goto </td></tr> <tr><td>^</td><td>goto 0</td></tr> <tr><td>$</td><td>goto -1</td></tr> <tr><td>H</td><td>mode webtoon</td></tr> <tr><td>J</td><td>mode double</td></tr> <tr><td>K</td><td>mode normal</td></tr> <tr><td>D</td><td>info </td></tr> <tr><td>O</td><td>info </td></tr> <tr><td>T</td><td>toggle_auto_scroll </td></tr> <tr><td>U</td><td>add_interval -25</td></tr> <tr><td>I</td><td>add_interval 25</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Shift+Ctrl+LeftClick</td><td>next_chap -1</td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F8</td><td>search </td></tr> <tr><td>F10</td><td>open </td></tr> <tr><td>F6</td><td>save </td></tr> <tr><td>F7</td><td>load </td></tr></table></section>
+
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
+
 <script type="text/javascript">
 "use strict";
 
 const defaultFileNameList = [
 ];
+
+let longJumpSearchImg = 10;
+let longJumpSearchChap = 5;
 
 let ifile = +window.location.search.split("=")[1] || 0;
 const img = document.getElementsByTagName("img")[0];
@@ -188,18 +305,28 @@ const scrollOnImageAfterDelay = function(image, delay, addTop) {
   };
 };
 
-const setImage = function(img, filename) {
-  if (fileByFilename) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      img.src = e.target.result;
+const isLocalProtocol = (location.protocol === "file:");
+
+const setImage = (function(){
+  if (isLocalProtocol) {
+    return function(img, filename) {
+      img.src = filename;
     };
-    reader.readAsDataURL(fileByFilename[filename]);
   }
-  else {
-    img.src = filename;
-  }
-};
+
+  return function(img, filename) {
+    if (fileByFilename) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(fileByFilename[filename]);
+    }
+    else {
+      img.src = filename;
+    }
+  };
+})();
 
 const normalMode = {
   start: function() {
@@ -288,7 +415,7 @@ const appendImages = function(elem, urls, startIndex) {
 
 const removeChildren = function(elem) {
   while (elem.lastChild) {
-    elem.removeChild(elem.lastChild);
+    elem.lastChild.remove();
   }
 }
 
@@ -437,7 +564,7 @@ const downOrNext = function(d, height) {
 };
 
 const upOrPrev = function(height) {
-  if (body.scrollTop == 0) {
+  if (body.scrollTop === 0) {
     mode.prev();
   }
   else {
@@ -445,6 +572,7 @@ const upOrPrev = function(height) {
   }
 };
 
+// auto-scroll
 //@{
 let autoScrollDelay = null;
 let autoScrollTimerId = null;
@@ -478,6 +606,8 @@ const addAutoScrollInterval = function(delay) {
   console.log(`autoScrollDelay: ${autoScrollDelay} (+${delay})`);
 };
 //@}
+
+const closeEvent = {key: "Escape"};
 
 const osd = (function() {
   let resumeAutoScroll = false;
@@ -520,6 +650,127 @@ ${filenames[ifile]}`;
   info.style.display = "block";
   info.style.top = `${body.scrollTop}px`;
   osd(() => { info.style.display = "none"; });
+};
+
+const showGoto = (function() {
+  const goto = document.getElementById("goto");
+  const gotoForm = document.getElementById("gotoForm");
+  const gotoCancel = document.getElementById("gotoCancel");
+  const gotoImageInput = document.getElementById("gotoImage");
+  const gotoChapterInput = document.getElementById("gotoChapter");
+  const gotoImageMax = document.getElementById("gotoImageMax");
+  const gotoChapterMax = document.getElementById("gotoChapterMax");
+  const gotoImageInChapter = document.getElementById("gotoImageInChapter");
+  const gotoNameOfChapter = document.getElementById("gotoNameOfChapter");
+
+  let lastInput = gotoImageInput;
+
+  const validateGoto = function(e, input) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    lastInput = input;
+    const n = input.value - 1;
+    if (input === gotoImageInput) {
+      mode.advance(n - ifile);
+    }
+    else {
+      mode.advanceChap(n - chapterByIndexes[ifile].ichap);
+    }
+    osd.close(closeEvent);
+  };
+
+  gotoForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    let elem = document.activeElement;
+    if (elem !== gotoImageInput && elem !== gotoChapterInput) {
+      elem = lastInput;
+    }
+    validateGoto(e, lastInput);
+  }, false);
+
+  gotoCancel.addEventListener("click", function(e) {
+    validateGoto(e, lastInput);
+  }, false);
+
+  let chapStartIndex;
+
+  const updateLastInput = function(e) {
+    lastInput = e.target;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  };
+
+  const updateChapElement = function() {
+    let filename = filenames[chapStartIndex];
+
+    const index = filename.lastIndexOf("/");
+    if (index !== -1) {
+      filename = filename.substring(0, index);
+    }
+    gotoNameOfChapter.textContent = `(dirname: ${filename})`;
+  };
+
+  const updateImageElement = function() {
+    const n = +gotoImageInput.value;
+    const currentChap = chapterByIndexes[n-1];
+    const startIndex = currentChap.startIndex;
+
+    gotoImageInChapter.textContent = `(in the chapter: ${n-startIndex}/${currentChap.images.length})`;
+
+    return startIndex;
+  };
+
+  gotoImageInput.addEventListener("change", function(e) {
+    updateLastInput(e);
+    const startIndex = updateImageElement();
+    if (startIndex !== chapStartIndex) {
+      chapStartIndex = startIndex;
+      gotoChapterInput.value = chapterByIndexes[startIndex].ichap+1;
+      updateChapElement();
+    }
+  });
+  gotoChapterInput.addEventListener("change", function(e) {
+    chapStartIndex = startIndexByChapters[gotoChapterInput.value-1];
+    updateLastInput(e);
+    updateChapElement();
+    updateImageElement();
+    gotoImageInput.value = chapterByIndexes[chapStartIndex].startIndex + 1;
+  });
+
+  return function() {
+    const chap = chapterByIndexes[ifile];
+    chapStartIndex = chap.startIndex;
+    gotoImageInput.max = nbFilename;
+    gotoImageInput.value = ifile+1;
+    gotoChapterInput.value = chap.ichap+1;
+    gotoChapterInput.max = startIndexByChapters.length;
+    gotoImageMax.textContent = nbFilename;
+    gotoChapterMax.textContent = startIndexByChapters.length;
+    updateImageElement();
+    updateChapElement();
+    goto.style.display = "block";
+    goto.style.top = `${body.scrollTop}px`;
+    lastInput.focus();
+    disableShortcuts();
+    osd(function(e) {
+      if (e.key !== "Escape") {
+        return true;
+      }
+      goto.style.display = "none";
+      enableShortcuts();
+      gotoImageInput.blur();
+      gotoChapterInput.blur();
+    });
+  };
+})();
+
+const gotoImage = function(i) {
+  if (i < 0) {
+    i += nbFilename;
+  }
+  mode.advance(i - ifile);
 };
 
 const modal = function(closeCallback) {
@@ -582,13 +833,9 @@ const showLoader = (function() {
   const prefixElement = document.getElementById("prefix");
   const dirsElement = document.getElementById("dirs");
   const pathElement = document.getElementById("finalpath");
-  const useGOpenElement = document.getElementById("useGOpen");
   const files = dirs.files;
-  const closeEvent = {key: "Escape"};
   const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
   const regDigit = /^[0-9]/;
-
-  let isFilenameMode = true;
 
   const getPrefix = function() {
     let prefix = prefixElement.value;
@@ -608,16 +855,16 @@ const showLoader = (function() {
     }
   };
 
-  prefixElement.addEventListener("keyup", updateFinalPath, true);
   dirsElement.addEventListener("change", updateFinalPath, true);
-
-  useGOpenElement.addEventListener("click", function(e) {
-    showLoader(!useGOpenElement.checked);
-  })
+  prefixElement.addEventListener("keyup", updateFinalPath, true);
+  prefixElement.addEventListener("input", function(e) {
+    // update only when pasted from clipboard
+    if (e.inputType === "insertFromPaste") updateFinalPath();
+  }, true);
 
   loaderForm.addEventListener("submit", function(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
 
     const filenameDatas = [];
     for (let i = 0; i < files.length; ++i) {
@@ -626,7 +873,6 @@ const showLoader = (function() {
       const path = file.webkitRelativePath;
       // split by string and number
       for (const m of path.matchAll(regSplit)) {
-        // m[0]
         parts.push(regDigit.test(m[0]) ? Number(m[0]) : m[0]);
       }
       filenameDatas.push([path, parts, file]);
@@ -649,7 +895,7 @@ const showLoader = (function() {
       return 0;
     });
 
-    if (isFilenameMode) {
+    if (isLocalProtocol) {
       const prefix = getPrefix();
       if (localStorage) {
         localStorage.setItem("prefix", prefix);
@@ -685,14 +931,13 @@ const showLoader = (function() {
 
   closeLoader.addEventListener("click", function(e) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
     modal.close(closeEvent);
   }, true);
 
-  return function(mode) {
-    isFilenameMode = mode;
+  return function() {
     modal((e) => {
-      if (e.key == "Escape") {
+      if (e.key === "Escape") {
         loader.style.display = "none";
         prefixElement.blur();
         return false;
@@ -700,18 +945,697 @@ const showLoader = (function() {
       return true;
     });
     const notice = loader.firstElementChild.firstElementChild;
-    notice.nextElementSibling.style.display = isFilenameMode ? "block" : "none";
-    notice.nextElementSibling.nextElementSibling.style.display = isFilenameMode ? "inline" : "none";
-    pathElement.style.display = isFilenameMode ? "block" : "none";
-    useGOpenElement.checked = !isFilenameMode;
+    notice.style.display = isLocalProtocol ? "inline" : "none";
+    pathElement.style.display = isLocalProtocol ? "block" : "none";
     loader.style.display = "block";
-    if (isFilenameMode) {
+    if (isLocalProtocol) {
       prefixElement.value = (localStorage && localStorage.getItem("prefix")) || "";
       updateFinalPath();
       prefixElement.focus();
     }
   }
 })();
+
+const SEARCH_BY_CHAPTER         = 0b000_000_000_000_001;
+const SEARCH_BY_IMAGE           = 0b000_000_000_000_010;
+const SEARCH_BY_IMAGE_IN_CHAP   = 0b000_000_000_000_100;
+const SEARCH_BY_MASK            = 0b000_000_000_000_111;
+
+const SEARCH_THEN_BY_IMAGE      = 0b000_000_000_001_000;
+const SEARCH_THEN_BY_MASK       = 0b000_000_000_001_000;
+
+const SEARCH_CASE_SENSITIVE     = 0b000_000_001_000_000;
+const SEARCH_CASE_INSENSITIVE   = 0b000_000_010_000_000;
+const SEARCH_UPPERCASE_ONLY     = 0b000_000_100_000_000;
+const SEARCH_CASE_SENSITIVITY_MASK = 0b000_000_111_000_000;
+
+const SEARCH_ACCENT_SENSITIVE   = 0b000_001_000_000_000;
+const SEARCH_ACCENT_INSENSITIVE = 0b000_010_000_000_000;
+const SEARCH_ACCENT_ONLY        = 0b000_100_000_000_000;
+const SEARCH_ACCENT_SENSITIVITY_MASK = 0b000_111_000_000_000;
+
+const SEARCH_MODE_FUZZY         = 0b001_000_000_000_000;
+const SEARCH_MODE_TEXT          = 0b010_000_000_000_000;
+const SEARCH_MODE_REGEX         = 0b100_000_000_000_000;
+const SEARCH_MODE_MASK          = 0b111_000_000_000_000;
+
+const showSearcher = (function() {
+  // Testable searcher
+  // @{
+
+  const removeAccents = function(str) {
+    // remove diacritics
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  };
+
+  const createDelegateSearcher = function(options, str, find) {
+    switch (options & (SEARCH_CASE_SENSITIVITY_MASK | SEARCH_ACCENT_SENSITIVITY_MASK)) {
+      case SEARCH_CASE_SENSITIVE   | SEARCH_ACCENT_SENSITIVE:
+        return function(si) { return find(str, si.str, si); };
+      case SEARCH_CASE_SENSITIVE   | SEARCH_ACCENT_INSENSITIVE:
+        str = removeAccents(str);
+        return function(si) { return find(str, si.unaccentedStr, si); };
+      case SEARCH_CASE_INSENSITIVE | SEARCH_ACCENT_SENSITIVE:
+        str = str.toUpperCase();
+        return function(si) { return find(str, si.upperStr, si); };
+      case SEARCH_CASE_INSENSITIVE | SEARCH_ACCENT_INSENSITIVE:
+        str = str.toUpperCase();
+        str = removeAccents(str);
+        return function(si) { return find(str, si.unaccentedUpperStr, si); };
+    }
+  };
+
+  const createFuzzySearcher = function(options, c) {
+    if (options & SEARCH_UPPERCASE_ONLY) {
+      const upper = c.toUpperCase();
+      options &= ~SEARCH_CASE_SENSITIVITY_MASK;
+      options |= (upper === c) ? SEARCH_CASE_SENSITIVE : SEARCH_CASE_INSENSITIVE;
+    }
+
+    if (options & SEARCH_ACCENT_ONLY) {
+      const accent = removeAccents(c);
+      options &= ~SEARCH_ACCENT_SENSITIVITY_MASK;
+      options |= (accent === c) ? SEARCH_ACCENT_INSENSITIVE : SEARCH_ACCENT_SENSITIVE;
+    }
+
+    return createDelegateSearcher(options, c, function(c, str, si) {
+      return str.indexOf(c, si.lastIndex+1);
+    });
+  };
+
+  const createTextSearcher = function(options, str, extendStr) {
+    const indexOf = function(searchValue, str, si) {
+      si.foundLength = searchValue.length;
+      return str.indexOf(searchValue);
+    };
+
+    const startsWith = function(searchValue, str, si) {
+      const index = si.lastIndex + si.foundLength;
+      si.foundLength += searchValue.length;
+      return str.startsWith(searchValue, index) ? si.lastIndex : -1;
+    };
+
+    const searcher = createDelegateSearcher(options, str, extendStr ? startsWith : indexOf);
+    if (searcher) {
+      return searcher;
+    }
+
+    // options contains SEARCH_UPPERCASE_ONLY and/or SEARCH_ACCENT_ONLY
+
+    const caseSensitivity = (options & SEARCH_CASE_SENSITIVITY_MASK);
+    const accentSensitivity = (options & SEARCH_ACCENT_SENSITIVITY_MASK);
+
+    const upper = str.toUpperCase();
+    const unaccented = removeAccents(upper);
+
+    const getState = function(i) {
+      return ((upper[i] === str[i])
+              ? ((caseSensitivity === SEARCH_UPPERCASE_ONLY)
+                 ? SEARCH_CASE_SENSITIVE
+                 : caseSensitivity
+                )
+              : ((caseSensitivity === SEARCH_UPPERCASE_ONLY)
+                 ? SEARCH_CASE_INSENSITIVE
+                 : caseSensitivity
+                )
+             )
+           | ((unaccented[i] === upper[i])
+              ? ((accentSensitivity === SEARCH_ACCENT_ONLY)
+                 ? SEARCH_ACCENT_INSENSITIVE
+                 : accentSensitivity
+                )
+              : ((accentSensitivity === SEARCH_ACCENT_ONLY)
+                 ? SEARCH_ACCENT_SENSITIVE
+                 : accentSensitivity
+                )
+             )
+    };
+
+    const searchers = [];
+    // split chain by state
+    {
+      const len = str.length;
+      let start = 0;
+      let state = getState(0);
+      let newState;
+      let i;
+
+      const push = function() {
+        searchers.push(createDelegateSearcher(state,
+                                              str.substring(start, i),
+                                              extendStr ? startsWith : indexOf));
+        extendStr = false;
+      };
+
+      for (i = 1; i < len; ++i) {
+        newState = getState(i);
+        if (newState !== state) {
+          push();
+          state = newState;
+          start = i;
+        }
+      }
+      push();
+    }
+
+    return function(si) {
+      let index;
+      for (let i = 0; i < searchers.length; ++i) {
+        const searcher = searchers[i];
+        index = searcher(si);
+        if (index === -1) {
+          return -1;
+        }
+      }
+      return index;
+    }
+  };
+
+  const searchRegIndex = function(str, si, reg) {
+    const m = str.match(reg);
+    if (m) {
+      si.foundLength = m[0].length;
+      return m.index;
+    }
+    return -1;
+  };
+
+  const createRegexSearcher = function(options, pattern) {
+    const isCaseInsensitive = options & (SEARCH_UPPERCASE_ONLY | SEARCH_CASE_INSENSITIVE);
+    const isAccentInsensitive = options & (SEARCH_ACCENT_ONLY | SEARCH_ACCENT_INSENSITIVE);
+
+    const reg = new RegExp(isAccentInsensitive ? removeAccents(pattern) : pattern,
+                           isCaseInsensitive ? "i" : "");
+    if (isAccentInsensitive) {
+      return function(si) { return searchRegIndex(si.unaccentedStr, si, reg); };
+    }
+    return function(si) { return searchRegIndex(si.str, si, reg); };
+  };
+
+  const filter = function(datas, searcher) {
+    let newLength = 0;
+    const len = datas.length;
+    for (let i = 0; i < len; ++i) {
+      const si = datas[i];
+      const index = searcher(si);
+      if (index !== -1) {
+        si.lastIndex = index;
+        si.indexes.push(index);
+        datas[newLength] = si;
+        ++newLength;
+      }
+    }
+    datas.length = newLength;
+  };
+
+  // @}
+
+  const searcherElement = document.getElementById("searcher");
+  const input = document.getElementById("searchInputMode");
+  const searchInputErrorElement = document.getElementById("searchInputError");
+  const searchByElement = document.getElementById("searchBy");
+  const searchThenByElement = document.getElementById("searchThenBy");
+  const searchCaseSensitivityElement = document.getElementById("searchCaseSensitivity");
+  const searchAccentSensitivityElement = document.getElementById("searchAccentSensitivity");
+  const searchModeElement = document.getElementById("searchMode");
+  const searchCloseElement = document.getElementById("searchClose");
+  const searchResultListElement = document.getElementById("searchResultList");
+
+  let strings;
+  let results;
+  let previousText;
+  let activeElement;
+  let options;
+
+  const resetDOM = function() {
+    removeChildren(searchResultListElement);
+
+    // create results and DOM elements
+    const len = strings.length;
+    results = new Array(len);
+    for (let i = 0; i < len; ++i) {
+      const str = strings[i];
+      const elem = searchResultListElement.appendChild(document.createElement("a"));
+      elem.appendChild(document.createTextNode(str));
+      elem.setAttribute("href", "#");
+      elem.dataset.index = i;
+      const unaccentedStr = removeAccents(str);
+      const upperStr = str.toUpperCase();
+      const unaccentedUpperStr = unaccentedStr.toUpperCase();
+      results[i] = {str, upperStr, unaccentedStr, unaccentedUpperStr, lastIndex: -1, foundLength: 0, elem, indexes: []};
+    }
+  };
+
+  const resetState = function() {
+    resetDOM();
+    // state for updateResults()
+    previousText = "";
+  };
+
+  const setActiveSearch = function(i) {
+    if (activeElement) {
+      activeElement.removeAttribute("id");
+    }
+    activeElement = results[i].elem;
+    activeElement.setAttribute("id", "activeSearch");
+    updateResultScroll();
+  }
+
+  const userActiveIndex = function() {
+    return (options & SEARCH_BY_CHAPTER) ? chapterByIndexes[ifile].ichap : ifile;
+  };
+
+  const updateFuzzyDisplay = function() {
+    removeChildren(searchResultListElement);
+    for (let i = 0; i < results.length; ++i) {
+      const result = results[i];
+      const elem = result.elem;
+      const str = result.str;
+      const indexes = result.indexes;
+      const indexLen = indexes.length;
+      result.indexes = [];
+      for (let j = 0; j < indexLen; ++j) {
+        const lastElem = elem.lastChild;
+        const strPart = lastElem.textContent;
+        const splitIndex = indexes[j] - (str.length - strPart.length);
+        const b = elem.appendChild(document.createElement("b"));
+        b.textContent = strPart[splitIndex];
+        elem.appendChild(document.createTextNode(strPart.substr(splitIndex+1)));
+        lastElem.textContent = strPart.substr(0, splitIndex);
+      }
+      searchResultListElement.appendChild(elem);
+    }
+  }
+
+  const updateRangeDisplay = function() {
+    removeChildren(searchResultListElement);
+    for (let i = 0; i < results.length; ++i) {
+      const result = results[i];
+      const elem = result.elem;
+      const str = result.str;
+      const index = result.lastIndex;
+      const len = result.foundLength;
+      removeChildren(elem);
+      elem.appendChild(document.createTextNode(str.substr(0, index)));
+      elem.appendChild(document.createElement("b")).textContent = str.substr(index, len);
+      elem.appendChild(document.createTextNode(str.substr(index+len)));
+      searchResultListElement.appendChild(elem);
+    }
+  }
+
+  const updateResultScroll = function() {
+    const firstElementChild = searchResultList.firstElementChild;
+    if (!firstElementChild) {
+      return;
+    }
+    const rect = activeElement.getBoundingClientRect();
+    const outerRect = searchResultList.getBoundingClientRect();
+    const firstRect = firstElementChild.getBoundingClientRect();
+    searchResultList.scrollTop = rect.y - firstRect.y - outerRect.height / 2;
+  };
+
+  const updateResults = function() {
+    const text = input.value;
+
+    // if the character is not added at the end of the text (unoptimized case)
+    if (!text.startsWith(previousText)) {
+      resetState();
+    }
+    else if (text.length === previousText.length) {
+      return;
+    }
+
+    switch (options & SEARCH_MODE_MASK) {
+      case SEARCH_MODE_FUZZY:
+        for (let i = previousText.length; i < text.length; ++i) {
+          filter(results, createFuzzySearcher(options, text[i]));
+        }
+        updateFuzzyDisplay();
+        break;
+
+      case SEARCH_MODE_TEXT:
+        if (previousText.length !== 0) {
+          filter(results, createTextSearcher(options, text.substr(previousText.length), true));
+        }
+        else {
+          filter(results, createTextSearcher(options, text, false));
+        }
+        updateRangeDisplay();
+        break;
+
+      case SEARCH_MODE_REGEX:
+        try {
+          filter(results, createRegexSearcher(options, text));
+        }
+        catch (ex) {
+          if (ex instanceof SyntaxError) {
+            searchInputErrorElement.textContent = ex;
+            searchInputErrorElement.style.display = "block";
+            return;
+          }
+          throw ex;
+        }
+        searchInputErrorElement.style.display = "none";
+        updateRangeDisplay();
+        break;
+    }
+
+    previousText = text;
+
+    // if activeElement is not in the DOM
+    if (!activeElement.parentNode && results[0]) {
+      activeElement = results[0].elem;
+      activeElement.setAttribute("id", "activeSearch");
+    }
+
+    updateResultScroll();
+  };
+
+
+  searchCloseElement.addEventListener("click", function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    modal.close(closeEvent);
+  }, true);
+
+  let savedIndex = null;
+  const validateItem = function(i) {
+    if (options & SEARCH_BY_IMAGE_IN_CHAP) {
+      // /!\ i is a string
+      i = (i|0) + savedIndex;
+      savedIndex = null;
+    }
+    else if (options & SEARCH_BY_CHAPTER) {
+      const startIndex = startIndexByChapters[i];
+      if (savedIndex === null && (options & SEARCH_THEN_BY_IMAGE)) {
+        input.value = ""
+        activeElement = null;
+        options |= SEARCH_BY_IMAGE_IN_CHAP;
+        savedIndex = startIndex;
+        initImageStringsOfChapIndex(startIndex);
+        resetState();
+        setActiveSearch(chapterByIndexes[ifile].startIndex === startIndex ? ifile - startIndex : 0);
+        return;
+      }
+      i = startIndex;
+    }
+    mode.advance(i - ifile);
+    modal.close(closeEvent);
+  };
+
+  input.addEventListener("keyup", updateResults, true);
+  input.addEventListener("keydown", function(e) {
+    switch (e.key) {
+      case "ArrowUp":
+      case "ArrowDown":
+      case "PageUp":
+      case "PageDown": {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        if (results.length === 0) {
+          return;
+        }
+
+        // if activeElement is in the DOM
+        if (activeElement.parentNode) {
+          const isUp = (e.key === "ArrowUp" || e.key === "PageUp");
+          const step = (e.key === "PageUp" || e.key === "PageDown")
+            ? ((options & SEARCH_BY_IMAGE) ? longJumpSearchImg : longJumpSearchChap)
+            : 1;
+          let next = activeElement;
+          for (let i = 0; i < step; ++i) {
+            next = isUp ? next.previousSibling : next.nextSibling;
+            // circular list, go to top/bottom
+            if (!next) {
+              next = results[isUp ? results.length - 1 : 0].elem;
+            }
+          }
+          activeElement.removeAttribute("id");
+          activeElement = next;
+        }
+        else {
+          activeElement = results[0].elem;
+        }
+        activeElement.setAttribute("id", "activeSearch");
+        updateResultScroll();
+        break;
+      }
+
+      // validate element
+      case "Enter": {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        let i;
+        if (activeElement.parentNode) {
+          i = activeElement.dataset.index;
+        }
+        else if (results.length !== 0) {
+          i = results[0].elem.dataset.index;
+        }
+        else {
+          return;
+        }
+
+        validateItem(i);
+        break;
+      }
+    }
+  }, true);
+
+  input.addEventListener("input", function(e) {
+    // update when pasted
+    if (e.inputType === "insertFromPaste") {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      updateResults();
+    }
+  }, true);
+
+  searchResultListElement.addEventListener("click", function(e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    let elem = e.target;
+    if (elem.tagName === "B") {
+      elem = elem.parentNode;
+    }
+    validateItem(elem.dataset.index);
+  });
+
+  const searchCommonPrefixLength = function(strings) {
+    const firstString = strings[0];
+    let prefixLen = firstString.lastIndexOf("/");
+
+    if (prefixLen === -1) {
+      return 0;
+    }
+
+    const len = strings.length;
+    for (let i = 1; i < len && prefixLen !== 0; ++i) {
+      const filename = strings[i];
+      const len = min(prefixLen, filename.length);
+      prefixLen = 0;
+      while (prefixLen < len && filename[prefixLen] === firstString[prefixLen]) {
+        ++prefixLen;
+      }
+    }
+
+    const i = firstString.lastIndexOf("/", prefixLen);
+    return (i !== -1) ? i + 1 : prefixLen;
+  };
+
+  let stringByChapters;
+  let stringByImages;
+
+  const initStrings = function() {
+    strings = (options & SEARCH_BY_CHAPTER) ? stringByChapters : stringByImages;
+    if (strings) {
+      return;
+    }
+
+    let stringRefs = filenames;
+    let stringRefsLen = nbFilename;
+    if (options & SEARCH_BY_CHAPTER) {
+      stringRefsLen = startIndexByChapters.length;
+      stringRefs = new Array(stringRefsLen);
+      for (let i = 0; i < stringRefsLen; ++i) {
+        const chapIndex = startIndexByChapters[i];
+        const filename = filenames[chapIndex];
+        const index = filename.lastIndexOf("/");
+        stringRefs[i] = (index === -1) ? filename : filename.substr(0, index);
+      }
+    }
+
+    const prefixLen = searchCommonPrefixLength(stringRefs);
+
+    // create string list reference
+    strings = new Array(stringRefsLen);
+    for (let i = 0; i < stringRefsLen; ++i) {
+      strings[i] = stringRefs[i].substr(prefixLen);
+    }
+
+    if (options & SEARCH_BY_CHAPTER) {
+      stringByChapters = strings;
+    }
+    else {
+      stringByImages = strings;
+    }
+  };
+
+  const updateStrings = function() {
+    const oldStrings = strings;
+    initStrings();
+    if (oldStrings !== strings) {
+      resetState();
+      setActiveSearch(userActiveIndex());
+      updateResults();
+    }
+  };
+
+  const initImageStringsOfChapIndex = function(ichap) {
+    const chap = chapterByIndexes[ichap];
+    const images = chap.images;
+    const length = images.length;
+    strings = new Array(length);
+    for (let i = 0; i < length; ++i) {
+      const filename = images[i];
+      const idx = filename.lastIndexOf("/");
+      strings[i] = (idx === -1) ? filename : filename.substr(idx + 1);
+    }
+  };
+
+  let initOptionsLock = false;
+  const updateOptionsEvent = function(ev, firstOption, mask) {
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+
+    if (initOptionsLock) {
+      return;
+    }
+
+    const oldOptions = options;
+    options &= ~mask;
+    options |= firstOption << ev.target.selectedIndex;
+    if ((oldOptions ^ options) & ~SEARCH_THEN_BY_MASK) {
+      resetState();
+      setActiveSearch(activeElement?.dataset.index | 0);
+      updateResults();
+    }
+  };
+
+  searchThenByElement.addEventListener("change", (ev) => {
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    options &= ~SEARCH_THEN_BY_MASK;
+    options |= ev.target.checked ? SEARCH_THEN_BY_IMAGE : 0;
+  });
+  searchCaseSensitivityElement.addEventListener("change", (ev) => {
+    updateOptionsEvent(ev, SEARCH_CASE_SENSITIVE, SEARCH_CASE_SENSITIVITY_MASK);
+  });
+  searchAccentSensitivityElement.addEventListener("change", (ev) => {
+    updateOptionsEvent(ev, SEARCH_ACCENT_SENSITIVE, SEARCH_ACCENT_SENSITIVITY_MASK);
+  });
+  searchModeElement.addEventListener("change", (ev) => {
+    updateOptionsEvent(ev, SEARCH_MODE_FUZZY, SEARCH_MODE_MASK);
+  });
+  searchByElement.addEventListener("change", function(ev) {
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    options &= ~SEARCH_BY_MASK;
+    options |= SEARCH_BY_CHAPTER << ev.target.selectedIndex;
+    updateStrings();
+  });
+
+  const updateForm = function(options) {
+    const setSelectedIndex = function(elem, firstOption, mask) {
+      let opt = options & mask;
+      let i = 0;
+      while (firstOption < opt) {
+        opt >>= 1;
+        ++i;
+      }
+      elem.selectedIndex = i;
+    };
+
+    initOptionsLock = true;
+    searchThenByElement.checked = options & SEARCH_THEN_BY_IMAGE;
+    setSelectedIndex(searchBy, SEARCH_BY_CHAPTER, SEARCH_BY_MASK);
+    setSelectedIndex(searchCaseSensitivityElement, SEARCH_CASE_SENSITIVE, SEARCH_CASE_SENSITIVITY_MASK);
+    setSelectedIndex(searchAccentSensitivityElement, SEARCH_ACCENT_SENSITIVE, SEARCH_ACCENT_SENSITIVITY_MASK);
+    setSelectedIndex(searchModeElement, SEARCH_MODE_FUZZY, SEARCH_MODE_MASK);
+    initOptionsLock = false;
+  };
+
+  let firstCall = true;
+
+  const searcher = function(userOptions) {
+    if (firstCall) {
+      firstCall = false;
+      options = userOptions;
+      updateForm(options);
+      initStrings();
+      resetState();
+      setActiveSearch(userActiveIndex());
+    }
+    else {
+      options &= ~SEARCH_BY_IMAGE_IN_CHAP;
+      savedIndex = null;
+      updateStrings();
+    }
+
+    modal((e) => {
+      if (e.key === "Escape") {
+        searcherElement.style.display = "none";
+        input.blur();
+        return false;
+      }
+      return true;
+    });
+    searcherElement.style.display = "flex";
+    input.focus();
+  };
+
+  searcher.reset = function() {
+    stringByChapters = null;
+    stringByImages = null;
+    options = 0;
+  };
+  return searcher;
+}());
+
+// save and load
+// @{
+const savePosition = function() {
+  let modeName;
+  switch (mode) {
+    case normalMode: modeName = "normal"; break;
+    case doublePageMode: modeName = "double"; break;
+    case webtoonMode: modeName = "webtoon"; break;
+    case allMode: modeName = "all"; break;
+  }
+  localStorage.setItem("ifile", ifile);
+  localStorage.setItem("modeName", modeName);
+  localStorage.setItem("imageLimit", currentImageLimit);
+};
+
+const loadPosition = function() {
+  let mode;
+  switch (localStorage.getItem("modeName")) {
+    case "normal": mode = normalMode; break;
+    case "double": mode = doublePageMode; break;
+    case "webtoon": mode = webtoonMode; break;
+    case "all": mode = allMode; break;
+    default: return;
+  }
+  selectMode(mode, +localStorage.getItem("imageLimit"));
+
+  // webtoon and may take time to load images
+  setTimeout(function() {
+    mode.advance(localStorage.getItem("ifile") - ifile);
+  }, 200);
+};
+// @}
 
 const toggleMouseAssistance = (function() {
   const style = document.getElementById("mouseAssistance").style;
@@ -816,6 +1740,9 @@ const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctr
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '/', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'm', action: function(){ rotate(-90); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: ',', action: function(){ rotate(90); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'g', action: function(){ showGoto(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '^', action: function(){ gotoImage(0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '$', action: function(){ gotoImage(-1); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'h', action: function(){ selectMode(webtoonMode, 0); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'j', action: function(){ selectMode(doublePageMode, 0); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'k', action: function(){ selectMode(normalMode, 0); }},
@@ -830,8 +1757,10 @@ const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctr
  {alt: 0, ctrl: 1, shift: 1, meta: 0, key: 'click0', action: function(){ mode.advanceChap(-1); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '@', action: function(){ toggleMouseAssistance() }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f1', action: function(){ showShorcuts(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f10', action: function(){ showLoader(true); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f8', action: function(){ showLoader(false); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f8', action: function(){ let options = SEARCH_BY_CHAPTER | SEARCH_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_FUZZY;showSearcher(options); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f10', action: function(){ showLoader(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f6', action: function(){ savePosition(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f7', action: function(){ loadPosition(); }},
 ]);
 
 const createModActions = function(shortcuts) {
@@ -862,7 +1791,7 @@ const keydownEvent = function(e) {
                 || actions[e.altKey + (e.ctrlKey << 1) + (e.metaKey << 3)];
     if (action) {
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       action();
       return false;
     }
@@ -874,7 +1803,7 @@ const clickEvent = function(e) {
   const action = actionsForPrimaryClick[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
   if (action) {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopImmediatePropagation();
     action();
     return false;
   }
@@ -887,7 +1816,7 @@ const auxClickEvent = function(e) {
     const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
     if (action) {
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       action(e);
       return false;
     }
@@ -929,6 +1858,7 @@ function initFilenames(fileNameList, fileByFileName) {
   nbFilename = filenames.length;
   chapterByIndexes = new Array(nbFilename);
   startIndexByChapters = [];
+  showSearcher.reset();
 
   let filename = filenames[0];
 
@@ -948,7 +1878,7 @@ function initFilenames(fileNameList, fileByFileName) {
   for (let i = 1; i < nbFilename; ++i) {
     filename = filenames[i];
     seppos2 = filename.lastIndexOf("/");
-    if (seppos2 == seppos && filename.startsWith(subs)) {
+    if (seppos2 === seppos && filename.startsWith(subs)) {
       images.push(filename);
     }
     else {
