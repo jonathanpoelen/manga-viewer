@@ -94,9 +94,6 @@ help="
       Allows the creation of html view without file. They can be opened
       directly from the viewer.
 
-  -A
-      same as -a, but use gopen command.
-
   -c <command>
       Add a command. See input.conf syntax.
 
@@ -730,7 +727,7 @@ force_pixel_distance_code=
 title="${@:0:200}"
 declare -a cmds=()
 
-while getopts 'aAsSnpKi:c:e:t:f:x:m:h?' opt ; do
+while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
   case $opt in
     s) sort=1;;
     S) sort=0;;
@@ -772,7 +769,6 @@ window.addEventListener("auxclick", mouseEvent, true);
 </script></body></html>';
        exit;;
     a) standalone=1 ;;
-    A) standalone=2 ;;
     h) echo "$usage";
        echo "$help"
        exit;;
@@ -2797,12 +2793,8 @@ for (const d of [
 '"$force_mode_code"'
 '
 
-if (( $# == 0 )); then
-  if (( $standalone == 1 )); then
-    echo 'showLoader(true);'
-  else
-    echo 'showLoader(false);'
-  fi
+if (( $# == 0 && $standalone == 1 )); then
+  echo 'showLoader();'
 fi
 
 echo '

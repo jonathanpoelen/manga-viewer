@@ -22,9 +22,9 @@ Or a version which asks for the files to load when opening the html file:
 htmlviewer -a > view.html
 ```
 
-`view.html` can be directly downloaded [here](https://jonathanpoelen.github.io/manga-viewer/view.html) (right click -> save link as...).
+`view.html` can be directly downloaded [here](https://jonathanpoelen.github.io/manga-viewer) (right click -> save link as...).
 
-A version that runs from a server but less efficient and taking more memory is available [here](https://jonathanpoelen.github.io/manga-viewer).
+Note that using it directly from the web server is less efficient and takes more memory. For security reasons, a website does not access local disks and opening images stores them in memory in a format that takes up more space than the image itself. This is why it is best to download the file and open it from your machine.
 
 The default shortcuts are displayed with `htmlviewer -p` or `F1`.
 
@@ -73,6 +73,10 @@ b pgup_or_prev
 m rotate -90
 , rotate 90
 
+g goto
+^ goto 0
+$ goto -1
+
 h mode webtoon
 j mode double
 k mode normal
@@ -97,6 +101,9 @@ shift+ctrl+left_click next_chap -1
 # extra
 
 F1 shortcuts
+F8 search
 F10 open
-F8 gopen
+
+F6 save
+F7 load
 ```
