@@ -1579,7 +1579,12 @@ ${chap.ichap+1}/${startIndexByChapters.length}][Img: ${ifile-chap.startIndex+1}/
 ${filenames[ifile]}`;
   info.style.display = "block";
   info.style.top = `${body.scrollTop}px`;
-  osd(() => { info.style.display = "none"; });
+  disableShortcuts();
+  osd(() => {
+    enableShortcuts();
+    info.style.display = "none";
+    return true;
+  });
 };
 
 const showGoto = (function() {
