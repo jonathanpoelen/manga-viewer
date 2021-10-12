@@ -724,7 +724,7 @@ inputdirs=''
 htmlheader=
 force_mode_code=
 force_pixel_distance_code=
-title="${@:0:200}"
+title="Viewer: ${@:0:200}"
 declare -a cmds=()
 
 while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
@@ -913,7 +913,7 @@ echo '<!DOCTYPE html>
 <html>
 <head>
   <meta charset="Utf-8"/>
-  <title>Viewer: '"$title"'</title>
+  <title>'"$title"'</title>
   <meta http-equiv="cache-control" content="max-age=0"/>
   <meta http-equiv="cache-control" content="no-cache"/>
   <meta http-equiv="expires" content="0"/>
