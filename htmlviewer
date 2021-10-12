@@ -912,8 +912,8 @@ echo '<!DOCTYPE html>
 <!-- https://github.com/jonathanpoelen/manga-viewer -->
 <html>
 <head>
-  <title>Viewer: '"$title"'</title>
   <meta charset="Utf-8"/>
+  <title>Viewer: '"$title"'</title>
   <meta http-equiv="cache-control" content="max-age=0"/>
   <meta http-equiv="cache-control" content="no-cache"/>
   <meta http-equiv="expires" content="0"/>
