@@ -2,8 +2,8 @@
 <!-- https://github.com/jonathanpoelen/manga-viewer -->
 <html>
 <head>
-  <title>Viewer: ./htmlviewer -a</title>
   <meta charset="Utf-8"/>
+  <title>Viewer: ./htmlviewer -a</title>
   <meta http-equiv="cache-control" content="max-age=0"/>
   <meta http-equiv="cache-control" content="no-cache"/>
   <meta http-equiv="expires" content="0"/>
@@ -608,32 +608,39 @@ const addAutoScrollInterval = function(delay) {
 //@}
 
 const closeEvent = {key: "Escape"};
+const isCloseEvent = (e) => e.key === "Escape";
 
 const osd = (function() {
   let resumeAutoScroll = false;
-  let close;
-  const removeOSD = function(ev) {
-    if (!close(ev)) {
-      window.removeEventListener("keydown", removeOSD, true);
-      if (resumeAutoScroll) {
-        resumeAutoScroll = false;
-        if (autoScrollTimerId === null) {
-          autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
-        }
+  let isClosable;
+  let closeAction;
+  const forceCloseOSD = function(ev) {
+    window.removeEventListener("keydown", removeOSD, true);
+    if (resumeAutoScroll) {
+      resumeAutoScroll = false;
+      if (autoScrollTimerId === null) {
+        autoScrollTimerId = setInterval(downOrNext, autoScrollDelay, bottomPixelDistance);
       }
     }
+    closeAction(ev);
   };
-  const open = function(closeCallback) {
+  const removeOSD = function(ev) {
+    if (isClosable(ev)) {
+      forceCloseOSD(ev);
+    }
+  };
+  const open = function(isClosableFn, closeActionFn) {
     if (autoScrollTimerId !== null) {
       clearInterval(autoScrollTimerId);
       autoScrollTimerId = null;
       resumeAutoScroll = true;
     }
 
-    close = closeCallback;
+    isClosable = isClosableFn;
+    closeAction = closeActionFn;
     window.addEventListener("keydown", removeOSD, true);
   }
-  open.close = removeOSD;
+  open.close = forceCloseOSD;
   return open;
 })();
 
@@ -650,10 +657,9 @@ ${filenames[ifile]}`;
   info.style.display = "block";
   info.style.top = `${body.scrollTop}px`;
   disableShortcuts();
-  osd(() => {
+  osd(() => true, () => {
     enableShortcuts();
     info.style.display = "none";
-    return true;
   });
 };
 
@@ -759,10 +765,7 @@ const showGoto = (function() {
     goto.style.top = `${body.scrollTop}px`;
     lastInput.focus();
     disableShortcuts();
-    osd(function(e) {
-      if (e.key !== "Escape") {
-        return true;
-      }
+    osd(isCloseEvent, function() {
       goto.style.display = "none";
       enableShortcuts();
       gotoImageInput.blur();
@@ -778,21 +781,18 @@ const gotoImage = function(i) {
   mode.advance(i - ifile);
 };
 
-const modal = function(closeCallback) {
+const modal = function(isClosableFn, closeActionFn) {
   const img = document.getElementsByClassName("imgWrapper")[0];
   const display = img.style.display;
   const scrollTop = body.scrollTop;
   body.scrollTop = 0;
   img.style.display = "none";
   disableShortcuts();
-  osd(function(e){
-    if (!closeCallback(e)) {
-      img.style.display = display;
-      body.scrollTop = scrollTop;
-      enableShortcuts();
-      return false;
-    }
-    return true;
+  osd(isClosableFn, function(){
+    img.style.display = display;
+    body.scrollTop = scrollTop;
+    enableShortcuts();
+    closeActionFn();
   });
 };
 modal.close = osd.close;
@@ -823,8 +823,10 @@ const showShorcuts = (function() {
         case "F3":
         // dev
         case "F12":
-          return true;
+          return false;
       }
+      return true;
+    }, () => {
       shortcutsDesc.style.display = "none";
     });
     shortcutsDesc.style.display = "block";
@@ -941,13 +943,9 @@ const showLoader = (function() {
   }, true);
 
   return function() {
-    modal((e) => {
-      if (e.key === "Escape") {
-        loader.style.display = "none";
-        prefixElement.blur();
-        return false;
-      }
-      return true;
+    modal(isCloseEvent, () => {
+      loader.style.display = "none";
+      prefixElement.blur();
     });
     const notice = loader.firstElementChild.firstElementChild;
     notice.style.display = isLocalProtocol ? "inline" : "none";
@@ -1589,13 +1587,9 @@ const showSearcher = (function() {
       updateStrings();
     }
 
-    modal((e) => {
-      if (e.key === "Escape") {
-        searcherElement.style.display = "none";
-        input.blur();
-        return false;
-      }
-      return true;
+    modal(isCloseEvent, () => {
+      searcherElement.style.display = "none";
+      input.blur();
     });
     searcherElement.style.display = "flex";
     input.focus();
