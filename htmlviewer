@@ -56,6 +56,9 @@ t toggle_auto_scroll
 u add_interval -25
 i add_interval 25
 
+y newtab
+shift+y newtab foreground
+
 # Mouse shortcuts
 
 left_click pgdown_or_next
@@ -63,6 +66,8 @@ shift+left_click pgup_or_prev
 
 ctrl+left_click next_chap
 shift+ctrl+left_click next_chap -1
+
+alt+left_click newtab
 
 @ mouse_assistance
 
@@ -218,6 +223,15 @@ help="
       rotate <deg>
           Rotate an images.
 
+      newtab [{background|foreground|window}]
+          Open the current image in a background tab (default), foreground tab
+          or new window.
+
+          Keyboard shortcuts containing ctrl or alt may malfunction with this
+          option. No problem with mouse shortcuts.
+
+          window depends on browser options and may open a foreground tab.
+
       mode {normal|double|webtoon|all} [image_limit=0]
           - normal: one image at a time.
           - double: once on 2, the commands pgdown_or_next/pgup_or_prev go to
@@ -335,6 +349,7 @@ declare -A fns=(
   [pgdown]=1
   [goto]=1
   [rotate]=1
+  [newtab]=1
   [pgdown_or_next]=1
   [pgup_or_prev]=1
   [info]=1
@@ -502,6 +517,21 @@ cmd_rotate()
   check_n 1 $#
   check_int "$1"
   code="rotate($1);"
+}
+
+cmd_newtab()
+{
+  if (( $# == 0 )); then
+    code='openInNewTab(0);'
+  else
+    check_n 1 $#
+    case "$1" in
+      window) code="openInNewTab(2);";;
+      foreground) code="openInNewTab(1);";;
+      background) code="openInNewTab(0);";;
+      *) error="Unknown '$1'"; return 1;;
+    esac
+  fi
 }
 
 cmd_mode()
@@ -1213,6 +1243,29 @@ const rotate = function(deg) {
     deg += Number(r.substring(25, r.length-4));
   }
   img.setAttribute("style", `transform:rotate(${deg}deg)`);
+};
+
+const openInNewTab = function(type) {
+  mode.syncIFile();
+  const url = filenames[ifile];
+  if (type === 2) {
+    window.open(url, url);
+  }
+  else {
+    const a = document.createElement("a");
+    a.href = url;
+    document.body.appendChild(a);
+    disableShortcuts();
+    if (type === 0) {
+      a.dispatchEvent(new MouseEvent("click", {ctrlKey: true}));
+    }
+    else {
+      a.target = "_blank";
+      a.dispatchEvent(new MouseEvent("click"));
+    }
+    enableShortcuts();
+    document.body.removeChild(a);
+  }
 };
 
 const toBottomOnLoad = function(image) {
