@@ -63,6 +63,17 @@ img {
   width: 100%;
 }
 
+#repositoryUrl {
+  background:#050505;
+  margin: auto;
+  padding: 1em;
+  text-align:center;
+}
+
+#repositoryUrl, #repositoryUrl > a {
+  color: #aaa;
+}
+
 #loaderForm {
   display: table;
   background:#eee;
@@ -199,12 +210,13 @@ img {
 
 <section id="loader">
   <form id="loaderForm">
-    <label>Prefix: <input id="prefix" type="text"/></label>
+    <label id="prefixLabel">Directory Prefix: <input id="prefix" type="text"/></label>
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
     <p id="finalpath"></p>
     <input type="submit"/>
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
+  <p id="repositoryUrl">Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a></p>
 </section>
 
 <section id="searcher">
@@ -236,7 +248,7 @@ img {
   <div id="searchResultList"></div>
 </section>
 
-<section id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>Z</td><td>next -5</td></tr> <tr><td>X</td><td>next 5</td></tr> <tr><td>A</td><td>next -12</td></tr> <tr><td>S</td><td>next 12</td></tr> <tr><td>Q</td><td>next -30</td></tr> <tr><td>W</td><td>next 30</td></tr> <tr><td>E</td><td>next -100</td></tr> <tr><td>R</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>C</td><td>pgup_or_prev </td></tr> <tr><td>V</td><td>prev </td></tr> <tr><td>B</td><td>pgup_or_prev </td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>M</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>G</td><td>goto </td></tr> <tr><td>^</td><td>goto 0</td></tr> <tr><td>$</td><td>goto -1</td></tr> <tr><td>H</td><td>mode webtoon</td></tr> <tr><td>J</td><td>mode double</td></tr> <tr><td>K</td><td>mode normal</td></tr> <tr><td>D</td><td>info </td></tr> <tr><td>O</td><td>info </td></tr> <tr><td>T</td><td>toggle_auto_scroll </td></tr> <tr><td>U</td><td>add_interval -25</td></tr> <tr><td>I</td><td>add_interval 25</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Shift+Ctrl+LeftClick</td><td>next_chap -1</td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F8</td><td>search </td></tr> <tr><td>F10</td><td>open </td></tr> <tr><td>F6</td><td>save </td></tr> <tr><td>F7</td><td>load </td></tr></table></section>
+<section id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>Z</td><td>next -5</td></tr> <tr><td>X</td><td>next 5</td></tr> <tr><td>A</td><td>next -12</td></tr> <tr><td>S</td><td>next 12</td></tr> <tr><td>Q</td><td>next -30</td></tr> <tr><td>W</td><td>next 30</td></tr> <tr><td>E</td><td>next -100</td></tr> <tr><td>R</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>C</td><td>pgup_or_prev </td></tr> <tr><td>V</td><td>prev </td></tr> <tr><td>B</td><td>pgup_or_prev </td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>M</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>G</td><td>goto </td></tr> <tr><td>^</td><td>goto 0</td></tr> <tr><td>$</td><td>goto -1</td></tr> <tr><td>H</td><td>mode webtoon</td></tr> <tr><td>J</td><td>mode double</td></tr> <tr><td>K</td><td>mode normal</td></tr> <tr><td>D</td><td>info </td></tr> <tr><td>O</td><td>info </td></tr> <tr><td>T</td><td>toggle_auto_scroll </td></tr> <tr><td>U</td><td>add_interval -25</td></tr> <tr><td>I</td><td>add_interval 25</td></tr> <tr><td>Y</td><td>newtab </td></tr> <tr><td>Y</td><td>newtab foreground</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Shift+Ctrl+LeftClick</td><td>next_chap -1</td></tr> <tr><td>Alt+LeftClick</td><td>newtab </td></tr> <tr><td>Altgr+LeftClick</td><td>newtab </td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F8</td><td>search </td></tr> <tr><td>F10</td><td>open </td></tr> <tr><td>F6</td><td>save </td></tr> <tr><td>F7</td><td>load </td></tr></table></section>
 
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
 
@@ -271,6 +283,29 @@ const rotate = function(deg) {
     deg += Number(r.substring(25, r.length-4));
   }
   img.setAttribute("style", `transform:rotate(${deg}deg)`);
+};
+
+const openInNewTab = function(type) {
+  mode.syncIFile();
+  const url = filenames[ifile];
+  if (type === 2) {
+    window.open(url, url);
+  }
+  else {
+    const a = document.createElement("a");
+    a.href = url;
+    document.body.appendChild(a);
+    disableShortcuts();
+    if (type === 0) {
+      a.dispatchEvent(new MouseEvent("click", {ctrlKey: true}));
+    }
+    else {
+      a.target = "_blank";
+      a.dispatchEvent(new MouseEvent("click"));
+    }
+    enableShortcuts();
+    document.body.removeChild(a);
+  }
 };
 
 const toBottomOnLoad = function(image) {
@@ -837,6 +872,7 @@ const showLoader = (function() {
   const loader = document.getElementById("loader");
   const closeLoader = document.getElementById("closeLoader");
   const loaderForm = document.getElementById("loaderForm");
+  const prefixLabel = document.getElementById("prefixLabel");
   const prefixElement = document.getElementById("prefix");
   const dirsElement = document.getElementById("dirs");
   const pathElement = document.getElementById("finalpath");
@@ -916,11 +952,6 @@ const showLoader = (function() {
       initFilenames(filenameDatas);
     }
     else {
-      const prefix = getPrefix();
-      if (localStorage) {
-        localStorage.setItem("prefix", prefix);
-      }
-
       const filenameLength = filenameDatas.length;
       const filenames = new Array(filenameLength);
       const fileByFilename = {};
@@ -947,8 +978,7 @@ const showLoader = (function() {
       loader.style.display = "none";
       prefixElement.blur();
     });
-    const notice = loader.firstElementChild.firstElementChild;
-    notice.style.display = isLocalProtocol ? "inline" : "none";
+    prefixLabel.style.display = isLocalProtocol ? "inline" : "none";
     pathElement.style.display = isLocalProtocol ? "block" : "none";
     loader.style.display = "block";
     if (isLocalProtocol) {
@@ -1706,60 +1736,87 @@ const createActions = function(shortcuts, actionsByKeys, actionsByClicks){
         actionsByClicks[d.key.substr(5)] = actionsByControls
       }
     }
-    actionsByControls[d.alt + (d.ctrl << 1) + (d.shift << 2) + (d.meta << 3)] = d.action;
+    actionsByControls[d.alt + (d.ctrl << 1) + (d.shift << 2) + (d.meta << 3) + (d.altgr << 4)] = d.action;
   }
 
-  return [actionsByKeys, actionsByClicks];
+  // if there is no conflict, assume assume that:
+  // - Shift+Key = Key (ex. Shift+< = <)
+  // - AltGr+Key = Key
+  const res = [actionsByKeys, actionsByClicks];
+  for (const actions of res) {
+    for (const k in actions) {
+      const actionsByControls = actions[k];
+      for (const m in actionsByControls) {
+        const withShift = m | 0b00100;
+        const withAltgr = m | 0b10000;
+        if (!actionsByControls[withShift]) {
+          actionsByControls[withShift] = actionsByControls[m];
+        }
+        if (!actionsByControls[withAltgr]) {
+          actionsByControls[withAltgr] = actionsByControls[m];
+        }
+        if (!actionsByControls[withShift | withAltgr]) {
+          actionsByControls[withShift | withAltgr] = actionsByControls[m];
+        }
+      }
+    }
+  }
+
+  return res;
 };
 
 // contains key and mouse actions
-const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 1, meta: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'z', action: function(){ mode.advance(-5); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'x', action: function(){ mode.advance(5); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'a', action: function(){ mode.advance(-12); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 's', action: function(){ mode.advance(12); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'q', action: function(){ mode.advance(-30); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'w', action: function(){ mode.advance(30); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'e', action: function(){ mode.advance(-100); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'r', action: function(){ mode.advance(100); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'ArrowLeft', action: function(){ mode.advance(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'ArrowRight', action: function(){ mode.advance(1); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'ArrowLeft', action: function(){ mode.advance(-5); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'ArrowRight', action: function(){ mode.advance(5); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'ArrowUp', action: function(){ mode.advance(12); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'ArrowDown', action: function(){ mode.advance(-12); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '<', action: function(){ mode.advanceChap(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '>', action: function(){ mode.advanceChap(1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '|', action: function(){ mode.advance(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'c', action: function(){ upOrPrev(body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'v', action: function(){ mode.advance(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'b', action: function(){ upOrPrev(body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '.', action: function(){ mode.advance(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '/', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'm', action: function(){ rotate(-90); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: ',', action: function(){ rotate(90); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'g', action: function(){ showGoto(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '^', action: function(){ gotoImage(0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '$', action: function(){ gotoImage(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'h', action: function(){ selectMode(webtoonMode, 0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'j', action: function(){ selectMode(doublePageMode, 0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'k', action: function(){ selectMode(normalMode, 0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'd', action: function(){ showImageInfo(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'o', action: function(){ showImageInfo(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 't', action: function(){ toggleAutoScroll(800); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'u', action: function(){ addAutoScrollInterval(-25); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'i', action: function(){ addAutoScrollInterval(25); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'click0', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 1, meta: 0, key: 'click0', action: function(){ upOrPrev(body.clientHeight); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, key: 'click0', action: function(){ mode.advanceChap(1); }},
- {alt: 0, ctrl: 1, shift: 1, meta: 0, key: 'click0', action: function(){ mode.advanceChap(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: '@', action: function(){ toggleMouseAssistance() }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f1', action: function(){ showShorcuts(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f8', action: function(){ let options = SEARCH_BY_CHAPTER | SEARCH_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_FUZZY;showSearcher(options); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f10', action: function(){ showLoader(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f6', action: function(){ savePosition(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, key: 'f7', action: function(){ loadPosition(); }},
+const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'z', action: function(){ mode.advance(-5); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'x', action: function(){ mode.advance(5); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'a', action: function(){ mode.advance(-12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 's', action: function(){ mode.advance(12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'q', action: function(){ mode.advance(-30); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'w', action: function(){ mode.advance(30); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'e', action: function(){ mode.advance(-100); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'r', action: function(){ mode.advance(100); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'ArrowLeft', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'ArrowRight', action: function(){ mode.advance(1); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'ArrowLeft', action: function(){ mode.advance(-5); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'ArrowRight', action: function(){ mode.advance(5); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'ArrowUp', action: function(){ mode.advance(12); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'ArrowDown', action: function(){ mode.advance(-12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '<', action: function(){ mode.advanceChap(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '>', action: function(){ mode.advanceChap(1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '|', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'c', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'v', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'b', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '.', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '/', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'm', action: function(){ rotate(-90); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ',', action: function(){ rotate(90); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'g', action: function(){ showGoto(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '^', action: function(){ gotoImage(0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '$', action: function(){ gotoImage(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'h', action: function(){ selectMode(webtoonMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'j', action: function(){ selectMode(doublePageMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'k', action: function(){ selectMode(normalMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'd', action: function(){ showImageInfo(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'o', action: function(){ showImageInfo(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 't', action: function(){ toggleAutoScroll(800); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'u', action: function(){ addAutoScrollInterval(-25); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'i', action: function(){ addAutoScrollInterval(25); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'y', action: function(){ openInNewTab(0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'Y', action: function(){ openInNewTab(1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'click0', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: 'click0', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'click0', action: function(){ mode.advanceChap(1); }},
+ {alt: 0, ctrl: 1, shift: 1, meta: 0, altgr: 0, key: 'click0', action: function(){ mode.advanceChap(-1); }},
+ {alt: 1, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'click0', action: function(){ openInNewTab(0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 1, key: 'click0', action: function(){ openInNewTab(0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '@', action: function(){ toggleMouseAssistance() }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F1', action: function(){ showShorcuts(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F8', action: function(){ let options = SEARCH_BY_CHAPTER | SEARCH_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_FUZZY;showSearcher(options); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F10', action: function(){ showLoader(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F6', action: function(){ savePosition(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F7', action: function(){ loadPosition(); }},
 ]);
 
 const createModActions = function(shortcuts) {
@@ -1770,11 +1827,11 @@ const createModActions = function(shortcuts) {
   return createActions(shortcuts, actionsByKeys, Array.from(globalActionsByClicks));
 };
 
-allMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
-{alt: 0, ctrl: 0, shift: 1, meta: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+allMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
 ]);
-webtoonMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
-{alt: 0, ctrl: 0, shift: 1, meta: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+webtoonMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
 ]);
 
 
@@ -1782,12 +1839,19 @@ let actionsByKeys = globalActionsByKeys;
 let actionsByClicks = globalActionsByClicks;
 let actionsForPrimaryClick = actionsByClicks[0];
 
+const eventMask = function(e) {
+  return e.altKey
+      + (e.ctrlKey << 1)
+      + (e.shiftKey << 2)
+      + (e.metaKey << 3)
+      + (e.getModifierState("AltGraph") << 4)
+      ;
+};
+
 const keydownEvent = function(e) {
   const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
   if (actions) {
-    const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)]
-                  // assume that Shift+Key = Key (ex. Shift+< = <)
-                || actions[e.altKey + (e.ctrlKey << 1) + (e.metaKey << 3)];
+    const action = actions[eventMask(e)];
     if (action) {
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -1799,7 +1863,7 @@ const keydownEvent = function(e) {
 };
 
 const clickEvent = function(e) {
-  const action = actionsForPrimaryClick[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
+  const action = actionsForPrimaryClick[eventMask(e)];
   if (action) {
     e.preventDefault();
     e.stopImmediatePropagation();
