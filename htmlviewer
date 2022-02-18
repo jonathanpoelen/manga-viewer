@@ -57,7 +57,7 @@ u add_interval -25
 i add_interval 25
 
 y newtab
-shift+y newtab foreground
+Y newtab foreground
 
 # Mouse shortcuts
 
@@ -68,6 +68,7 @@ ctrl+left_click next_chap
 shift+ctrl+left_click next_chap -1
 
 alt+left_click newtab
+altgr+left_click newtab
 
 @ mouse_assistance
 
@@ -157,9 +158,16 @@ help="
 
       Each line maps a key to an input command.
 
-      In general, keys can be combined with Shift, Ctrl, Alt and Meta:
+      In general, keys can be combined with Shift, Ctrl, Alt, Meta and AltGr
+      (Modifiers are case insensitive):
 
         shift+Space pgup_or_prev
+
+      AltGr and Shift are optional.
+
+        # the following 2 commands are equivalent
+        shift+y newtab
+        Y newtab
 
 
   input.conf syntax
@@ -846,7 +854,7 @@ parse_input_line()
   cmd_$fn "${args[@]}" || error="$fn: $error"
 
   # extract controls and convert key to lowercase
-  local -A control=([alt]=0 [ctrl]=0 [shift]=0 [meta]=0)
+  local -A controls=([alt]=0 [ctrl]=0 [shift]=0 [meta]=0 [altgr]=0)
   local ifs="$IFS"
   IFS=+
   local -a keys=($key)
@@ -877,14 +885,15 @@ parse_input_line()
     raw_shortcuts+=("<tr><td>$htmlized</td><td>$cmdraw</td></tr>")
   fi
 
+  local lowerkey
   for key in "${keys[@]}"; do
-    key=${key,,}
-    control["$key"]=1
+    lowerkey="${key,,}"
+    controls["${lowerkey}"]=1
   done
 
-  local newkey="${remap[$key]}"
+  local newkey="${remap[${lowerkey}]}"
   [[ -z $newkey ]] || key="$newkey"
-  local shortcut="{alt: ${control[alt]}, ctrl: ${control[ctrl]}, shift: ${control[shift]}, meta: ${control[meta]}, key: '$key', action: function(){ $code }},"$'\n'
+  local shortcut="{alt: ${controls[alt]}, ctrl: ${controls[ctrl]}, shift: ${controls[shift]}, meta: ${controls[meta]}, altgr: ${controls[altgr]}, key: '$key', action: function(){ $code }},"$'\n'
 
   if [[ -z $mode ]]; then
     shortcuts+=("$shortcut")
@@ -2696,10 +2705,33 @@ const createActions = function(shortcuts, actionsByKeys, actionsByClicks){
         actionsByClicks[d.key.substr(5)] = actionsByControls
       }
     }
-    actionsByControls[d.alt + (d.ctrl << 1) + (d.shift << 2) + (d.meta << 3)] = d.action;
+    actionsByControls[d.alt + (d.ctrl << 1) + (d.shift << 2) + (d.meta << 3) + (d.altgr << 4)] = d.action;
   }
 
-  return [actionsByKeys, actionsByClicks];
+  // if there is no conflict, assume assume that:
+  // - Shift+Key = Key (ex. Shift+< = <)
+  // - AltGr+Key = Key
+  const res = [actionsByKeys, actionsByClicks];
+  for (const actions of res) {
+    for (const k in actions) {
+      const actionsByControls = actions[k];
+      for (const m in actionsByControls) {
+        const withShift = m | 0b00100;
+        const withAltgr = m | 0b10000;
+        if (!actionsByControls[withShift]) {
+          actionsByControls[withShift] = actionsByControls[m];
+        }
+        if (!actionsByControls[withAltgr]) {
+          actionsByControls[withAltgr] = actionsByControls[m];
+        }
+        if (!actionsByControls[withShift | withAltgr]) {
+          actionsByControls[withShift | withAltgr] = actionsByControls[m];
+        }
+      }
+    }
+  }
+
+  return res;
 };
 
 // contains key and mouse actions
@@ -2722,12 +2754,19 @@ let actionsByKeys = globalActionsByKeys;
 let actionsByClicks = globalActionsByClicks;
 let actionsForPrimaryClick = actionsByClicks[0];
 
+const eventMask = function(e) {
+  return e.altKey
+      + (e.ctrlKey << 1)
+      + (e.shiftKey << 2)
+      + (e.metaKey << 3)
+      + (e.getModifierState("AltGraph") << 4)
+      ;
+};
+
 const keydownEvent = function(e) {
   const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
   if (actions) {
-    const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)]
-                  // assume that Shift+Key = Key (ex. Shift+< = <)
-                || actions[e.altKey + (e.ctrlKey << 1) + (e.metaKey << 3)];
+    const action = actions[eventMask(e)];
     if (action) {
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -2739,7 +2778,7 @@ const keydownEvent = function(e) {
 };
 
 const clickEvent = function(e) {
-  const action = actionsForPrimaryClick[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
+  const action = actionsForPrimaryClick[eventMask(e)];
   if (action) {
     e.preventDefault();
     e.stopImmediatePropagation();
