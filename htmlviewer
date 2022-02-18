@@ -973,6 +973,17 @@ img {
   width: 100%;
 }
 
+#repositoryUrl {
+  background:#050505;
+  margin: auto;
+  padding: 1em;
+  text-align:center;
+}
+
+#repositoryUrl, #repositoryUrl > a {
+  color: #aaa;
+}
+
 #loaderForm {
   display: table;
   background:#eee;
@@ -1109,12 +1120,13 @@ img {
 
 <section id="loader">
   <form id="loaderForm">
-    <label>Prefix: <input id="prefix" type="text"/></label>
+    <label id="prefixLabel">Directory Prefix: <input id="prefix" type="text"/></label>
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
     <p id="finalpath"></p>
     <input type="submit"/>
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
+  <p id="repositoryUrl">Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a></p>
 </section>
 
 <section id="searcher">
@@ -1767,6 +1779,7 @@ const showLoader = (function() {
   const loader = document.getElementById("loader");
   const closeLoader = document.getElementById("closeLoader");
   const loaderForm = document.getElementById("loaderForm");
+  const prefixLabel = document.getElementById("prefixLabel");
   const prefixElement = document.getElementById("prefix");
   const dirsElement = document.getElementById("dirs");
   const pathElement = document.getElementById("finalpath");
@@ -1846,11 +1859,6 @@ const showLoader = (function() {
       initFilenames(filenameDatas);
     }
     else {
-      const prefix = getPrefix();
-      if (localStorage) {
-        localStorage.setItem("prefix", prefix);
-      }
-
       const filenameLength = filenameDatas.length;
       const filenames = new Array(filenameLength);
       const fileByFilename = {};
@@ -1877,8 +1885,7 @@ const showLoader = (function() {
       loader.style.display = "none";
       prefixElement.blur();
     });
-    const notice = loader.firstElementChild.firstElementChild;
-    notice.style.display = isLocalProtocol ? "inline" : "none";
+    prefixLabel.style.display = isLocalProtocol ? "inline" : "none";
     pathElement.style.display = isLocalProtocol ? "block" : "none";
     loader.style.display = "block";
     if (isLocalProtocol) {
