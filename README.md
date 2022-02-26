@@ -88,6 +88,9 @@ t toggle_auto_scroll
 u add_interval -25
 i add_interval 25
 
+y newtab
+Y newtab foreground
+
 # Mouse shortcuts
 
 left_click pgdown_or_next
@@ -95,6 +98,9 @@ shift+left_click pgup_or_prev
 
 ctrl+left_click next_chap
 shift+ctrl+left_click next_chap -1
+
+alt+left_click newtab
+altgr+left_click newtab
 
 @ mouse_assistance
 
