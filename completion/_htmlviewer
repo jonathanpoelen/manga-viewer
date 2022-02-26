@@ -7,21 +7,22 @@
 _htmlviewer_cmd() {
   compset -q
 
-  if (( $#words <= 1 )); then
+  if (( CURRENT <= 1 )); then
     _values -s + \
       space sharp plus pgup pgdown up down left right left_click middle_click \
       right_click shift ctrl alt meta
   else
-    typeset -i i=2
+    local -i i=2
+    local -i curr=$CURRENT
     local sepopt=()
-    if [[ $QIPREFIX[1] == "'" || $QIPREFIX[1] == '"' ]]; then
+    if [[ $QIPREFIX[1] == [\'\"] ]]; then
       sepopt=(-s ' ')
     fi
     while; do
-      if (( $#words == i )); then
-        _values $sepopt[@] \
+      if (( curr == 2 )); then
+        _values $sepopt[@] 'command' \
           next prev next_chap prev_chap pgup pgdown pgdown_or_next \
-          pgup_or_prev goto rotate mode info auto_scroll \
+          pgup_or_prev goto rotate newtab mode info auto_scroll \
           toggle_auto_scroll add_interval set_bottom_pixel add_bottom_pixel \
           trigger mouse mouse_assistance restrict shortcuts open search save \
           load
@@ -31,35 +32,64 @@ _htmlviewer_cmd() {
           goto) _message '[image_position]';;
           rotate) _message '<deg>';;
           pgup|pgdown|pgup_or_prev) _message '[percent=100]';;
-          pgdown_or_next) (( $#words == i+1 )) && _message '[percent=100]' || _message '[pixel_distance=bottom_pixel]';;
+          pgdown_or_next) (( curr == 3 )) && _message '[percent=100]' || _message '[pixel_distance=bottom_pixel]';;
           auto_scroll|toggle_auto_scroll) _message '[ms_delay=800]';;
           add_interval) _message '<ms_delay>';;
           set_bottom_pixel|add_bottom_pixel) _message '<pixel_distance>';;
+          newtab)
+            if (( curr == 3 )); then
+              _values $sepopt[@] 'type' background foreground window
+            else
+              _message '[{background|foreground|window}]'
+            fi;;
           mouse)
-            if (( $#words == i+1 )); then
-              _values $sepopt[@] top bottom left right top_left top_right bottom_left bottom_right
+            if (( curr == 3 )); then
+              _values $sepopt[@] 'position' top bottom left right top_left top_right bottom_left bottom_right
             else
               i+=2
+              curr+=-2
               continue
             fi;;
-          mode|restrict)
-            if (( $#words == i+1 )); then
-              _values $sepopt[@] normal double webtoon all
+          mode)
+            if (( curr == 3 )); then
+              _values $sepopt[@] 'mode' normal double webtoon all
+            elif (( curr == 4 )); then
+              _message '[image_limit=0]'
+            else
+              i+=3
+              curr+=-3
+              continue
+            fi;;
+          restrict)
+            if (( curr == 3 )); then
+              _values $sepopt[@] 'mode' normal double webtoon all
             else
               i+=2
+              curr+=-2
               continue
             fi;;
           trigger)
             ((i++))
-            if (( $#words > i )); then
+            if (( $curr == 3 )); then
+              ((curr--))
+            else
+              # ignore optional ms_delay parameter
               typeset -i n=$words[i]
               if [[ $n == $words[i] ]]; then
                 ((i++))
+                curr+=-2
+              else
+                ((curr--))
               fi
             fi
             continue;;
           search)
-            _values chapter image then_by_img case_sensitive case_insensitive uppercase_only accent_sensitive accent_insensitive accent_only fuzzy plain_text regex;;
+            _values $sepopt[@] -w 'options' \
+              chapter image then_by_img \
+              case_sensitive case_insensitive uppercase_only \
+              accent_sensitive accent_insensitive accent_only \
+              fuzzy plain_text regex
+            ;;
         esac
       fi
       break
