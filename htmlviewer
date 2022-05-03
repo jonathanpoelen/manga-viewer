@@ -394,6 +394,16 @@ declare -A remap=(
   [\']=\\\'
 )
 
+declare -A show_shortcut_map=(
+  [ArrowLeft]=Left
+  [ArrowRight]=Right
+  [ArrowUp]=Up
+  [ArrowDown]=Down
+  [click0]=LeftClick
+  [click1]=MiddleClick
+  [click2]=RightClick
+)
+
 declare -A mousezone=(
   [xtop]=1
   [xbottom]=2
@@ -860,31 +870,6 @@ parse_input_line()
   local -a keys=($key)
   IFS="$ifs"
 
-  if [[ $key != nokey ]]; then
-    local htmlized="${keys[@]^}"
-    htmlized="${htmlized//_click/Click}"
-    htmlized="${htmlized//&/&amp;}"
-    htmlized="${htmlized//</&lt;}"
-    htmlized="${htmlized// /+}"
-    htmlized="${htmlized/sharp/#}"
-    htmlized="${htmlized/plus/#}"
-    local cmdraw
-    # remove trigger prefix
-    if [[ $fn = trigger ]]; then
-      # remove delay prefix
-      if [[ ${args[@]} =~ [0-9] ]]; then
-        local tmp=("${args[@]}")
-        tmp[0]=''
-        cmdraw="${tmp[@]}"
-      else
-        cmdraw="${args[@]}"
-      fi
-    else
-      cmdraw="$fn ${args[@]}"
-    fi
-    raw_shortcuts+=("<tr><td>$htmlized</td><td>$cmdraw</td></tr>")
-  fi
-
   local lowerkey
   for key in "${keys[@]}"; do
     lowerkey="${key,,}"
@@ -899,6 +884,43 @@ parse_input_line()
     shortcuts+=("$shortcut")
   else
     shortcuts_by_mode[$mode]+="$shortcut"
+  fi
+
+  # shortcut for help
+  if [[ $key != nokey ]]; then
+    local display_key="${key}"
+    if (( ${#key} > 1 )); then
+      display_key="${show_shortcut_map[$key]}"
+      if [[ -z $display_key ]]; then
+        display_key="${key^}"
+      fi
+    else
+      display_key="${display_key/ /Space}"
+      display_key="${display_key/&/&amp;}"
+      display_key="${display_key/</&lt;}"
+    fi
+
+    local cmdraw
+    # remove trigger prefix
+    if [[ $fn = trigger ]]; then
+      # remove delay prefix
+      if [[ ${args[@]} = [0-9] ]]; then
+        local tmp=("${args[@]}")
+        tmp[0]=''
+        cmdraw="${tmp[@]}"
+      else
+        cmdraw="${args[@]}"
+      fi
+    else
+      cmdraw="$fn ${args[@]}"
+    fi
+
+    [[ 0 != ${controls[meta]} ]] && display_key="Meta+$display_key"
+    [[ 0 != ${controls[altgr]} ]] && display_key="AltGr+$display_key"
+    [[ 0 != ${controls[shift]} ]] && display_key="Shift+$display_key"
+    [[ 0 != ${controls[alt]} ]] && display_key="Alt+$display_key"
+    [[ 0 != ${controls[ctrl]} ]] && display_key="Ctrl+$display_key"
+    raw_shortcuts+=("<tr><td>$display_key</td><td>$cmdraw</td></tr>")
   fi
 }
 
@@ -1048,7 +1070,6 @@ img {
   background:#eee;
   margin: auto;
   padding: 2em;
-  // border-collapse: collapse;
   border-spacing: 0;
 }
 
