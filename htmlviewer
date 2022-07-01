@@ -799,7 +799,8 @@ while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
        exit;;
     K) echo '<!DOCTYPE html>
 <html><head><title>Key viewer</title><meta charset="Utf-8"/></head>
-<p>Press keys on the keyboard to see what the KeyboardEvent'\''s key values is for each one.</p>
+<noscript><p>Javascript must be enabled</p></noscript>
+<p>Press a keyboard key or mouse click to see the associated values.</p>
 <div id="output"></div>
 <script>const output = document.getElementById("output");
 window.addEventListener("keydown", function(event) {
@@ -1165,6 +1166,8 @@ img {
   '"$htmlheader"'
 </head>
 <body>
+
+<noscript><p style="background:#eee;color:black;text-align:center;font-size:2em">Javascript must be enabled</p></noscript>
 
 <img src="" class="imgWrapper"/>
 
