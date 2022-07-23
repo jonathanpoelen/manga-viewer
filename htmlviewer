@@ -48,6 +48,7 @@ $ goto -1
 h mode webtoon
 j mode double
 k mode normal
+l mode normal_or_double
 
 d info
 o info
@@ -89,7 +90,7 @@ triggered=''
 usage='Generate a html viewer file
 
   htmlviewer [-a|-A] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
-             [-i <filename>] [-m {normal|double|webtoon|all}] [-t <title>]
+             [-i <filename>] [-m {normal|double|normal_or_doube|webtoon|all}] [-t <title>]
              [-x <pixel_distance>] directory...
   htmlviewer -p
   htmlviewer -K
@@ -122,7 +123,7 @@ help="
       Generates a html file which displays the name of the keys and
       mouse buttons.
 
-  -m {normal|double|webtoon|all}
+  -m {normal|double|normal_or_double|webtoon|all}
       Specify default mode.
 
   -n
@@ -240,11 +241,14 @@ help="
 
           window depends on browser options and may open a foreground tab.
 
-      mode {normal|double|webtoon|all} [image_limit=0]
+      mode {normal|double|normal_or_double|webtoon|all} [image_limit=0]
           - normal: one image at a time.
           - double: once on 2, the commands pgdown_or_next/pgup_or_prev go to
                     top/bottom of the page rather than go to the next/prev
                     image.
+          - normal_or_double: use double mode when the width of the image is
+                              greater than the height, otherwise use normal
+                              mode
           - webtoon: All images in a chapter are displayed one below the other.
           - all: All images are displayed one below the other.
 
@@ -294,7 +298,7 @@ help="
       mouse_assistance
           Enable or disable the display of mouse area.
 
-      restrict {normal|double|webtoon|all} <command>
+      restrict {normal|double|normal_or_double|webtoon|all} <command>
           Enable a shortcut for a specific mode.
 
       shortcuts
@@ -452,6 +456,7 @@ init_local_mode()
     normal)  mode=normalMode;;
     double)  mode=doublePageMode;;
     webtoon) mode=webtoonMode;;
+    normal_or_double) mode=normalOrDoublePageMode;;
     all)     mode=allMode;;
     *) error="Unknown mode '$1'";
        return 1;;
@@ -1427,6 +1432,40 @@ const doublePageMode = {
   advanceChap: function(x) {
     this.db = false;
     normalMode.advanceChap(x);
+  },
+  syncIFile: function() {},
+};
+
+const isSinglePageImg = function() {
+  return img.width <= img.height;
+};
+
+const normalOrDoublePageMode = {
+  start: function() {
+    doublePageMode.start();
+  },
+  stop: function() {},
+  next: function() {
+    if (isSinglePageImg()) {
+      normalMode.next();
+    }
+    else {
+      doublePageMode.next();
+    }
+  },
+  prev: function() {
+    if (isSinglePageImg()) {
+      normalMode.prev();
+    }
+    else {
+      doublePageMode.prev();
+    }
+  },
+  advance: function(x) {
+    doublePageMode.advance(x);
+  },
+  advanceChap: function(x) {
+    doublePageMode.advanceChap(x);
   },
   syncIFile: function() {},
 };
@@ -2634,6 +2673,7 @@ const savePosition = function() {
     case normalMode: modeName = "normal"; break;
     case doublePageMode: modeName = "double"; break;
     case webtoonMode: modeName = "webtoon"; break;
+    case normalOrDoublePageMode: modeName = "normal_or_double"; break;
     case allMode: modeName = "all"; break;
   }
   localStorage.setItem("ifile", ifile);
@@ -2647,12 +2687,13 @@ const loadPosition = function() {
     case "normal": mode = normalMode; break;
     case "double": mode = doublePageMode; break;
     case "webtoon": mode = webtoonMode; break;
+    case "normal_or_double": mode = normalOrDoublePageMode; break;
     case "all": mode = allMode; break;
     default: return;
   }
   selectMode(mode, +localStorage.getItem("imageLimit"));
 
-  // webtoon and may take time to load images
+  // webtoon may take time to load images
   setTimeout(function() {
     mode.advance(localStorage.getItem("ifile") - ifile);
   }, 200);
