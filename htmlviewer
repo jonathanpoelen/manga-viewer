@@ -246,8 +246,8 @@ help="
           - double: once on 2, the commands pgdown_or_next/pgup_or_prev go to
                     top/bottom of the page rather than go to the next/prev
                     image.
-          - normal_or_double: use double mode when the width of the image is
-                              greater than the height, otherwise use normal
+          - normal_or_double: use double page mode when the width of the image
+                              is greater than the height, otherwise use normal
                               mode
           - webtoon: All images in a chapter are displayed one below the other.
           - all: All images are displayed one below the other.
