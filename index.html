@@ -95,6 +95,17 @@ img {
   display: inline-block;
 }
 
+#loaderForm > fieldset > label {
+  text-align: left;
+  display: block;
+}
+.urlmode {
+  font-size: .8em;
+}
+.urlmode, .urlmode > a {
+  color: #888;
+}
+
 #shortcuts > table {
   background:#eee;
   margin: auto;
@@ -214,6 +225,14 @@ img {
     <label id="prefixLabel">Directory Prefix: <input id="prefix" type="text"/></label>
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
     <p id="finalpath"></p>
+    <fieldset>
+      <legend>Mode:</legend>
+      <label><input type="radio" id="mode_normal" name="mode" value="normal"/>Normal <span class="urlmode">(url: <a href="?mode=normal">?mode=normal</a>)</span></label>
+      <label><input type="radio" id="mode_double" name="mode" value="double"/>Double page <span class="urlmode">(url: <a href="?mode=double">?mode=double</a>)</span></label>
+      <label><input type="radio" id="mode_webtoon" name="mode" value="webtoon"/>Webtoon <span class="urlmode">(url: <a href="?mode=webtoon">?mode=webtoon</a>)</span></label>
+      <label><input type="radio" id="mode_normal_or_double" name="mode" value="normal_or_double"/>Normal or Double page <span class="urlmode">(url: <a href="?mode=normal_or_double">?mode=normal_or_double</a>)</span></label>
+      <label><input type="radio" id="mode_all" name="mode" value="all"/>All page <span class="urlmode">(url: <a href="?mode=all">?mode=all</a>)</span></label>
+    </fieldset>
     <input type="submit"/>
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
@@ -262,7 +281,11 @@ const defaultFileNameList = [
 let longJumpSearchImg = 10;
 let longJumpSearchChap = 5;
 
-let ifile = +window.location.search.split("=")[1] || 0;
+const urlParams = new URLSearchParams(window.location.search);
+const originalModeName = urlParams.get("mode");
+urlParams.delete("mode");
+
+let ifile = +urlParams.values().next().value || 0;
 const img = document.getElementsByTagName("img")[0];
 const info = document.getElementById("info");
 const body = document.documentElement;
@@ -503,6 +526,10 @@ const groupPageModeBase = {
     }
   },
   _start: function(chapterByIndexes, startIndexByChapters, imageLimit) {
+    if (0 === filenames.length) {
+      return;
+    }
+
     if (!imageLimit) {
       this.chapterByIndexes = chapterByIndexes;
     }
@@ -547,6 +574,9 @@ const groupPageModeBase = {
     appendImages(this.eimgs, chap.images, chap.startIndex);
   },
   stop: function() {
+    if (0 === filenames.length) {
+      return;
+    }
     this.syncIFile();
     setImage(img, filenames[ifile]);
     document.body.removeChild(this.eimgs);
@@ -620,8 +650,28 @@ const allMode = Object.assign({
   },
 }, groupPageModeBase);
 
-let mode = normalMode;
-let currentImageLimit = -1;
+const modeToModeName = function(mode) {
+  switch (mode) {
+    case normalMode: return "normal";
+    case doublePageMode: return "double";
+    case webtoonMode: return "webtoon";
+    case normalOrDoublePageMode: return "normal_or_double";
+    case allMode: return "all";
+  }
+}
+
+const modeNameToMode = function(name) {
+  switch (name) {
+    case "normal": return normalMode;
+    case "double": return doublePageMode;
+    case "webtoon": return webtoonMode;
+    case "normal_or_double": return normalOrDoublePageMode;
+    case "all": return allMode;
+  }
+}
+
+let mode = modeNameToMode(originalModeName) || normalMode;
+let currentImageLimit = 0;
 let bottomPixelDistance = 20;
 
 const downOrNext = function(d, height) {
@@ -715,12 +765,9 @@ const osd = (function() {
 })();
 
 const showImageInfo = function() {
-  let scrollInfo = "";
-  if (autoScrollTimerId !== null) {
-    scrollInfo = `[auto-scroll: ${autoScrollDelay}ms]`;
-  }
   mode.syncIFile();
   const chap = chapterByIndexes[ifile];
+  const scrollInfo = (autoScrollTimerId !== null) ? `[auto-scroll: ${autoScrollDelay}ms]` : "";
   info.textContent = `[${ifile+1}/${nbFilename}][Chapter: \
 ${chap.ichap+1}/${startIndexByChapters.length}][Img: ${ifile-chap.startIndex+1}/${chap.images.length}]${scrollInfo} \
 ${filenames[ifile]}`;
@@ -911,6 +958,13 @@ const showLoader = (function() {
   const prefixElement = document.getElementById("prefix");
   const dirsElement = document.getElementById("dirs");
   const pathElement = document.getElementById("finalpath");
+  const modes = {
+    normal: document.getElementById("mode_normal"),
+    double: document.getElementById("mode_double"),
+    webtoon: document.getElementById("mode_webtoon"),
+    normal_or_double: document.getElementById("mode_normal_or_double"),
+    all: document.getElementById("mode_all"),
+  }
   const files = dirs.files;
   const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
   const regDigit = /^[0-9]/;
@@ -943,6 +997,19 @@ const showLoader = (function() {
   loaderForm.addEventListener("submit", function(e) {
     e.preventDefault();
     e.stopImmediatePropagation();
+
+    let newMode;
+    for (const modeName in modes) {
+      if (modes[modeName].checked) {
+        const selectedMode = modeNameToMode(modeName);
+        if (selectedMode !== mode) {
+          mode.stop();
+          newMode = selectedMode;
+          mode = newMode;
+        }
+        break;
+      }
+    }
 
     const filenameDatas = [];
     for (let i = 0; i < files.length; ++i) {
@@ -998,6 +1065,10 @@ const showLoader = (function() {
       initFilenames(filenames, fileByFilename);
     }
 
+    if (newMode) {
+      updateShortcuts(mode);
+    }
+
     modal.close(closeEvent);
     body.scrollTop = 0;
   }, true);
@@ -1021,6 +1092,7 @@ const showLoader = (function() {
       updateFinalPath();
       prefixElement.focus();
     }
+    modes[modeToModeName(mode)].checked = true;
   }
 })();
 
@@ -1671,29 +1743,17 @@ const showSearcher = (function() {
 // save and load
 // @{
 const savePosition = function() {
-  let modeName;
-  switch (mode) {
-    case normalMode: modeName = "normal"; break;
-    case doublePageMode: modeName = "double"; break;
-    case webtoonMode: modeName = "webtoon"; break;
-    case normalOrDoublePageMode: modeName = "normal_or_double"; break;
-    case allMode: modeName = "all"; break;
-  }
   localStorage.setItem("ifile", ifile);
-  localStorage.setItem("modeName", modeName);
+  localStorage.setItem("modeName", modeToModeName(mode));
   localStorage.setItem("imageLimit", currentImageLimit);
 };
 
 const loadPosition = function() {
-  let mode;
-  switch (localStorage.getItem("modeName")) {
-    case "normal": mode = normalMode; break;
-    case "double": mode = doublePageMode; break;
-    case "webtoon": mode = webtoonMode; break;
-    case "normal_or_double": mode = normalOrDoublePageMode; break;
-    case "all": mode = allMode; break;
-    default: return;
+  const mode = modeNameToMode(localStorage.getItem("modeName"));
+  if (!mode) {
+    return
   }
+
   selectMode(mode, +localStorage.getItem("imageLimit"));
 
   // webtoon may take time to load images
@@ -1994,7 +2054,7 @@ function initFilenames(fileNameList, fileByFileName) {
     chapterByIndexes[i] = chap;
   }
 
-  mode.start();
+  mode.start(currentImageLimit);
 }
 
 enableShortcuts();
