@@ -89,7 +89,7 @@ triggered=''
 
 usage='Generate a html viewer file
 
-  htmlviewer [-a|-A] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
+  htmlviewer [-a] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
              [-i <filename>] [-m {normal|double|normal_or_doube|webtoon|all}] [-t <title>]
              [-x <pixel_distance>] directory...
   htmlviewer -p
@@ -777,7 +777,7 @@ inputdirs=''
 htmlheader=
 force_mode_code=
 force_pixel_distance_code=
-title="Viewer: ${@:0:200}"
+title=
 declare -a cmds=()
 
 while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
@@ -802,6 +802,10 @@ while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
        };;
     p) echo -n "$inputs";
        exit;;
+    a) standalone=1;;
+    h) echo "$usage";
+       echo "$help"
+       exit;;
     K) echo '<!DOCTYPE html>
 <html><head><title>Key viewer</title><meta charset="Utf-8"/></head>
 <noscript><p>Javascript must be enabled</p></noscript>
@@ -822,19 +826,20 @@ window.addEventListener("click", mouseEvent, true);
 window.addEventListener("auxclick", mouseEvent, true);
 </script></body></html>';
        exit;;
-    a) standalone=1 ;;
-    h) echo "$usage";
-       echo "$help"
-       exit;;
     ?) minihelp;
        exit 2;;
   esac
 done
 shift $(($OPTIND - 1))
 
-if (( $# == 0 )) && (( $standalone == 0 )); then
+if (( $# == 0 )) && (( ! $standalone )); then
   minihelp >&2
   exit 1
+fi
+
+if [[ -z "$title" ]]; then
+  title="Directories: $@"
+  title="${title:0:200}"
 fi
 
 shortcuts=()
@@ -933,7 +938,7 @@ parse_input_line()
 # read input.conf
 if [[ -f "$inputconf" ]]; then
   inputs="$(<$inputconf)"
-elif (( $hasinput == 1 )); then
+elif (( $hasinput )); then
   echo "Unknown '$inputconf'" >&2
   exit 1
 fi
@@ -1935,6 +1940,8 @@ const showShorcuts = (function() {
         case "/":
         case "f"/* + ctrl */:
         case "F3":
+        // fullscreen
+        case "F11":
         // dev
         case "F12":
           return false;
