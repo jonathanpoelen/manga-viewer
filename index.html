@@ -3,7 +3,7 @@
 <html>
 <head>
   <meta charset="Utf-8"/>
-  <title>Viewer: ./htmlviewer -a</title>
+  <title>Directories: </title>
   <meta http-equiv="cache-control" content="max-age=0"/>
   <meta http-equiv="cache-control" content="no-cache"/>
   <meta http-equiv="expires" content="0"/>
@@ -66,8 +66,9 @@ img {
 #repositoryUrl {
   background:#050505;
   margin: auto;
-  padding: 1em;
-  text-align:center;
+  padding: .5em;
+  text-align: center;
+  line-height: 2.5em;
 }
 
 #repositoryUrl, #repositoryUrl > a {
@@ -109,7 +110,7 @@ img {
 #shortcuts > table {
   background:#eee;
   margin: auto;
-  padding: 2em;
+  padding: 0;
   border-spacing: 0;
 }
 
@@ -119,14 +120,14 @@ img {
 
 #shortcuts > table td {
   padding: .5em;
+  padding-right: 2em;
 }
 
 #shortcuts > table td:first-child {
-  text-align:right;
-}
-
-#shortcuts table tr {
-  border-bottom: 1px solid black;
+  text-align: right;
+  font-weight: bold;
+  padding-left: 2em;
+  padding-right: .5em;
 }
 
 #searcher {
@@ -205,7 +206,6 @@ img {
   
 </head>
 <body>
-
 <noscript><p style="background:#eee;color:black;text-align:center;font-size:2em">Javascript must be enabled</p></noscript>
 
 <img src="" class="imgWrapper"/>
@@ -236,7 +236,10 @@ img {
     <input type="submit"/>
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
-  <p id="repositoryUrl">Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a></p>
+  <p id="repositoryUrl">
+    <a href="https://github.com/jonathanpoelen/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a><br/>
+    Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a>
+  </p>
 </section>
 
 <section id="searcher">
@@ -938,6 +941,8 @@ const showShorcuts = (function() {
         case "/":
         case "f"/* + ctrl */:
         case "F3":
+        // fullscreen
+        case "F11":
         // dev
         case "F12":
           return false;
