@@ -1241,7 +1241,7 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
   <p id="repositoryUrl">
-    <a href="https://github.com/jonathanpoelen/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a><br/>
+    <a href="https://jonathanpoelen.github.io/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a><br/>
     Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a>
   </p>
 </section>
