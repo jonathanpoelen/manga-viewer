@@ -1,4 +1,6 @@
-`htmlviewer` is a tool that generates html file from image directories. The generated file be can opened with any web browser. `htmlviewer-gui` is simple wrapper which uses `zenity` as GUI. A standalone html file is available [here](https://jonathanpoelen.github.io/manga-viewer).
+`htmlviewer` is a tool that generates a web page to view images in a directorie. `htmlviewer-gui` is simple wrapper which uses `zenity` as GUI.
+
+A standalone viewer is available [here](https://jonathanpoelen.github.io/manga-viewer).
 
 It's main advantage is that it uses one and the same key to scroll and go to the next image (space or left click by default), the behavior of which changes according to 5 reading modes:
 
@@ -81,6 +83,7 @@ $ goto -1
 h mode webtoon
 j mode double
 k mode normal
+l mode normal_or_double
 
 d info
 o info

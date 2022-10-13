@@ -98,11 +98,10 @@ usage='Generate a html viewer file
 
 help="
   -a
-      Allows the creation of html view without file. Directories can be opened
-      directly from the viewer.
+      Builds a web page that can open images from the viewer.
 
   -A
-      Create a web page that lists the shortcuts available for the current
+      Builds a web page that lists the shortcuts available for the current
       configuration.
 
   -c <command>
@@ -246,17 +245,17 @@ help="
           window depends on browser options and may open a foreground tab.
 
       mode {normal|double|normal_or_double|webtoon|all} [image_limit=0]
-          - normal: one image at a time.
-          - double: once on 2, the commands pgdown_or_next/pgup_or_prev go to
+          - normal: One image at a time.
+          - double: Once on 2, the commands pgdown_or_next/pgup_or_prev go to
                     top/bottom of the page rather than go to the next/prev
                     image.
-          - normal_or_double: use double page mode when the width of the image
-                              is greater than the height, otherwise use normal
-                              mode
+          - normal_or_double: Use double page mode for images whose width is
+                              greater than the height, otherwise use the normal
+                              mode.
           - webtoon: All images in a chapter are displayed one below the other.
           - all: All images are displayed one below the other.
 
-          image_limit specifies the maximum number of images displayed per
+          'image_limit' specifies the maximum number of images displayed per
           page. 0 for no limit.
 
       info
