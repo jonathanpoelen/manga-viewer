@@ -107,7 +107,7 @@ args=(
   '(: * -)-p[Print default keyboard mapping]'
   '(: * -)-K[Generates a html file which displays the name of the keys]'
 
-  + 'command'
+  + command
   '*-c+[Add a command]:gui-command:_htmlviewer_cmd'
 
   + '(sort)'
@@ -118,12 +118,17 @@ args=(
   '-i+[Specify configuration file]: :_files'
   '-n[Do not load default configuration files]'
 
+  + generating
+  '-a[Builds a web page that can open images from the viewer]'
+  '-A[Build a web page that lists the shortcuts available]'
+
   + misc
   '-e[Specify content of html header]'
   '-f+[Read directories from file]: :_files'
   '-m+[Specify default mode]:mode:((
     normal\:one\ image\ at\ a\ time
     double\:bottom\ then\ top\ then\ next\ image
+    normal_or_double\:double\ page\ mode\ for\ image\ whose\ width\ is\ greater\ than\ their\ heigth
     webtoon\:all\ images\ in\ a\ chapter\ one\ below\ the\ other
     all\:all\ images\ one\ below\ the\ other
   ))'
