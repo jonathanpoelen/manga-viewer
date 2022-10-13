@@ -1057,8 +1057,9 @@ img {
 #repositoryUrl {
   background:#050505;
   margin: auto;
-  padding: 1em;
-  text-align:center;
+  padding: .5em;
+  text-align: center;
+  line-height: 2.5em;
 }
 
 #repositoryUrl, #repositoryUrl > a {
@@ -1234,7 +1235,10 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
     <input type="submit"/>
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
-  <p id="repositoryUrl">Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a></p>
+  <p id="repositoryUrl">
+    <a href="https://github.com/jonathanpoelen/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a><br/>
+    Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a>
+  </p>
 </section>
 
 <section id="searcher">
