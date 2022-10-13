@@ -89,17 +89,21 @@ triggered=''
 
 usage='Generate a html viewer file
 
-  htmlviewer [-a] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
-             [-i <filename>] [-m {normal|double|normal_or_doube|webtoon|all}] [-t <title>]
-             [-x <pixel_distance>] directory...
+  htmlviewer [-a|-A] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
+             [-i <filename>] [-m {normal|double|normal_or_doube|webtoon|all}]
+             [-t <title>] [-x <pixel_distance>] directory...
   htmlviewer -p
   htmlviewer -K
   htmlviewer -h'
 
 help="
   -a
-      Allows the creation of html view without file. They can be opened
+      Allows the creation of html view without file. Directories can be opened
       directly from the viewer.
+
+  -A
+      Create a web page that lists the shortcuts available for the current
+      configuration.
 
   -c <command>
       Add a command. See input.conf syntax.
@@ -780,7 +784,7 @@ force_pixel_distance_code=
 title=
 declare -a cmds=()
 
-while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
+while getopts 'aAsSnpKi:c:e:t:f:x:m:h?' opt ; do
   case $opt in
     s) sort=1;;
     S) sort=0;;
@@ -803,6 +807,7 @@ while getopts 'asSnpKi:c:e:t:f:x:m:h?' opt ; do
     p) echo -n "$inputs";
        exit;;
     a) standalone=1;;
+    A) standalone=2;;
     h) echo "$usage";
        echo "$help"
        exit;;
@@ -838,8 +843,12 @@ if (( $# == 0 )) && (( ! $standalone )); then
 fi
 
 if [[ -z "$title" ]]; then
-  title="Directories: $@"
-  title="${title:0:200}"
+  if (( $standalone == 2 )); then
+    title='Shortcut list for manga-viewer / htmlviewer'
+  else
+    title="Directories: $@"
+    title="${title:0:200}"
+  fi
 fi
 
 shortcuts=()
@@ -1091,7 +1100,7 @@ img {
 #shortcuts > table {
   background:#eee;
   margin: auto;
-  padding: 2em;
+  padding: 0;
   border-spacing: 0;
 }
 
@@ -1101,14 +1110,14 @@ img {
 
 #shortcuts > table td {
   padding: .5em;
+  padding-right: 2em;
 }
 
 #shortcuts > table td:first-child {
-  text-align:right;
-}
-
-#shortcuts table tr {
-  border-bottom: 1px solid black;
+  text-align: right;
+  font-weight: bold;
+  padding-left: 2em;
+  padding-right: .5em;
 }
 
 #searcher {
@@ -1186,9 +1195,16 @@ img {
   </style>
   '"$htmlheader"'
 </head>
-<body>
+<body>'
 
-<noscript><p style="background:#eee;color:black;text-align:center;font-size:2em">Javascript must be enabled</p></noscript>
+if (( $standalone == 2 )); then
+  echo '<section id="shortcuts" style="display:block"><table>'"${raw_shortcuts[@]}"'</table></section>
+</body>
+</html>'
+  exit
+fi
+
+echo '<noscript><p style="background:#eee;color:black;text-align:center;font-size:2em">Javascript must be enabled</p></noscript>
 
 <img src="" class="imgWrapper"/>
 
