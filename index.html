@@ -976,7 +976,6 @@ const showLoader = (function() {
     normal_or_double: document.getElementById("mode_normal_or_double"),
     all: document.getElementById("mode_all"),
   }
-  const files = dirs.files;
   const regSplit = /([0-9]+(?:\.[0-9]+)?|[^0-9]+)/g;
   const regDigit = /^[0-9]/;
 
@@ -989,7 +988,7 @@ const showLoader = (function() {
   };
 
   const updateFinalPath = function() {
-    const file = files[0];
+    const file = dirsElement.files[0];
     if (file) {
       const path = document.createElement("b");
       path.textContent = getPrefix() + file.webkitRelativePath;
@@ -1008,6 +1007,8 @@ const showLoader = (function() {
   loaderForm.addEventListener("submit", function(e) {
     e.preventDefault();
     e.stopImmediatePropagation();
+
+    const files = dirsElement.files;
 
     let newMode;
     for (const modeName in modes) {
