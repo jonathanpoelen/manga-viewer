@@ -2195,13 +2195,13 @@ const showSearcher = (function() {
 
   const createTextSearcher = function(options, str, extendStr) {
     const indexOf = function(searchValue, str, si) {
-      si.foundLength = searchValue.length;
+      si.lengthFound = searchValue.length;
       return str.indexOf(searchValue);
     };
 
     const startsWith = function(searchValue, str, si) {
-      const index = si.lastIndex + si.foundLength;
-      si.foundLength += searchValue.length;
+      const index = si.lastIndex + si.lengthFound;
+      si.lengthFound += searchValue.length;
       return str.startsWith(searchValue, index) ? si.lastIndex : -1;
     };
 
@@ -2284,7 +2284,7 @@ const showSearcher = (function() {
   const searchRegIndex = function(str, si, reg) {
     const m = str.match(reg);
     if (m) {
-      si.foundLength = m[0].length;
+      si.lengthFound = m[0].length;
       return m.index;
     }
     return -1;
@@ -2352,7 +2352,7 @@ const showSearcher = (function() {
       const unaccentedStr = removeAccents(str);
       const upperStr = str.toUpperCase();
       const unaccentedUpperStr = unaccentedStr.toUpperCase();
-      results[i] = {str, upperStr, unaccentedStr, unaccentedUpperStr, lastIndex: -1, foundLength: 0, elem, indexes: []};
+      results[i] = {str, upperStr, unaccentedStr, unaccentedUpperStr, lastIndex: -1, lengthFound: 0, elem, indexes: []};
     }
   };
 
@@ -2404,7 +2404,7 @@ const showSearcher = (function() {
       const elem = result.elem;
       const str = result.str;
       const index = result.lastIndex;
-      const len = result.foundLength;
+      const len = result.lengthFound;
       removeChildren(elem);
       elem.appendChild(document.createTextNode(str.substr(0, index)));
       elem.appendChild(document.createElement("b")).textContent = str.substr(index, len);
