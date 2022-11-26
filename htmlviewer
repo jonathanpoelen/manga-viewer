@@ -314,7 +314,7 @@ help="
              |{then_by_img}
              |{case_sensitive|case_insensitive|uppercase_only}
              |{accent_sensitive|accent_insensitive|accent_only}
-             |{word|fuzzy|plain_text|regex}
+             |{word|fuzzy|text|regex}
              ]...
           Show a finder.
           Default is chapter, uppercase_only, accent_only and word.
@@ -338,7 +338,7 @@ help="
               'accent_only' ignore accent for unaccented letters and match
               accent for accented letters. Does not work with regex mode.
 
-          - word, fuzzy, plain_text, regex:
+          - word, fuzzy, text, regex:
               Algorithm used for the filter.
 
       save
@@ -737,10 +737,10 @@ cmd_search()
       accent_insensitive) code+='options = options & ~SEARCH_ACCENT_SENSITIVITY_MASK | SEARCH_ACCENT_INSENSITIVE;';;
       accent_only)        code+='options = options & ~SEARCH_ACCENT_SENSITIVITY_MASK | SEARCH_ACCENT_ONLY;';;
 
-      word)       code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_WORD;';;
-      fuzzy)      code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_FUZZY;';;
-      plain_text) code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_TEXT;';;
-      regex)      code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_REGEX;';;
+      word)  code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_WORD;';;
+      fuzzy) code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_FUZZY;';;
+      text)  code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_TEXT;';;
+      regex) code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_REGEX;';;
 
       *) error="Unknown mode '$1'";
         return 1;;
