@@ -88,7 +88,7 @@ _htmlviewer_cmd() {
               chapter image then_by_img \
               case_sensitive case_insensitive uppercase_only \
               accent_sensitive accent_insensitive accent_only \
-              fuzzy plain_text regex
+              word fuzzy text regex
             ;;
         esac
       fi
