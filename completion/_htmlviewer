@@ -52,7 +52,7 @@ _htmlviewer_cmd() {
             fi;;
           mode)
             if (( curr == 3 )); then
-              _values $sepopt[@] 'mode' normal double webtoon all
+              _values $sepopt[@] 'mode' normal double normal_or_double webtoon all
             elif (( curr == 4 )); then
               _message '[image_limit=0]'
             else
@@ -62,7 +62,7 @@ _htmlviewer_cmd() {
             fi;;
           restrict)
             if (( curr == 3 )); then
-              _values $sepopt[@] 'mode' normal double webtoon all
+              _values $sepopt[@] 'mode' normal double normal_or_double webtoon all
             else
               i+=2
               curr+=-2
