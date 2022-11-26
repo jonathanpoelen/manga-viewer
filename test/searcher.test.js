@@ -219,6 +219,48 @@ test.each([
 });
 
 
+// word
+test.each([
+  ['abcabc', 'cab', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 2, lengthFound: 3}]],
+  ['abcabc', 'cab', 1, {lastIndex:  2, lengthFound: 1}, [{lastIndex: 2, lengthFound: 3}]],
+
+  ['abcabc', 'a', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 0, lengthFound: 1}]],
+  ['abcabc', 'ab', 1, {lastIndex: 0, lengthFound: 1}, [{lastIndex: 0, lengthFound: 2}]],
+  ['abcabc', 'ab ', 2, {lastIndex: 0, lengthFound: 2}, []],
+  ['abcabc', 'ab a', 3, {lastIndex: 0, lengthFound: 2}, [{lastIndex: 3, lengthFound: 1}]],
+  ['abcabc', 'ab ab', 4, {lastIndex: 3, lengthFound: 1}, [{lastIndex: 3, lengthFound: 2}]],
+
+  ['abcabc', 'ab  ', 2, {lastIndex: 0, lengthFound: 2}, []],
+  ['abcabc', 'ab  ', 3, {lastIndex: 0, lengthFound: 2}, []],
+  ['abcabc', 'ab  a', 4, {lastIndex: 0, lengthFound: 2}, [{lastIndex: 3, lengthFound: 1}]],
+
+  ['abcabc', 'ab ', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 0, lengthFound: 2}]],
+  ['abcabc', 'ab ab', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 0, lengthFound: 2},
+                                                           {lastIndex: 3, lengthFound: 2}]],
+  ['abcabcabc', 'ab ab ab', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 0, lengthFound: 2},
+                                                                 {lastIndex: 3, lengthFound: 2},
+                                                                 {lastIndex: 6, lengthFound: 2}]],
+
+  // space (ignored)
+  ['abcabc', ' ', 0, {lastIndex: -1, lengthFound: 0}, []],
+  ['abcabc', '  ', 0, {lastIndex: -1, lengthFound: 0}, []],
+  ['abcabc', '  ', 1, {lastIndex: -1, lengthFound: 0}, []],
+
+])("word(str='%s', patt='%s'[%i], %s) = %o", (str, patt, ipatt, si, expectedSis) => {
+  const options = CASE_SENSITIVE | ACCENT_SENSITIVE;
+  const searchers = searcher.createWordSearchers(options, patt, ipatt);
+  expect(searchers.length).toBe(expectedSis.length);
+  const len = Math.min(searchers.length, expectedSis.length);
+  for (let i = 0; i < len; ++i) {
+    si.str = str;
+    const expected = expectedSis[i];
+    expect(searchers[i](si)).toBe(expected.lastIndex);
+    expect(si.lengthFound).toBe(expected.lengthFound);
+    si = expected;
+  }
+});
+
+
 // regex
 test.each([
   [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'A', -1, undefined],
@@ -250,19 +292,19 @@ test.each([
 
 test('filter()', () => {
   const datas = [
-    {str:'ab', lastIndex: -1, indexes:[]},
-    {str:'aaaa', lastIndex: -1, indexes:[]},
-    {str:'aabbb', lastIndex: -1, indexes:[]},
-    {str:'aaaaaaaaaa', lastIndex: -1, indexes:[]},
-    {str:'ababab', lastIndex: -1, indexes:[]},
-    {str:'aaaaaaab', lastIndex: -1, indexes:[]},
+    {str:'ab', lastIndex: -1, lengthFound: 0, fragments:[]},
+    {str:'aaaa', lastIndex: -1, lengthFound: 0, fragments:[]},
+    {str:'aabbb', lastIndex: -1, lengthFound: 0, fragments:[]},
+    {str:'aaaaaaaaaa', lastIndex: -1, lengthFound: 0, fragments:[]},
+    {str:'ababab', lastIndex: -1, lengthFound: 0, fragments:[]},
+    {str:'aaaaaaab', lastIndex: -1, lengthFound: 0, fragments:[]},
   ];
-  const filter = searcher.createFuzzySearcher(CASE_SENSITIVE | ACCENT_SENSITIVE, 'ab')
+  const filter = searcher.createFuzzySearcher(CASE_SENSITIVE | ACCENT_SENSITIVE, 'b')
   searcher.filter(datas, filter);
   expect(datas).toStrictEqual([
-    {str:'ab', lastIndex: 0, indexes:[0]},
-    {str:'aabbb', lastIndex: 1, indexes:[1]},
-    {str:'ababab', lastIndex: 0, indexes:[0]},
-    {str:'aaaaaaab', lastIndex: 6, indexes:[6]},
+    {str:'ab', lastIndex: 1, lengthFound: 1, fragments:[{index: 1, lengthFound: 1}]},
+    {str:'aabbb', lastIndex: 2, lengthFound: 1, fragments:[{index: 2, lengthFound: 1}]},
+    {str:'ababab', lastIndex: 1, lengthFound: 1, fragments:[{index: 1, lengthFound: 1}]},
+    {str:'aaaaaaab', lastIndex: 7, lengthFound: 1, fragments:[{index: 7, lengthFound: 1}]},
   ]);
 });
