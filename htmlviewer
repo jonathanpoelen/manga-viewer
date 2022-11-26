@@ -2429,7 +2429,14 @@ const showSearcher = (function() {
 
     // if the character is not added at the end of the text (unoptimized case)
     if (!text.startsWith(previousText)) {
+      const i = activeElement.parentNode ? activeElement.dataset.index : userActiveIndex();
       resetState();
+      activeElement = results[i].elem;
+      activeElement.setAttribute("id", "activeSearch");
+
+      if (text.length === 0) {
+        return;
+      }
     }
     else if (text.length === previousText.length) {
       return;
