@@ -39,7 +39,7 @@ jobs:
 
       - name: Push changes
         run: |
-          mv index.html shortcuts.html standalone/
+          mv index.html shortcuts.html man.html standalone/
           cd standalone
           if ! git diff --quiet ; then
             git config --global user.name 'Jonathan Poelen'
