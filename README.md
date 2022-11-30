@@ -25,13 +25,13 @@ Or a version which asks for the files to load when opening the html file:
 htmlviewer -a > view.html
 ```
 
-`view.html` can be directly downloaded [here](https://jonathanpoelen.github.io/manga-viewer) (right click -> save link as...).
+`view.html` can be used [here](https://jonathanpoelen.github.io/manga-viewer) or downloaded with a right click on the link then "save link as...".
 
 Note that using it directly from the web server is less efficient and takes more memory. For security reasons, a website does not access local disks and opening images stores them in memory in a format that takes up more space than the image itself. This is why it is best to download the file and open it from your machine.
 
-The default shortcuts are displayed with `htmlviewer -p` or `F1`.
+The keyboard and mouse shortcuts are available [here](https://jonathanpoelen.github.io/manga-viewer/shortcuts.html), with `htmlviewer -p` or the `F1` keyboard shortcut.
 
-Read `htmlviewer -h` for more options.
+Read `htmlviewer -h` or [this page](https://jonathanpoelen.github.io/manga-viewer/man.html) for more options.
 
 
 # Default input.conf
