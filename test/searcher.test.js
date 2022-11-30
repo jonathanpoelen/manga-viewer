@@ -1,292 +1,285 @@
 const searcher = require('htmlviewer_searcher.js')
 
-const CASE_SENSITIVE = searcher.SEARCH_CASE_SENSITIVE;
-const UPPERCASE_ONLY = searcher.SEARCH_UPPERCASE_ONLY;
-const CASE_INSENSITIVE = searcher.SEARCH_CASE_INSENSITIVE;
-const ACCENT_SENSITIVE = searcher.SEARCH_ACCENT_SENSITIVE;
-const ACCENT_INSENSITIVE = searcher.SEARCH_ACCENT_INSENSITIVE;
-const ACCENT_ONLY = searcher.SEARCH_ACCENT_ONLY;
+const CASE = searcher.SEARCH_CASE_SENSITIVE;
+const ICASE = searcher.SEARCH_CASE_INSENSITIVE;
+const UPCASE = searcher.SEARCH_UPPERCASE_ONLY;
+const ACCENT = searcher.SEARCH_ACCENT_SENSITIVE;
+const IACCENT = searcher.SEARCH_ACCENT_INSENSITIVE;
+const UPACCENT = searcher.SEARCH_ACCENT_ONLY;
+
+const modeToString = function() {
+  return [
+    (this.options & ICASE) ? 'icase|' : '',
+    (this.options & UPCASE) ? 'upperonly|' : '',
+    (this.options & IACCENT) ? 'iaccent|' : '',
+    (this.options & UPACCENT) ? 'accentonly|' : '',
+  ].join('').replace(/\|$/, '');
+};
+const mode = function(options) {
+  return {options: options, toString: modeToString};
+}
+
+const nfd = (str) => str.normalize('NFD')
 
 // fuzzy
 test.each([
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'A', -1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'a', 0],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'b', 1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'd', -1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: 0}, 'a', 3],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: 0}, 'b', 1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: 0}, 'd', -1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: 1}, 'b', 4],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: 3}, 'a', -1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'A', -1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'a', 0],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'b', 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'd', -1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: 0}, 'a', 3],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: 0}, 'b', 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: 0}, 'd', -1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: 1}, 'b', 4],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: 3}, 'a', -1],
 
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: -1}, 'A', 0],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: -1}, 'a', 0],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: -1}, 'd', -1],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: 0}, 'A', 3],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: 0}, 'a', 3],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: 0}, 'd', -1],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'é', lastIndex: 0}, 'e', -1],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex: -1}, 'A', 0],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex: -1}, 'a', 0],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex: -1}, 'd', -1],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex: 0}, 'A', 3],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex: 0}, 'a', 3],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex: 0}, 'd', -1],
+  [mode(ICASE | ACCENT), {upperStr:'é', lastIndex: 0}, 'e', -1],
 
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aeb', lastIndex: -1}, 'e', 1],
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aeb', lastIndex: -1}, 'é', 1],
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aEb', lastIndex: -1}, 'é', -1],
+  [mode(CASE | IACCENT), {unaccentedStr:'aeb', lastIndex: -1}, 'e', 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'aeb', lastIndex: -1}, 'é', 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'aEb', lastIndex: -1}, 'é', -1],
 
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'e', 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'é', 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'E', 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'É', 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'd', -1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'AEB', lastIndex: -1}, 'e', 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'AEB', lastIndex: -1}, 'é', 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'AEB', lastIndex: -1}, 'E', 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'AEB', lastIndex: -1}, 'É', 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'AEB', lastIndex: -1}, 'd', -1],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: -1}, 'e', 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aEb', lastIndex: -1}, 'e', -1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: -1}, 'E', -1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aEb', lastIndex: -1}, 'E', 1],
+  [mode(CASE | UPACCENT), {unaccentedStr:'aeb', lastIndex: -1}, 'e', 1],
+  [mode(CASE | UPACCENT), {unaccentedStr:'aEb', lastIndex: -1}, 'e', -1],
+  [mode(CASE | UPACCENT), {unaccentedStr:'aeb', lastIndex: -1}, 'E', -1],
+  [mode(CASE | UPACCENT), {unaccentedStr:'aEb', lastIndex: -1}, 'E', 1],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aeb', lastIndex: -1}, 'é', -1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aéb', lastIndex: -1}, 'é', 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AEB', lastIndex: -1}, 'é', -1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AÉB', lastIndex: -1}, 'é', -1],
+  [mode(CASE | UPACCENT), {str:'aeb', lastIndex: -1}, 'é', -1],
+  [mode(CASE | UPACCENT), {str:'aéb', lastIndex: -1}, 'é', 1],
+  [mode(CASE | UPACCENT), {str:'AEB', lastIndex: -1}, 'é', -1],
+  [mode(CASE | UPACCENT), {str:'AÉB', lastIndex: -1}, 'é', -1],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aeb', lastIndex: -1}, 'É', -1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aéb', lastIndex: -1}, 'É', -1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AEB', lastIndex: -1}, 'É', -1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AÉB', lastIndex: -1}, 'É', 1],
+  [mode(CASE | UPACCENT), {str:'aeb', lastIndex: -1}, 'É', -1],
+  [mode(CASE | UPACCENT), {str:'aéb', lastIndex: -1}, 'É', -1],
+  [mode(CASE | UPACCENT), {str:'AEB', lastIndex: -1}, 'É', -1],
+  [mode(CASE | UPACCENT), {str:'AÉB', lastIndex: -1}, 'É', 1],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AEB', lastIndex: -1}, 'e', 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AÉB', lastIndex: -1}, 'e', -1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AEB', lastIndex: -1}, 'é', -1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AÉB', lastIndex: -1}, 'é', 1],
+  [mode(UPCASE | ACCENT), {upperStr:'AEB', lastIndex: -1}, 'e', 1],
+  [mode(UPCASE | ACCENT), {upperStr:'AÉB', lastIndex: -1}, 'e', -1],
+  [mode(UPCASE | ACCENT), {upperStr:'AEB', lastIndex: -1}, 'é', -1],
+  [mode(UPCASE | ACCENT), {upperStr:'AÉB', lastIndex: -1}, 'é', 1],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aeb', lastIndex: -1}, 'E', -1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aéb', lastIndex: -1}, 'E', -1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AEB', lastIndex: -1}, 'E', 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AÉB', lastIndex: -1}, 'E', -1],
+  [mode(UPCASE | ACCENT), {str:'aeb', lastIndex: -1}, 'E', -1],
+  [mode(UPCASE | ACCENT), {str:'aéb', lastIndex: -1}, 'E', -1],
+  [mode(UPCASE | ACCENT), {str:'AEB', lastIndex: -1}, 'E', 1],
+  [mode(UPCASE | ACCENT), {str:'AÉB', lastIndex: -1}, 'E', -1],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aeb', lastIndex: -1}, 'É', -1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aéb', lastIndex: -1}, 'É', -1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AEB', lastIndex: -1}, 'É', -1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AÉB', lastIndex: -1}, 'É', 1],
+  [mode(UPCASE | ACCENT), {str:'aeb', lastIndex: -1}, 'É', -1],
+  [mode(UPCASE | ACCENT), {str:'aéb', lastIndex: -1}, 'É', -1],
+  [mode(UPCASE | ACCENT), {str:'AEB', lastIndex: -1}, 'É', -1],
+  [mode(UPCASE | ACCENT), {str:'AÉB', lastIndex: -1}, 'É', 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'e', 1],
+  [mode(UPCASE | UPACCENT), {unaccentedUpperStr:'AEB', lastIndex: -1}, 'e', 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: -1}, 'E', -1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedStr:'AEB', lastIndex: -1}, 'E', 1],
+  [mode(UPCASE | UPACCENT), {unaccentedStr:'aeb', lastIndex: -1}, 'E', -1],
+  [mode(UPCASE | UPACCENT), {unaccentedStr:'AEB', lastIndex: -1}, 'E', 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {upperStr:'AEB', lastIndex: -1}, 'é', -1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {upperStr:'AÉB', lastIndex: -1}, 'é', 1],
+  [mode(UPCASE | UPACCENT), {upperStr:'AEB', lastIndex: -1}, 'é', -1],
+  [mode(UPCASE | UPACCENT), {upperStr:'AÉB', lastIndex: -1}, 'é', 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'aeb', lastIndex: -1}, 'É', -1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'AEB', lastIndex: -1}, 'É', -1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'aéb', lastIndex: -1}, 'É', -1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'AÉB', lastIndex: -1}, 'É', 1],
+  [mode(UPCASE | UPACCENT), {str:'aeb', lastIndex: -1}, 'É', -1],
+  [mode(UPCASE | UPACCENT), {str:'AEB', lastIndex: -1}, 'É', -1],
+  [mode(UPCASE | UPACCENT), {str:'aéb', lastIndex: -1}, 'É', -1],
+  [mode(UPCASE | UPACCENT), {str:'AÉB', lastIndex: -1}, 'É', 1],
 
-])("fuzzy(mode=%i, %s, c='%s') = %i", (options, si, c, expectedIndex) => {
-  expect(searcher.createFuzzySearcher(options, c)(si)).toBe(expectedIndex);
+])("fuzzy(mode='%s', %s, c='%s') = %i", (mode, si, c, expectedIndex) => {
+  expect(searcher.createFuzzySearcher(mode.options, c)(si)).toBe(expectedIndex);
 });
 
 
 // plainText
 test.each([
-  // lastIndex = -1
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'A', -1, 1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'a', 0, 1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'b', 1, 1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'ab', 0, 2],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'd', -1, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:0, lengthFound:0}, 'A', false, -1, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:0, lengthFound:0}, 'a', false, 0, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:0, lengthFound:0}, 'b', false, 1, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:0, lengthFound:0}, 'ab', false, 0, 2],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:0, lengthFound:0}, 'd', false, -1, 1],
 
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: -1}, 'A', 0, 1],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: -1}, 'a', 0, 1],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: -1}, 'd', -1, 1],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex:0, lengthFound:0}, 'A', false, 0, 1],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex:0, lengthFound:0}, 'a', false, 0, 1],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex:0, lengthFound:0}, 'd', false, -1, 1],
 
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aeb', lastIndex: -1}, 'e', 1, 1],
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aeb', lastIndex: -1}, 'é', 1, 1],
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aEb', lastIndex: -1}, 'é', -1, 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'xaeb', lastIndex:0, lengthFound:0}, 'e', false, 2, 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'xaeb', lastIndex:0, lengthFound:0}, 'é', false, 2, 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'xaEb', lastIndex:0, lengthFound:0}, 'é', false, -1, 1],
 
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'e', 1, 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'é', 1, 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'E', 1, 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'É', 1, 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'd', -1, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xAEB', lastIndex:0, lengthFound:0}, 'e', false, 2, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xAEB', lastIndex:0, lengthFound:0}, 'é', false, 2, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xAEB', lastIndex:0, lengthFound:0}, 'E', false, 2, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xAEB', lastIndex:0, lengthFound:0}, 'É', false, 2, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xAEB', lastIndex:0, lengthFound:0}, 'd', false, -1, 1],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: -1}, 'e', 1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aEb', lastIndex: -1}, 'e', -1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: -1}, 'E', -1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aEb', lastIndex: -1}, 'E', 1, 1],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xaeb'), lastIndex:0, lengthFound:0}, 'e', false, 2, 1],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xaEb'), lastIndex:0, lengthFound:0}, 'e', false, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xaeb'), lastIndex:0, lengthFound:0}, 'E', false, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xaEb'), lastIndex:0, lengthFound:0}, 'E', false, 2, 1],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aeb', lastIndex: -1}, 'é', -1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aéb', lastIndex: -1}, 'é', 1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AEB', lastIndex: -1}, 'é', -1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AÉB', lastIndex: -1}, 'é', -1, 1],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('caeb'), lastIndex:0, lengthFound:0}, 'é', false, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('caéb'), lastIndex:0, lengthFound:0}, 'é', false, 2, 2],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('caéb'), lastIndex:0, lengthFound:0}, 'éb', false, 2, 3],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('cAEB'), lastIndex:0, lengthFound:0}, 'é', false, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('cAÉB'), lastIndex:0, lengthFound:0}, 'é', false, -1, 0],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aeb', lastIndex: -1}, 'É', -1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aéb', lastIndex: -1}, 'É', -1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AEB', lastIndex: -1}, 'É', -1, 1],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AÉB', lastIndex: -1}, 'É', 1, 1],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xaeb'), lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xaéb'), lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xAEB'), lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xAÉB'), lastIndex:0, lengthFound:0}, 'É', false, 2, 2],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xAÉB'), lastIndex:0, lengthFound:0}, 'ÉB', false, 2, 3],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AEB', lastIndex: -1}, 'e', 1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AÉB', lastIndex: -1}, 'e', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AEB', lastIndex: -1}, 'é', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AÉB', lastIndex: -1}, 'é', 1, 1],
+  [mode(UPCASE | ACCENT), {str:'xAEB', lastIndex:0, lengthFound:0}, 'e', false, 2, 1],
+  [mode(UPCASE | ACCENT), {str:'xAÉB', lastIndex:0, lengthFound:0}, 'e', false, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xAEB', lastIndex:0, lengthFound:0}, 'é', false, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xAÉB', lastIndex:0, lengthFound:0}, 'é', false, 2, 1],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aeb', lastIndex: -1}, 'E', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aéb', lastIndex: -1}, 'E', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AEB', lastIndex: -1}, 'E', 1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AÉB', lastIndex: -1}, 'E', -1, 1],
+  [mode(UPCASE | ACCENT), {str:'xaeb', lastIndex:0, lengthFound:0}, 'E', false, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xaéb', lastIndex:0, lengthFound:0}, 'E', false, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xAEB', lastIndex:0, lengthFound:0}, 'E', false, 2, 1],
+  [mode(UPCASE | ACCENT), {str:'xAÉB', lastIndex:0, lengthFound:0}, 'E', false, -1, 0],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aeb', lastIndex: -1}, 'É', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aéb', lastIndex: -1}, 'É', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AEB', lastIndex: -1}, 'É', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AÉB', lastIndex: -1}, 'É', 1, 1],
+  [mode(UPCASE | ACCENT), {str:'xaeb', lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xaéb', lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xAEB', lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xAÉB', lastIndex:0, lengthFound:0}, 'É', false, 2, 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedUpperStr:'AEB', lastIndex: -1}, 'e', 1, 1],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xAEB'), lastIndex:0, lengthFound:0}, 'e', false, 2, 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: -1}, 'E', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedStr:'AEB', lastIndex: -1}, 'E', 1, 1],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xaeb'), lastIndex:0, lengthFound:0}, 'E', false, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xAEB'), lastIndex:0, lengthFound:0}, 'E', false, 2, 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {upperStr:'AEB', lastIndex: -1}, 'é', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {upperStr:'AÉB', lastIndex: -1}, 'é', 1, 1],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xAEB'), lastIndex:0, lengthFound:0}, 'é', false, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xAÉB'), lastIndex:0, lengthFound:0}, 'é', false, 2, 2],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xAÉB'), lastIndex:0, lengthFound:0}, 'éB', false, 2, 3],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'aeb', lastIndex: -1}, 'É', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'AEB', lastIndex: -1}, 'É', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'aéb', lastIndex: -1}, 'É', -1, 1],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'AÉB', lastIndex: -1}, 'É', 1, 1],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xaeb'), lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xAEB'), lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xaéb'), lastIndex:0, lengthFound:0}, 'É', false, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xAÉB'), lastIndex:0, lengthFound:0}, 'É', false, 2, 2],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xAÉB'), lastIndex:0, lengthFound:0}, 'ÉB', false, 2, 3],
 
-  // lastIndex = 0, lengthFound: 1
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: 0, lengthFound: 1}, 'a', -1, 2],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: 0, lengthFound: 1}, 'b', 0, 2],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: 0, lengthFound: 1}, 'bc', 0, 3],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:1, lengthFound:2}, 'A', true, -1, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:1, lengthFound:2}, 'a', true, 3, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:1, lengthFound:2}, 'b', true, 4, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex:1, lengthFound:2}, 'ab', true, 3, 2],
 
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: 0, lengthFound: 1}, 'B', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: 0, lengthFound: 1}, 'b', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {upperStr:'ABCABC', lastIndex: 0, lengthFound: 1}, 'd', -1, 2],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex:1, lengthFound:2}, 'A', true, 3, 1],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex:1, lengthFound:2}, 'a', true, 3, 1],
+  [mode(ICASE | ACCENT), {upperStr:'ABCABC', lastIndex:1, lengthFound:2}, 'd', true, -1, 1],
 
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aeb', lastIndex: 0, lengthFound: 1}, 'e', 0, 2],
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aeb', lastIndex: 0, lengthFound: 1}, 'é', 0, 2],
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aEb', lastIndex: 0, lengthFound: 1}, 'é', -1, 2],
+  [mode(CASE | IACCENT), {unaccentedStr:'abcabc', lastIndex:1, lengthFound:2}, 'a', true, 3, 1],
 
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'e', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'é', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'E', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'É', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedUpperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'd', -1, 2],
+  [mode(CASE | IACCENT), {unaccentedStr:'xxaeb', lastIndex:1, lengthFound:2}, 'e', true, 3, 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'xxaeb', lastIndex:1, lengthFound:2}, 'é', true, 3, 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'xxaEb', lastIndex:1, lengthFound:2}, 'é', true, -1, 1],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: 0, lengthFound: 1}, 'e', 0, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aEb', lastIndex: 0, lengthFound: 1}, 'e', -1, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: 0, lengthFound: 1}, 'E', -1, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {unaccentedStr:'aEb', lastIndex: 0, lengthFound: 1}, 'E', 0, 2],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xxAEB', lastIndex:1, lengthFound:2}, 'e', true, 3, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xxAEB', lastIndex:1, lengthFound:2}, 'é', true, 3, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xxAEB', lastIndex:1, lengthFound:2}, 'E', true, 3, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xxAEB', lastIndex:1, lengthFound:2}, 'É', true, 3, 1],
+  [mode(ICASE | IACCENT), {unaccentedUpperStr:'xxAEB', lastIndex:1, lengthFound:2}, 'd', true, -1, 1],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aeb', lastIndex: 0, lengthFound: 1}, 'é', -1, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aéb', lastIndex: 0, lengthFound: 1}, 'é', 0, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AEB', lastIndex: 0, lengthFound: 1}, 'é', -1, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AÉB', lastIndex: 0, lengthFound: 1}, 'é', -1, 2],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('abcabc'), lastIndex:1, lengthFound:2}, 'a', true, 3, 1],
 
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aeb', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'aéb', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AEB', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [CASE_SENSITIVE | ACCENT_ONLY, {str:'AÉB', lastIndex: 0, lengthFound: 1}, 'É', 0, 2],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxaeb'), lastIndex:1, lengthFound:2}, 'e', true, 3, 1],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxaEb'), lastIndex:1, lengthFound:2}, 'e', true, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxaeb'), lastIndex:1, lengthFound:2}, 'E', true, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxaEb'), lastIndex:1, lengthFound:2}, 'E', true, 3, 1],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'e', 0, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AÉB', lastIndex: 0, lengthFound: 1}, 'e', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'é', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {upperStr:'AÉB', lastIndex: 0, lengthFound: 1}, 'é', 0, 2],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xcaeb'), lastIndex:1, lengthFound:2}, 'é', true, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xcaéb'), lastIndex:1, lengthFound:2}, 'é', true, 3, 2],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xcaéb'), lastIndex:1, lengthFound:2}, 'éb', true, 3, 3],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xcaéb'), lastIndex:1, lengthFound:2}, 'éB', true, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xcAEB'), lastIndex:1, lengthFound:2}, 'é', true, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xcAÉB'), lastIndex:1, lengthFound:2}, 'é', true, -1, 0],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aeb', lastIndex: 0, lengthFound: 1}, 'E', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aéb', lastIndex: 0, lengthFound: 1}, 'E', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AEB', lastIndex: 0, lengthFound: 1}, 'E', 0, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AÉB', lastIndex: 0, lengthFound: 1}, 'E', -1, 2],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxaeb'), lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxaéb'), lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxAEB'), lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'É', true, 3, 2],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'ÉB', true, 3, 3],
+  [mode(CASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'Éb', true, -1, 0],
 
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aeb', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'aéb', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AEB', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_SENSITIVE, {str:'AÉB', lastIndex: 0, lengthFound: 1}, 'É', 0, 2],
+  [mode(UPCASE | ACCENT), {str:'abcabc', lastIndex:1, lengthFound:2}, 'a', true, 3, 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedUpperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'e', 0, 2],
+  [mode(UPCASE | ACCENT), {str:'xxAEB', lastIndex:1, lengthFound:2}, 'e', true, 3, 1],
+  [mode(UPCASE | ACCENT), {str:'xxAÉB', lastIndex:1, lengthFound:2}, 'e', true, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xxAEB', lastIndex:1, lengthFound:2}, 'é', true, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xxAÉB', lastIndex:1, lengthFound:2}, 'é', true, 3, 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedStr:'aeb', lastIndex: 0, lengthFound: 1}, 'E', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {unaccentedStr:'AEB', lastIndex: 0, lengthFound: 1}, 'E', 0, 2],
+  [mode(UPCASE | ACCENT), {str:'xxaeb', lastIndex:1, lengthFound:2}, 'E', true, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xxaéb', lastIndex:1, lengthFound:2}, 'E', true, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xxAEB', lastIndex:1, lengthFound:2}, 'E', true, 3, 1],
+  [mode(UPCASE | ACCENT), {str:'xxAÉB', lastIndex:1, lengthFound:2}, 'E', true, -1, 0],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {upperStr:'AEB', lastIndex: 0, lengthFound: 1}, 'é', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {upperStr:'AÉB', lastIndex: 0, lengthFound: 1}, 'é', 0, 2],
+  [mode(UPCASE | ACCENT), {str:'xxaeb', lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xxaéb', lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xxAEB', lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(UPCASE | ACCENT), {str:'xxAÉB', lastIndex:1, lengthFound:2}, 'É', true, 3, 1],
 
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'aeb', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'AEB', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'aéb', lastIndex: 0, lengthFound: 1}, 'É', -1, 2],
-  [UPPERCASE_ONLY | ACCENT_ONLY, {str:'AÉB', lastIndex: 0, lengthFound: 1}, 'É', 0, 2],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('abcabc'), lastIndex:1, lengthFound:2}, 'a', true, 3, 1],
 
-])("plainText(mode=%i, %s, s='%s') = {index:%i, length:%i}", (options, si, str, expectedIndex, expectedLen) => {
-  expect(searcher.createTextSearcher(options, str, si.lastIndex !== -1)(si)).toBe(expectedIndex);
-  expect(si.lengthFound).toBe(expectedLen);
-});
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAEB'), lastIndex:1, lengthFound:2}, 'e', true, 3, 1],
 
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxaeb'), lastIndex:1, lengthFound:2}, 'E', true, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAEB'), lastIndex:1, lengthFound:2}, 'E', true, 3, 1],
 
-// word
-test.each([
-  ['abcabc', 'cab', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 2, lengthFound: 3}]],
-  ['abcabc', 'cab', 1, {lastIndex:  2, lengthFound: 1}, [{lastIndex: 2, lengthFound: 3}]],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAEB'), lastIndex:1, lengthFound:2}, 'é', true, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'é', true, 3, 2],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'éb', true, 3, 3],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'éB', true, 3, 3],
 
-  ['abcabc', 'a', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 0, lengthFound: 1}]],
-  ['abcabc', 'ab', 1, {lastIndex: 0, lengthFound: 1}, [{lastIndex: 0, lengthFound: 2}]],
-  ['abcabc', 'ab ', 2, {lastIndex: 0, lengthFound: 2}, []],
-  ['abcabc', 'ab a', 3, {lastIndex: 0, lengthFound: 2}, [{lastIndex: 3, lengthFound: 1}]],
-  ['abcabc', 'ab ab', 4, {lastIndex: 3, lengthFound: 1}, [{lastIndex: 3, lengthFound: 2}]],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxaeb'), lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAEB'), lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxaéb'), lastIndex:1, lengthFound:2}, 'É', true, -1, 0],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'É', true, 3, 2],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'Éb', true, 3, 3],
+  [mode(UPCASE | UPACCENT), {nfdStr:nfd('xxAÉB'), lastIndex:1, lengthFound:2}, 'ÉB', true, 3, 3],
 
-  ['abcabc', 'ab  ', 2, {lastIndex: 0, lengthFound: 2}, []],
-  ['abcabc', 'ab  ', 3, {lastIndex: 0, lengthFound: 2}, []],
-  ['abcabc', 'ab  a', 4, {lastIndex: 0, lengthFound: 2}, [{lastIndex: 3, lengthFound: 1}]],
-
-  ['abcabc', 'ab ', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 0, lengthFound: 2}]],
-  ['abcabc', 'ab ab', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 0, lengthFound: 2},
-                                                           {lastIndex: 3, lengthFound: 2}]],
-  ['abcabcabc', 'ab ab ab', 0, {lastIndex: -1, lengthFound: 0}, [{lastIndex: 0, lengthFound: 2},
-                                                                 {lastIndex: 3, lengthFound: 2},
-                                                                 {lastIndex: 6, lengthFound: 2}]],
-
-  // space (ignored)
-  ['abcabc', ' ', 0, {lastIndex: -1, lengthFound: 0}, []],
-  ['abcabc', '  ', 0, {lastIndex: -1, lengthFound: 0}, []],
-  ['abcabc', '  ', 1, {lastIndex: -1, lengthFound: 0}, []],
-
-])("word(str='%s', patt='%s'[%i], %s) = %o", (str, patt, ipatt, si, expectedSis) => {
-  const options = CASE_SENSITIVE | ACCENT_SENSITIVE;
-  const searchers = searcher.createWordSearchers(options, patt, ipatt);
-  expect(searchers.length).toBe(expectedSis.length);
-  const len = Math.min(searchers.length, expectedSis.length);
-  for (let i = 0; i < len; ++i) {
-    si.str = str;
-    const expected = expectedSis[i];
-    expect(searchers[i](si)).toBe(expected.lastIndex);
-    expect(si.lengthFound).toBe(expected.lengthFound);
-    si = expected;
+])("plainText(mode='%s', %s, s='%s', afterLast=%d) = {index:%i, length:%i}", (mode, si, pattern, afterLastIndex, expectedIndex, expectedLen) => {
+  expect(searcher.createTextSearcher(mode.options, pattern, afterLastIndex)(si)).toBe(expectedIndex);
+  if (expectedIndex !== -1) {
+    expect(si.lengthFound).toBe(expectedLen);
   }
 });
 
 
 // regex
 test.each([
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'A', -1, undefined],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'a', 0, 1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'b', 1, 1],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'b.?a', 1, 3],
-  [CASE_SENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'd', -1, undefined],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'A', -1, undefined],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'a', 0, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'b', 1, 1],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'b.?a', 1, 3],
+  [mode(CASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'd', -1, undefined],
 
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'Ab', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {str:'ABCABC', lastIndex: -1}, 'Ab', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {str:'abcabc', lastIndex: -1}, 'aB', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {str:'ABCABC', lastIndex: -1}, 'aB', 0, 2],
-  [CASE_INSENSITIVE | ACCENT_SENSITIVE, {str:'ABCABC', lastIndex: -1}, 'd', -1, undefined],
+  [mode(ICASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'Ab', 0, 2],
+  [mode(ICASE | ACCENT), {str:'ABCABC', lastIndex: -1}, 'Ab', 0, 2],
+  [mode(ICASE | ACCENT), {str:'abcabc', lastIndex: -1}, 'aB', 0, 2],
+  [mode(ICASE | ACCENT), {str:'ABCABC', lastIndex: -1}, 'aB', 0, 2],
+  [mode(ICASE | ACCENT), {str:'ABCABC', lastIndex: -1}, 'd', -1, undefined],
 
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aeb', lastIndex: -1}, 'e', 1, 1],
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aeb', lastIndex: -1}, 'é', 1, 1],
-  [CASE_SENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'aEb', lastIndex: -1}, 'é', -1, undefined],
+  [mode(CASE | IACCENT), {unaccentedStr:'aeb', lastIndex: -1}, 'e', 1, 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'aeb', lastIndex: -1}, 'é', 1, 1],
+  [mode(CASE | IACCENT), {unaccentedStr:'aEb', lastIndex: -1}, 'é', -1, undefined],
 
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'AEB', lastIndex: -1}, 'e', 1, 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'AEB', lastIndex: -1}, 'é', 1, 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'AEB', lastIndex: -1}, 'E', 1, 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'AEB', lastIndex: -1}, 'É', 1, 1],
-  [CASE_INSENSITIVE | ACCENT_INSENSITIVE, {unaccentedStr:'AEB', lastIndex: -1}, 'd', -1, undefined],
+  [mode(ICASE | IACCENT), {unaccentedStr:'AEB', lastIndex: -1}, 'e', 1, 1],
+  [mode(ICASE | IACCENT), {unaccentedStr:'AEB', lastIndex: -1}, 'é', 1, 1],
+  [mode(ICASE | IACCENT), {unaccentedStr:'AEB', lastIndex: -1}, 'E', 1, 1],
+  [mode(ICASE | IACCENT), {unaccentedStr:'AEB', lastIndex: -1}, 'É', 1, 1],
+  [mode(ICASE | IACCENT), {unaccentedStr:'AEB', lastIndex: -1}, 'd', -1, undefined],
 
-])("regex(mode=%i, %s, s='%s') = {index:%i, length:%i}", (options, si, str, expectedIndex, expectedLen) => {
-  expect(searcher.createRegexSearcher(options, str)(si)).toBe(expectedIndex);
+])("regex(mode='%s', %s, s='%s') = {index:%i, length:%i}", (mode, si, str, expectedIndex, expectedLen) => {
+  expect(searcher.createRegexSearcher(mode.options, str)(si)).toBe(expectedIndex);
   expect(si.lengthFound).toBe(expectedLen);
 });
 
@@ -299,7 +292,7 @@ test('filter()', () => {
     {str:'ababab', lastIndex: -1, lengthFound: 0, fragments:[]},
     {str:'aaaaaaab', lastIndex: -1, lengthFound: 0, fragments:[]},
   ];
-  const filter = searcher.createFuzzySearcher(CASE_SENSITIVE | ACCENT_SENSITIVE, 'b')
+  const filter = searcher.createFuzzySearcher(CASE | ACCENT, 'b')
   searcher.filter(datas, filter);
   expect(datas).toStrictEqual([
     {str:'ab', lastIndex: 1, lengthFound: 1, fragments:[{index: 1, lengthFound: 1}]},
