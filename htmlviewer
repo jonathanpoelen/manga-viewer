@@ -2200,8 +2200,8 @@ const showSearcher = (function() {
 
     const [pattern, strKey] = optionsToPatternAndStrKey(options, c);
     return (si) => {
-      si.lengthFound = 1;
-      return si[strKey].indexOf(pattern, si.lastIndex+1);
+      si.length = 1;
+      return si[strKey].indexOf(pattern, si.index+1);
     };
   };
 
@@ -2209,8 +2209,8 @@ const showSearcher = (function() {
     if ((options & (SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY)) === 0) {
       const [pattern, strKey] = optionsToPatternAndStrKey(options, str);
       return (si) => {
-        const index = si.lastIndex + (afterLastIndex ? si.lengthFound : 0);
-        si.lengthFound = pattern.length;
+        const index = si.index + (afterLastIndex ? si.length : 0);
+        si.length = pattern.length;
         return si[strKey].indexOf(pattern, index);
       }
     }
@@ -2248,10 +2248,10 @@ const showSearcher = (function() {
     }
 
     return (si) => {
-      regex.lastIndex = si.lastIndex + (afterLastIndex ? si.lengthFound : 0);
+      regex.lastIndex = si.index + (afterLastIndex ? si.length : 0);
       const m = regex.exec(si[strKey]);
       if (m) {
-        si.lengthFound = m[0].length;
+        si.length = m[0].length;
         return m.index;
       }
       return -1;
@@ -2261,7 +2261,7 @@ const showSearcher = (function() {
   const searchRegIndex = function(str, si, reg) {
     const m = str.match(reg);
     if (m) {
-      si.lengthFound = m[0].length;
+      si.length = m[0].length;
       return m.index;
     }
     return -1;
@@ -2283,8 +2283,8 @@ const showSearcher = (function() {
     for (const si of datas) {
       const index = searcher(si);
       if (index !== -1) {
-        si.lastIndex = index;
-        si.fragments.push({index, lengthFound: si.lengthFound});
+        si.index = index;
+        si.fragments.push({index, length: si.length});
         datas[newLength] = si;
         ++newLength;
       }
@@ -2340,9 +2340,8 @@ const showSearcher = (function() {
         unaccentedStr: unaccentedStrs[i],
         unaccentedUpperStr: unaccentedUpperStrs[i],
         nfdStr: nfdStrs[i],
-        // TODO lastIndex -> index ; lengthFound -> length
-        lastIndex: 0,
-        lengthFound: 0,
+        index: 0,
+        length: 0,
         previousMatch: previousMatch,
         elem, fragments: [],
       };
@@ -2381,8 +2380,8 @@ const showSearcher = (function() {
     let newFragLen = 1;
     for (let i = 1; i < fragLen; ++i) {
       const fragment = fragments[i];
-      if (prev.index + prev.lengthFound === fragment.index) {
-        prev.lengthFound += fragment.lengthFound;
+      if (prev.index + prev.length === fragment.index) {
+        prev.length += fragment.length;
       }
       else {
         fragments[newFragLen] = fragment;
@@ -2415,7 +2414,7 @@ const showSearcher = (function() {
         const index = fragment.index;
         // append to last <b>
         if (index === lastIndex) {
-          lastIndex += fragment.lengthFound;
+          lastIndex += fragment.length;
           const textContent = str.substring(index, lastIndex);
           lastElem.firstChild.textContent += textContent;
           ++i;
@@ -2426,7 +2425,7 @@ const showSearcher = (function() {
         const fragment = fragments[i];
         const index = fragment.index;
         elem.appendChild(document.createTextNode(str.substring(lastIndex, index)));
-        lastIndex = index + fragment.lengthFound;
+        lastIndex = index + fragment.length;
         const textContent = str.substring(index, lastIndex);
         const b = elem.appendChild(document.createElement("b"));
         b.textContent = textContent;
@@ -2485,7 +2484,7 @@ const showSearcher = (function() {
         const fragment = fragments[i];
         const index = fragment.index;
         elem.appendChild(document.createTextNode(str.substring(lastIndex, index)));
-        lastIndex = index + fragment.lengthFound;
+        lastIndex = index + fragment.length;
         const textContent = str.substring(index, lastIndex);
         const b = elem.appendChild(document.createElement("b"));
         b.textContent = textContent;
@@ -2513,8 +2512,8 @@ const showSearcher = (function() {
     for (const result of results) {
       const elem = result.elem;
       const str = result[strKey];
-      const index = result.lastIndex;
-      const len = result.lengthFound;
+      const index = result.index;
+      const len = result.length;
       removeChildren(elem);
       elem.appendChild(document.createTextNode(str.substr(0, index)));
       elem.appendChild(document.createElement("b")).textContent = str.substr(index, len);
