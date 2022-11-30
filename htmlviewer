@@ -87,69 +87,77 @@ config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
 inputconf="$config"/input.conf
 triggered=''
 
-usage='Generate a html viewer file
+co=$'\x1b[31m'
+cv=$'\x1b[32m'
+cl=$'\x1b[34m'
+cd=$'\x1b[37m'
+cr=$'\x1b[m'
+usage() {
+  echo "Generate a html viewer file
 
-  htmlviewer [-a|-A] [-n] [-s] [-S] [-c <command>] [-e <html>] [-f <filename>]
-             [-i <filename>] [-m {normal|double|normal_or_doube|webtoon|all}]
-             [-t <title>] [-x <pixel_distance>] directory...
-  htmlviewer -p
-  htmlviewer -K
-  htmlviewer -h'
+  htmlviewer [$co-a$cr|$co-A$cr] [$co-n$cr] [$co-s$cr] [$co-S$cr] [$co-c$cr <${cv}command$cr>] [$co-e$cr <${cv}html$cr>] [$co-f$cr <${cv}filename$cr>]
+             [$co-i$cr <${cv}filename$cr>] [$co-m$cr {${cl}normal$cr|${cl}double$cr|${cl}normal_or_doube$cr|${cl}webtoon$cr|${cl}all$cr}]
+             [$co-t$cr <${cv}title$cr>] [$co-x$cr <${cv}pixel_distance$cr>] directory...
+  htmlviewer $co-p$cr
+  htmlviewer $co-K$cr
+  htmlviewer $co-h$cr"
+}
 
-help="
-  -a
+help() {
+  echo "
+  $co-a$cr
       Builds a web page that can open images from the viewer.
 
-  -A
+  $co-A$cr
       Builds a web page that lists the shortcuts available for the current
       configuration.
 
-  -c <command>
+  $co-c$cr <${cv}command${cr}>
       Add a command. See input.conf syntax.
 
-  -e <html>
+  $co-e$cr <${cv}html${cr}>
       Specify content of html header. By default its contains the html style.
 
-  -f <filename>
-      Read directories from <filename>. If - is specified as filename,
+  $co-f$cr <${cv}filename${cr}>
+      Read directories from <${cv}filename${cr}>. If - is specified as filename,
       directories are read from the standard input.
 
         find -type d | fzf | htmlviewer -f- > view.html
 
-  -i <filename>
+  $co-i$cr <${cv}filename${cr}>
       Specify configuration file. See input.conf.
 
-  -h
+  $co-h$cr
       Show this help.
 
-  -K
+  $co-K$cr
       Generates a html file which displays the name of the keys and
       mouse buttons.
 
-  -m {normal|double|normal_or_double|webtoon|all}
+  $co-m$cr {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_double${cr}|${cl}webtoon${cr}|${cl}all${cr}}
       Specify default mode.
 
-  -n
+  $co-n$cr
       Do not load default configuration files.
 
-      By default load \${XDG_CONFIG_DIRS}/htmlviewer/input.conf with
-      \$HOME/.config as default value when XDG_CONFIG_DIRS is unset.
+      By default load $cd\${XDG_CONFIG_DIRS}/htmlviewer/input.conf$cr with
+      $cd\$HOME/.config$cr as default value when XDG_CONFIG_DIRS is unset.
 
-      Currently $inputconf
+      Currently $cd$inputconf$cr
 
-  -p
+  $co-p$cr
       Print default keyboard mapping.
 
-  -s
+  $co-s$cr
       Sort input directories (default).
 
-  -S
+  $co-S$cr
       Do not sort input directories.
 
-  -t <title>
+  $co-t$cr <${cv}title${cr}>
       Specify title page.
 
-  -x <pixel_distance>
+  $co-x$cr <${cv}pixel_distance${cr}>
       Specify default value for bottom_pixel command.
 
 
@@ -162,12 +170,12 @@ help="
 
       Each line maps a key to an input command.
 
-      In general, keys can be combined with Shift, Ctrl, Alt, Meta and AltGr
+      In general, keys can be combined with ${cl}Shift${cr}, ${cl}Ctrl${cr}, ${cl}Alt${cr}, ${cl}Meta${cr} and ${cl}AltGr${cr}
       (Modifiers are case insensitive):
 
         shift+Space pgup_or_prev
 
-      AltGr and Shift are optional.
+      ${cl}AltGr${cr} and ${cl}Shift${cr} are optional.
 
         # the following 2 commands are equivalent
         shift+y newtab
@@ -175,67 +183,67 @@ help="
 
 
   input.conf syntax
-      <key> <command> [<args>...]
+      <${cv}key${cr}> <${cv}command${cr}> [<${cv}args${cr}>...]
 
       Newlines always start a new binding. # starts a comment.
       To bind commands to the # key, SHARP can be used.
 
-      <key> is either the literal character the key produces (ASCII,
-      Unicode character or Javascript KeyEvent.key). See -K flag.
+      <${cv}key${cr}> is either the literal character the key produces (ASCII,
+      Unicode character or Javascript KeyEvent.key). See ${co}-K${cr} flag.
 
-      <command> is the command itself. It consists of the command name
+      <${cv}command${cr}> is the command itself. It consists of the command name
       and multiple (or none) arguments, all separated by whitespace.
 
   Special key names
-      space
-      sharp alias for #
-      plus alias for +
-      pgup alias for PageUp
-      pgdown alias for PageDown
-      up alias for ArrowUp
-      down alias for ArrowDown
-      left alias for ArrowLeft
-      right alias for ArrowRight
-      left_click for click0
-      middle_click for click1
-      right_click for click2
+      ${cl}space${cr}
+      ${cl}sharp${cr} alias for #
+      ${cl}plus${cr} alias for +
+      ${cl}pgup${cr} alias for PageUp
+      ${cl}pgdown${cr} alias for PageDown
+      ${cl}up${cr} alias for ArrowUp
+      ${cl}down${cr} alias for ArrowDown
+      ${cl}left${cr} alias for ArrowLeft
+      ${cl}right${cr} alias for ArrowRight
+      ${cl}left_click${cr} for click0
+      ${cl}middle_click${cr} for click1
+      ${cl}right_click${cr} for click2
 
       Note: aliases are insensitive case
 
   Commands
-      next [n=1]
-          Advance n images. A negative number goes back n images.
+      ${co}next${cr} [${cv}n${cr}=${cd}1${cr}]
+          Advance n images. A negative number goes back ${cv}n${cr} images.
 
-      prev [n=1]
-          Equivalent to next -n.
+      ${co}prev${cr} [${cv}n${cr}=${cd}1${cr}]
+          Equivalent to next -${cv}n${cr}.
 
-      next_chap [n=1]
-          Advance n directories. A negative number goes back n directories.
+      ${co}next_chap${cr} [${cv}n${cr}=${cd}1${cr}]
+          Advance n directories. A negative number goes back ${cv}n${cr} directories.
 
-      prev_chap [n=1]
-          Equivalent to next -n.
+      ${co}prev_chap${cr} [${cv}n${cr}=${cd}1${cr}]
+          Equivalent to next -${cv}n${cr}.
 
-      pgup [percent=100]
+      ${co}pgup${cr} [${cv}percent${cr}=${cd}100${cr}]
 
-      pgdown [percent=100]
+      ${co}pgdown${cr} [${cv}percent${cr}=${cd}100${cr}]
 
-      pgdown_or_next [percent=100] [pixel_distance=bottom_pixel]
+      ${co}pgdown_or_next${cr} [${cv}percent${cr}=${cd}100${cr}] [${cv}pixel_distance${cr}=${cd}\$bottom_pixel${cr}]
           Next image when at the bottom of the page, otherwise scroll down.
 
-      pgup_or_prev [percent=100]
+      ${co}pgup_or_prev${cr} [${cv}percent${cr}=${cd}100${cr}]
           Previous image when at the top of the page, otherwise scroll up.
 
-      goto [image_position]
+      ${co}goto${cr} [${cv}image_position${cr}]
           Opens a page selection window.
 
-          When 'image_position' is specified, the nth image is opened directly.
+          When '${cv}image_position${cr}' is specified, the nth image is opened directly.
           A negative number begins at the end and too large a number selects
           the last frame.
 
-      rotate <deg>
+      ${co}rotate${cr} <${cv}deg${cr}>
           Rotate an images.
 
-      newtab [{background|foreground|window}]
+      ${co}newtab${cr} [{${cl}background${cr}|${cl}foreground${cr}|${cl}window${cr}}]
           Open the current image in a background tab (default), foreground tab
           or new window.
 
@@ -244,45 +252,45 @@ help="
 
           window depends on browser options and may open a foreground tab.
 
-      mode {normal|double|normal_or_double|webtoon|all} [image_limit=0]
-          - normal: One image at a time.
-          - double: Once on 2, the commands pgdown_or_next/pgup_or_prev go to
+      ${co}mode${cr} {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_double${cr}|${cl}webtoon${cr}|${cl}all${cr}} [${cv}image_limit${cr}=${cd}0]
+          - ${cl}normal${cr}: One image at a time.
+          - ${cl}double${cr}: Once on 2, the commands ${co}pgdown_or_next${cr}/${co}pgup_or_prev${cr} go to
                     top/bottom of the page rather than go to the next/prev
                     image.
-          - normal_or_double: Use double page mode for images whose width is
+          - ${cl}normal_or_double${cr}: Use double page mode for images whose width is
                               greater than the height, otherwise use the normal
                               mode.
-          - webtoon: All images in a chapter are displayed one below the other.
-          - all: All images are displayed one below the other.
+          - ${cl}webtoon${cr}: All images in a chapter are displayed one below the other.
+          - ${cl}all${cr}: All images are displayed one below the other.
 
-          'image_limit' specifies the maximum number of images displayed per
-          page. 0 for no limit.
+          '${cv}image_limit${cr}' specifies the maximum number of images displayed per
+          page. ${cv}0${cr} for no limit.
 
-      info
+      ${co}info${cr}
           Show current image position.
 
-      auto_scroll [ms_delay=800]
+      ${co}auto_scroll${cr} [${cv}ms_delay${cr}=${cd}800${cr}]
           Start auto scroll with specific delay.
 
-      toggle_auto_scroll [ms_delay=800]
-          Resume or stop auto scroll. Equivalent to auto_scroll when not started.
+      ${co}toggle_auto_scroll${cr} [${cv}ms_delay${cr}=${cd}800${cr}]
+          Resume or stop auto scroll. Equivalent to ${co}auto_scroll${cr} when not started.
 
-      add_interval <ms_delay>
+      ${co}add_interval${cr} <${cv}ms_delay${cr}>
           Add delay of auto scroll. Delay can be negative.
 
-      set_bottom_pixel <pixel_distance>
+      ${co}set_bottom_pixel${cr} <${cv}pixel_distance${cr}>
           Number of pixels at the bottom of the page that can be skipped for
-          so that pgdown_or_next, auto_scroll and toggle_auto_scroll goes to
+          so that ${co}pgdown_or_next${cr}, ${co}auto_scroll${cr} and ${co}toggle_auto_scroll${cr} goes to
           the next image.
 
-          Default is 20.
+          Default is ${cd}20${cr}.
 
-      add_bottom_pixel <pixel_distance>
-          Add pixel_distance. See set_bottom_pixel.
+      ${co}add_bottom_pixel${cr} <${cv}pixel_distance${cr}>
+          Add ${cv}pixel_distance${cr}. See ${co}set_bottom_pixel${cr}.
 
-      trigger [ms_delay=0] <command>
-          Allows to trigger <command> when opening the page after <ms_delay>.
-          The keyboard shortcut is associated with <command>.
+      ${co}trigger${cr} [${cv}ms_delay${cr}=${cd}0${cr}] <${cv}command${cr}>
+          Allows to trigger <${cv}command${cr}> when opening the page after <${cv}ms_delay${cr}>.
+          The keyboard shortcut is associated with <${cv}command${cr}>.
 
           You can put a key that does not exist to make no association:
 
@@ -293,58 +301,58 @@ help="
             nokey trigger mode webtoon
             h mode webtoon
 
-      mouse {top|bottom|left|right|top_left|top_right|bottom_left|bottom_right} <command>
-          Execute <command> only when the mouse pointer is in a certain area.
+      ${co}mouse${cr} {${cl}top${cr}|${cl}bottom${cr}|${cl}left${cr}|${cl}right${cr}|${cl}top_left${cr}|${cl}top_right${cr}|${cl}bottom_left${cr}|${cl}bottom_right${cr}} <${cv}command${cr}>
+          Execute <${cv}command${cr}> only when the mouse pointer is in a certain area.
 
           Note: Only works with mouse shortcuts.
 
-      mouse_assistance
+      ${co}mouse_assistance${cr}
           Enable or disable the display of mouse area.
 
-      restrict {normal|double|normal_or_double|webtoon|all} <command>
+      ${co}restrict${cr} {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_double${cr}|${cl}webtoon${cr}|${cl}all${cr}} <${cv}command${cr}>
           Enable a shortcut for a specific mode.
 
-      shortcuts
+      ${co}shortcuts${cr}
           Show shortcuts.
 
-      open
+      ${co}open${cr}
           Open directories.
 
-      search [{chapter|image}
-             |{then_by_img}
-             |{case_sensitive|case_insensitive|uppercase_only}
-             |{accent_sensitive|accent_insensitive|accent_only}
-             |{word|fuzzy|text|regex}
+      ${co}search${cr} [{${cl}chapter${cr}|${cl}image${cr}}
+             |{${cl}then_by_img${cr}}
+             |{${cl}case_sensitive${cr}|${cl}case_insensitive${cr}|${cl}uppercase_only${cr}}
+             |{${cl}accent_sensitive${cr}|${cl}accent_insensitive${cr}|${cl}accent_only${cr}}
+             |{${cl}word${cr}|${cl}fuzzy${cr}|${cl}text${cr}|${cl}regex${cr}}
              ]...
           Show a finder.
-          Default is chapter, uppercase_only, accent_only and word.
+          Default are ${cd}chapter${cr}, ${cd}uppercase_only${cr}, ${cd}accent_only${cr} and ${cd}word${cr}.
 
-          - chapter, img:
+          - ${cl}chapter${cr}, ${cl}img${cr}:
               Indicates from which part the urls will be cut.
 
-          - then_by_img:
+          - ${cl}then_by_img${cr}:
               Activate recursive filters. for example, after selecting a chapter,
               a new filter can on the image of it.
 
-          - case_sensitive, case_insensitive, uppercase_only:
+          - ${cl}case_sensitive${cr}, ${cl}case_insensitive${cr}, ${cl}uppercase_only${cr}:
               Indicates whether upper and lower case letters should be
               considered the same.
-              'uppercase_only' searches case insensitive for lowercase letters
+              '${cl}uppercase_only${cr}' searches case insensitive for lowercase letters
               and case sensitive for uppercase letters. Does not work with
               regex mode.
 
-          - accent_sensitive, accent_insensitive, accent_only:
+          - ${cl}accent_sensitive${cr}, ${cl}accent_insensitive${cr}, ${cl}accent_only${cr}:
               Indicates whether accents should be ignored.
-              'accent_only' ignore accent for unaccented letters and match
+              '${cl}accent_only${cr}' ignore accent for unaccented letters and match
               accent for accented letters. Does not work with regex mode.
 
-          - word, fuzzy, text, regex:
+          - ${cl}word${cr}, ${cl}fuzzy${cr}, ${cl}text${cr}, ${cl}regex${cr}:
               Algorithm used for the filter.
 
-      save
+      ${co}save${cr}
           Save position and mode.
 
-      load
+      ${co}load${cr}
           Load saved position and mode.
 
 
@@ -353,6 +361,7 @@ help="
        License MIT
        https://github.com/jonathanpoelen/manga-viewer
 "
+}
 
 declare -A fns=(
   [next]=1
@@ -763,17 +772,17 @@ cmd_load() {
 
 minihelp()
 {
-  echo "$usage"
+  usage
   echo
-  echo "input.conf path: $inputconf"
+  echo "input.conf path: $cd$inputconf$cr"
   if [[ ! -f "$inputconf" ]]; then
-    echo '  But not found, a default configuration will be used (see -p).'
+    echo "  But not found, a default configuration will be used (see $co-p$cr)."
   fi
   echo
-  echo 'Use -a for create a view without directory. Directories to be loaded'
+  echo "Use $co-a$cr for create a view without directory. Directories to be loaded"
   echo 'will be asked when opening the html file.'
   echo
-  echo 'Use -h for more information.'
+  echo "Use $co-h$cr for more information."
 }
 
 typeset -i standalone=0 sort=1 hasinput=0
@@ -808,9 +817,7 @@ while getopts 'aAsSnpKi:c:e:t:f:x:m:h?' opt ; do
        exit;;
     a) standalone=1;;
     A) standalone=2;;
-    h) echo "$usage";
-       echo "$help"
-       exit;;
+    h) usage; help; exit;;
     K) echo '<!DOCTYPE html>
 <html><head><title>Key viewer</title><meta charset="Utf-8"/></head>
 <noscript><p>Javascript must be enabled</p></noscript>
@@ -831,7 +838,7 @@ window.addEventListener("click", mouseEvent, true);
 window.addEventListener("auxclick", mouseEvent, true);
 </script></body></html>';
        exit;;
-    ?) minihelp;
+    ?) minihelp >&2;
        exit 2;;
   esac
 done
