@@ -2911,7 +2911,7 @@ const showSearcher = (function() {
     setSelectedIndex(searchBy, SEARCH_BY_CHAPTER, SEARCH_BY_MASK);
     setSelectedIndex(searchCaseSensitivityElement, SEARCH_CASE_SENSITIVE, SEARCH_CASE_SENSITIVITY_MASK);
     setSelectedIndex(searchAccentSensitivityElement, SEARCH_ACCENT_SENSITIVE, SEARCH_ACCENT_SENSITIVITY_MASK);
-    setSelectedIndex(searchModeElement, SEARCH_MODE_FUZZY, SEARCH_MODE_MASK);
+    setSelectedIndex(searchModeElement, SEARCH_MODE_WORD, SEARCH_MODE_MASK);
     initOptionsLock = false;
   };
 
