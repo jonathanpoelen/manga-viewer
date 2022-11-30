@@ -2343,7 +2343,8 @@ const showSearcher = (function() {
         index: 0,
         length: 0,
         previousMatch: previousMatch,
-        elem, fragments: [],
+        elem,
+        fragments: [],
       };
     }
   };
