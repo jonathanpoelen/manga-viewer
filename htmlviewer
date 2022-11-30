@@ -252,7 +252,7 @@ help() {
 
           window depends on browser options and may open a foreground tab.
 
-      ${co}mode${cr} {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_double${cr}|${cl}webtoon${cr}|${cl}all${cr}} [${cv}image_limit${cr}=${cd}0]
+      ${co}mode${cr} {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_double${cr}|${cl}webtoon${cr}|${cl}all${cr}} [${cv}image_limit${cr}=${cd}0${cr}]
           - ${cl}normal${cr}: One image at a time.
           - ${cl}double${cr}: Once on 2, the commands ${co}pgdown_or_next${cr}/${co}pgup_or_prev${cr} go to
                     top/bottom of the page rather than go to the next/prev
