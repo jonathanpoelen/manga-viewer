@@ -516,10 +516,10 @@ const normalOrDoublePageMode = {
 
 const appendImages = function(elem, urls, startIndex) {
   const nUrl = urls.length;
-  for (let i = 0; i < nUrl; ++i, ++startIndex) {
+  for (let i = 0; i < nUrl; ++i) {
     const img = document.createElement("img");
     setImage(img, urls[i]);
-    img.dataset.i = startIndex;
+    img.dataset.i = i + startIndex;
     elem.appendChild(img);
   }
 };
@@ -1033,9 +1033,8 @@ const showLoader = (function() {
     }
 
     const filenameDatas = [];
-    for (let i = 0; i < files.length; ++i) {
+    for (const file of files) {
       const parts = [];
-      const file = files[i];
       const path = file.webkitRelativePath;
       // split by string and number
       for (const m of path.matchAll(regSplit)) {
@@ -1147,23 +1146,23 @@ const showSearcher = (function() {
 
   const removeAccents = function(str) {
     // remove diacritics
-    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return str.normalize("NFD").replace(/\p{Mn}/gu, "");
   };
 
-  const createDelegateSearcher = function(options, str, finder) {
+  const escapeRegex = function(str) {
+    return str.replace(/[\\^$()\[\{?*+]/g, (m) => "\\" + m);
+  };
+
+  const optionsToPatternAndStrKey = function(options, pattern) {
     switch (options & (SEARCH_CASE_SENSITIVITY_MASK | SEARCH_ACCENT_SENSITIVITY_MASK)) {
       case SEARCH_CASE_SENSITIVE   | SEARCH_ACCENT_SENSITIVE:
-        return function(si) { return finder(str, si.str, si); };
+        return [pattern, "str"];
       case SEARCH_CASE_SENSITIVE   | SEARCH_ACCENT_INSENSITIVE:
-        str = removeAccents(str);
-        return function(si) { return finder(str, si.unaccentedStr, si); };
+        return [removeAccents(pattern), "unaccentedStr"];
       case SEARCH_CASE_INSENSITIVE | SEARCH_ACCENT_SENSITIVE:
-        str = str.toUpperCase();
-        return function(si) { return finder(str, si.upperStr, si); };
+        return [pattern.toUpperCase(), "upperStr"];
       case SEARCH_CASE_INSENSITIVE | SEARCH_ACCENT_INSENSITIVE:
-        str = str.toUpperCase();
-        str = removeAccents(str);
-        return function(si) { return finder(str, si.unaccentedUpperStr, si); };
+        return [removeAccents(pattern.toUpperCase()), "unaccentedUpperStr"];
     }
   };
 
@@ -1180,131 +1179,70 @@ const showSearcher = (function() {
       options |= (accent === c) ? SEARCH_ACCENT_INSENSITIVE : SEARCH_ACCENT_SENSITIVE;
     }
 
-    return createDelegateSearcher(options, c, function(c, str, si) {
-      si.lengthFound = 1;
-      return str.indexOf(c, si.lastIndex+1);
-    });
-  };
-
-  const textIndexOf = function(searchValue, str, si) {
-    const index = si.lastIndex + si.lengthFound + (si.lastIndex === -1);
-    si.lengthFound = searchValue.length;
-    return str.indexOf(searchValue, index);
-  };
-
-  const textStartsWith = function(searchValue, str, si) {
-    const index = si.lastIndex + si.lengthFound;
-    si.lengthFound += searchValue.length;
-    return str.startsWith(searchValue, index) ? si.lastIndex : -1;
-  };
-
-  const createTextSearcher = function(options, str, extendStr) {
-    const searcher = createDelegateSearcher(options, str, extendStr ? textStartsWith : textIndexOf);
-    if (searcher) {
-      return searcher;
-    }
-
-    // options contains SEARCH_UPPERCASE_ONLY and/or SEARCH_ACCENT_ONLY
-
-    const caseSensitivity = (options & SEARCH_CASE_SENSITIVITY_MASK);
-    const accentSensitivity = (options & SEARCH_ACCENT_SENSITIVITY_MASK);
-
-    const upper = str.toUpperCase();
-    const unaccented = removeAccents(upper);
-
-    const getState = function(i) {
-      return ((upper[i] === str[i])
-              ? ((caseSensitivity === SEARCH_UPPERCASE_ONLY)
-                 ? SEARCH_CASE_SENSITIVE
-                 : caseSensitivity
-                )
-              : ((caseSensitivity === SEARCH_UPPERCASE_ONLY)
-                 ? SEARCH_CASE_INSENSITIVE
-                 : caseSensitivity
-                )
-             )
-           | ((unaccented[i] === upper[i])
-              ? ((accentSensitivity === SEARCH_ACCENT_ONLY)
-                 ? SEARCH_ACCENT_INSENSITIVE
-                 : accentSensitivity
-                )
-              : ((accentSensitivity === SEARCH_ACCENT_ONLY)
-                 ? SEARCH_ACCENT_SENSITIVE
-                 : accentSensitivity
-                )
-             )
+    const [pattern, strKey] = optionsToPatternAndStrKey(options, c);
+    return (si) => {
+      si.length = 1;
+      return si[strKey].indexOf(pattern, si.index+1);
     };
-
-    const searchers = [];
-    // split chain by state
-    {
-      const len = str.length;
-      let start = 0;
-      let state = getState(0);
-      let newState;
-      let i;
-
-      const push = function() {
-        searchers.push(createDelegateSearcher(state,
-                                              str.substring(start, i),
-                                              extendStr ? textStartsWith : textIndexOf));
-        extendStr = false;
-      };
-
-      for (i = 1; i < len; ++i) {
-        newState = getState(i);
-        if (newState !== state) {
-          push();
-          state = newState;
-          start = i;
-        }
-      }
-      push();
-    }
-
-    return function(si) {
-      let index = -1;
-      for (const searcher of searchers) {
-        index = searcher(si);
-        if (index === -1) {
-          return -1;
-        }
-      }
-      return index;
-    }
   };
 
-  const createWordSearchers = function(options, str, i) {
-    const searchers = [];
-    let startedWord = (i === 0 || str[i - 1] === " ");
-
-    while (true) {
-      while (i < str.length && str[i] === " ") {
-        ++i;
-        startedWord = true;
+  const createTextSearcher = function(options, str, afterLastIndex) {
+    if ((options & (SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY)) === 0) {
+      const [pattern, strKey] = optionsToPatternAndStrKey(options, str);
+      return (si) => {
+        const index = si.index + (afterLastIndex ? si.length : 0);
+        si.length = pattern.length;
+        return si[strKey].indexOf(pattern, index);
       }
-
-      if (i === str.length) {
-        break;
-      }
-
-      const endWord = str.indexOf(" ", i);
-      const word = str.substring(i, endWord === -1 ? undefined : endWord);
-      searchers.push(createTextSearcher(options, word, !startedWord));
-
-      if (endWord === -1) {
-        break;
-      }
-      i = endWord;
     }
 
-    return searchers;
+    const flags = (options & SEARCH_CASE_INSENSITIVE) ? "gi" : "g";
+    let regex;
+    let strKey = "nfdStr";
+
+    if (options & SEARCH_ACCENT_ONLY) {
+      // optional accent for each letter
+      const toReg = (options & SEARCH_UPPERCASE_ONLY)
+        ? (m) => (m === m.toUpperCase() ? m : `[${m}${m.toUpperCase()}]`) + "\\p{Mn}?"
+        : (m) => m + "\\p{Mn}?";
+
+      let pattern = "";
+      for (const m of escapeRegex(str.normalize("NFD"))
+        // Mn => Nonspacing_Mark (contains accents only?)
+        .matchAll(/([^\p{Mn}]+)[\p{Mn}]?|[\p{Mn}]/gu)
+      ) {
+        const reg = m[1];
+        const accent = m[0].substr(reg.length);
+        pattern += reg.replace(/\p{L}/gu, toReg) + m[0].substr(reg.length);
+      }
+
+      regex = new RegExp(pattern, flags + "u");
+    }
+    else {
+      const pattern = escapeRegex(str)
+        // lower letter as lower and upper letter
+        .replace(/\p{Ll}/gu, (m) => `[${m}${m.toUpperCase()}]`);
+
+      const insensitiveAccent = (options & SEARCH_ACCENT_INSENSITIVE);
+      regex = new RegExp(insensitiveAccent ? removeAccents(pattern) : pattern, flags);
+      strKey = insensitiveAccent ? "unaccentedStr" : "str";
+    }
+
+    return (si) => {
+      regex.lastIndex = si.index + (afterLastIndex ? si.length : 0);
+      const m = regex.exec(si[strKey]);
+      if (m) {
+        si.length = m[0].length;
+        return m.index;
+      }
+      return -1;
+    };
   };
 
   const searchRegIndex = function(str, si, reg) {
     const m = str.match(reg);
     if (m) {
-      si.lengthFound = m[0].length;
+      si.length = m[0].length;
       return m.index;
     }
     return -1;
@@ -1314,12 +1252,11 @@ const showSearcher = (function() {
     const isCaseInsensitive = options & (SEARCH_UPPERCASE_ONLY | SEARCH_CASE_INSENSITIVE);
     const isAccentInsensitive = options & (SEARCH_ACCENT_ONLY | SEARCH_ACCENT_INSENSITIVE);
 
-    const reg = new RegExp(isAccentInsensitive ? removeAccents(pattern) : pattern,
-                           isCaseInsensitive ? "i" : "");
-    if (isAccentInsensitive) {
-      return function(si) { return searchRegIndex(si.unaccentedStr, si, reg); };
-    }
-    return function(si) { return searchRegIndex(si.str, si, reg); };
+    const regex = new RegExp(isAccentInsensitive ? removeAccents(pattern) : pattern,
+                             isCaseInsensitive ? "i" : "");
+    return isAccentInsensitive
+      ? (si) => searchRegIndex(si.unaccentedStr, si, regex)
+      : (si) => searchRegIndex(si.str, si, regex);
   };
 
   const filter = function(datas, searcher) {
@@ -1327,8 +1264,8 @@ const showSearcher = (function() {
     for (const si of datas) {
       const index = searcher(si);
       if (index !== -1) {
-        si.lastIndex = index;
-        si.fragments.push({index, lengthFound: si.lengthFound});
+        si.index = index;
+        si.fragments.push({index, length: si.length});
         datas[newLength] = si;
         ++newLength;
       }
@@ -1352,25 +1289,44 @@ const showSearcher = (function() {
   let strings;
   let results;
   let previousText;
+  let previousWordIndex;
   let activeElement;
   let options;
+  let unaccentedStrCaches;
+  let upperStrCaches;
+  let unaccentedUpperStrCaches;
+  let nfdStrCaches;
 
   const resetDOM = function() {
     removeChildren(searchResultListElement);
+    const len = strings.length;
+    const icache = (options & SEARCH_BY_CHAPTER) ? 0 : 1;
+    const unaccentedStrs = unaccentedStrCaches[icache];
+    const upperStrs = upperStrCaches[icache];
+    const unaccentedUpperStrs = unaccentedUpperStrCaches[icache];
+    const nfdStrs = nfdStrCaches[icache];
 
     // create results and DOM elements
-    const len = strings.length;
     results = new Array(len);
+    const previousMatch = (options & SEARCH_MODE_WORD) ? {index:0, lastIndex:0} : 0;
     for (let i = 0; i < len; ++i) {
       const str = strings[i];
       const elem = searchResultListElement.appendChild(document.createElement("a"));
       elem.appendChild(document.createTextNode(str));
       elem.setAttribute("href", "#");
       elem.dataset.index = i;
-      const unaccentedStr = removeAccents(str);
-      const upperStr = str.toUpperCase();
-      const unaccentedUpperStr = unaccentedStr.toUpperCase();
-      results[i] = {str, upperStr, unaccentedStr, unaccentedUpperStr, lastIndex: -1, lengthFound: 0, elem, fragments: []};
+      results[i] = {
+        str,
+        upperStr: upperStrs[i],
+        unaccentedStr: unaccentedStrs[i],
+        unaccentedUpperStr: unaccentedUpperStrs[i],
+        nfdStr: nfdStrs[i],
+        index: 0,
+        length: 0,
+        previousMatch: previousMatch,
+        elem,
+        fragments: [],
+      };
     }
   };
 
@@ -1378,6 +1334,7 @@ const showSearcher = (function() {
     resetDOM();
     // state for updateResults()
     previousText = "";
+    previousWordIndex = 0;
   };
 
   const setActiveSearch = function(i) {
@@ -1393,76 +1350,159 @@ const showSearcher = (function() {
     return (options & SEARCH_BY_CHAPTER) ? chapterByIndexes[ifile].ichap : ifile;
   };
 
-  const updateFragmentsDisplay = function() {
+  const getDisplayStrKey = function(mode) {
+    mode |= SEARCH_ACCENT_ONLY;
+    return (options & mode === mode) ? "nfdStr" : "str";
+  }
+
+  // merge fragments [idx: 1, len:1][idx: 2, len:1] = [idx: 1, len:2]
+  const mergeFragments = function(fragments) {
+    const fragLen = fragments.length;
+    let prev = fragments[0];
+    let newFragLen = 1;
+    for (let i = 1; i < fragLen; ++i) {
+      const fragment = fragments[i];
+      if (prev.index + prev.length === fragment.index) {
+        prev.length += fragment.length;
+      }
+      else {
+        fragments[newFragLen] = fragment;
+        prev = fragment;
+        ++newFragLen;
+      }
+    }
+    return newFragLen;
+  };
+
+  const updateFuzzyDisplay = function() {
     removeChildren(searchResultListElement);
-    for (let i = 0; i < results.length; ++i) {
-      const result = results[i];
+
+    for (const result of results) {
       const fragments = result.fragments;
       result.fragments = [];
 
-      let ifrag = 0;
+      const fragLen = mergeFragments(fragments);
+      const str = result.str;
+      const elem = result.elem;
 
-      // merge fragments [idx: 1, len:1][idx: 2, len:1] = [idx: 1, len:2]
-      {
-        const fragLen = fragments.length;
-        for (let i = 1; i < fragLen; ++i) {
-          const prev = fragments[ifrag];
-          const fragment = fragments[i];
-          if (prev.index + prev.lengthFound === fragment.index) {
-            prev.lengthFound += fragment.lengthFound;
-          }
-          else {
-            ++ifrag;
-          }
+      let i = 0
+      let lastIndex = result.previousMatch;
+
+      // remove text element
+      elem.lastChild.remove();
+      let lastElem = elem.lastChild;
+      if (lastElem) {
+        const fragment = fragments[0];
+        const index = fragment.index;
+        // append to last <b>
+        if (index === lastIndex) {
+          lastIndex += fragment.length;
+          const textContent = str.substring(index, lastIndex);
+          lastElem.firstChild.textContent += textContent;
+          ++i;
         }
       }
 
-      const elem = result.elem;
-      const str = result.str;
-
-      // add first fragment to previous element
-      const lastElem = elem.lastChild;
-      if (lastElem.previousSibling?.firstChild && str.length - lastElem.textContent.length >= fragments[0].index) {
-        const fragment = fragments[0];
-        const delta = str.length - lastElem.textContent.length - fragment.index;
-        const startIndex = fragment.index + delta;
-        const endIndex = fragment.index + fragment.lengthFound;
-        lastElem.previousSibling.firstChild.textContent += str.substring(startIndex, endIndex);
-        lastElem.textContent = str.substring(endIndex);
-        ++ifrag;
-      }
-
-      const fragLen = fragments.length;
-      for (; ifrag < fragLen; ++ifrag) {
-        const fragment = fragments[ifrag];
-        const lastElem = elem.lastChild;
-        const strPart = lastElem.textContent;
-        const splitIndex1 = fragment.index - (str.length - strPart.length);
-        const splitIndex2 = splitIndex1 + fragment.lengthFound;
+      for (; i < fragLen; ++i) {
+        const fragment = fragments[i];
+        const index = fragment.index;
+        elem.appendChild(document.createTextNode(str.substring(lastIndex, index)));
+        lastIndex = index + fragment.length;
+        const textContent = str.substring(index, lastIndex);
         const b = elem.appendChild(document.createElement("b"));
-        b.textContent = strPart.substring(splitIndex1, splitIndex2);
-        elem.appendChild(document.createTextNode(strPart.substring(splitIndex2)));
-        lastElem.textContent = strPart.substring(0, splitIndex1);
+        b.textContent = textContent;
       }
+
+      // add final unmatch text
+      if (lastIndex !== str.length) {
+        elem.appendChild(document.createTextNode(str.substring(lastIndex)));
+      }
+
+      result.previousMatch = lastIndex;
       searchResultListElement.appendChild(elem);
     }
-  }
+  };
+
+  const updateFragmentsDisplay = function(removeLastMatch) {
+    const strKey = getDisplayStrKey(SEARCH_MODE_WORD);
+
+    removeChildren(searchResultListElement);
+
+    for (const result of results) {
+      const fragments = result.fragments;
+      result.fragments = [];
+
+      const fragLen = mergeFragments(fragments);
+      const str = result[strKey];
+      const elem = result.elem;
+
+      let previousIndex = result.previousMatch.index;
+
+      // (1)  [TEXT]                   (first call)
+      // (2)  [TEXT][Fragment]         (impossible)
+      // (3)        [Fragment]         (impossible)
+      // (4)        [Fragment][TEXT]
+      // (5)  [TEXT][Fragment][TEXT]
+      elem.lastChild.remove();
+      let lastElem = elem.lastChild;
+      if (removeLastMatch) {
+        // (4) (5)
+        if (lastElem) {
+          // (5)
+          if (lastElem.previousSibling) {
+            lastElem.previousSibling.remove();
+          }
+          lastElem.remove();
+        }
+      }
+      else if (lastElem) {
+        previousIndex = result.previousMatch.lastIndex;
+      }
+
+      let lastIndex = previousIndex;
+      let i = 0;
+
+      while (true) {
+        const fragment = fragments[i];
+        const index = fragment.index;
+        elem.appendChild(document.createTextNode(str.substring(lastIndex, index)));
+        lastIndex = index + fragment.length;
+        const textContent = str.substring(index, lastIndex);
+        const b = elem.appendChild(document.createElement("b"));
+        b.textContent = textContent;
+
+        if (++i === fragLen) {
+          break;
+        }
+        previousIndex = lastIndex;
+      }
+
+      // add final unmatch text
+      if (lastIndex !== str.length) {
+        elem.appendChild(document.createTextNode(str.substring(lastIndex)));
+      }
+
+      result.previousMatch = {index: previousIndex, lastIndex: lastIndex};
+
+      searchResultListElement.appendChild(elem);
+    }
+  };
 
   const updateRangeDisplay = function() {
+    const strKey = getDisplayStrKey(SEARCH_MODE_TEXT);
     removeChildren(searchResultListElement);
-    for (let i = 0; i < results.length; ++i) {
-      const result = results[i];
+    for (const result of results) {
       const elem = result.elem;
-      const str = result.str;
-      const index = result.lastIndex;
-      const len = result.lengthFound;
+      const str = result[strKey];
+      const index = result.index;
+      const len = result.length;
       removeChildren(elem);
       elem.appendChild(document.createTextNode(str.substr(0, index)));
       elem.appendChild(document.createElement("b")).textContent = str.substr(index, len);
       elem.appendChild(document.createTextNode(str.substr(index+len)));
       searchResultListElement.appendChild(elem);
     }
-  }
+  };
 
   const updateResultScroll = function() {
     const firstElementChild = searchResultList.firstElementChild;
@@ -1498,26 +1538,61 @@ const showSearcher = (function() {
         for (let i = previousText.length; i < text.length; ++i) {
           filter(results, createFuzzySearcher(options, text[i]));
         }
-        updateFragmentsDisplay();
+        updateFuzzyDisplay();
         break;
 
       case SEARCH_MODE_WORD:
-        const searchers = createWordSearchers(options, text, previousText.length);
-        if (searchers.length !== 0) {
-          for (const searcher of searchers) {
-            filter(results, searcher);
-          }
-          updateFragmentsDisplay();
+        // ignore word separator
+        if (text[previousText.length] === " ") {
+          previousText = text;
+          return;
         }
+
+        let iword = previousWordIndex;
+        let removeLastMatch = true;
+        // previous character is a word separator
+        if (text[previousText.length - 1] === " ") {
+          iword = previousText.length - 1;
+          removeLastMatch = false;
+        }
+        let afterLastIndex = false;
+        let update = false;
+
+        while (true) {
+          // consume spaces
+          if (text[iword] === " ") {
+            do {
+              ++iword;
+            } while (text[iword] === " ");
+
+            if (iword >= text.length) {
+              break;
+            }
+            previousWordIndex = iword;
+            afterLastIndex = true;
+          }
+
+          update = true;
+          const endIndex = text.indexOf(" ", iword);
+          const word = text.substring(iword, (endIndex === -1) ? text.length : endIndex);
+          filter(results, createTextSearcher(options, word, afterLastIndex));
+          if (endIndex === -1) {
+            break;
+          }
+          iword = endIndex;
+        }
+
+        if (!update) {
+          previousText = text;
+          return;
+        }
+
+        updateFragmentsDisplay(removeLastMatch);
         break;
 
       case SEARCH_MODE_TEXT:
-        if (previousText.length !== 0) {
-          filter(results, createTextSearcher(options, text.substr(previousText.length), true));
-        }
-        else {
-          filter(results, createTextSearcher(options, text, false));
-        }
+        const pattern = text.substr(previous.length);
+        filter(results, createTextSearcher(options, pattern));
         updateRangeDisplay();
         break;
 
@@ -1719,6 +1794,22 @@ const showSearcher = (function() {
     else {
       stringByImages = strings;
     }
+
+    const icache = (options & SEARCH_BY_CHAPTER) ? 0 : 1;
+    // initialize string caches
+    if (!unaccentedStrCaches[icache]) {
+      const unaccentedStrs = unaccentedStrCaches[icache] = new Array(stringRefsLen);
+      const upperStrs = upperStrCaches[icache] = new Array(stringRefsLen);
+      const unaccentedUpperStrs = unaccentedUpperStrCaches[icache] = new Array(stringRefsLen);
+      const nfdStrs = nfdStrCaches[icache] = new Array(stringRefsLen);
+      for (let i = 0; i < stringRefsLen; ++i) {
+        const str = strings[i];
+        unaccentedStrs[i] = removeAccents(str);
+        upperStrs[i] = str.toUpperCase();
+        unaccentedUpperStrs[i] = unaccentedStrs[i].toUpperCase();
+        nfdStrs[i] = str.normalize("NFD");
+      }
+    }
   };
 
   const updateStrings = function() {
@@ -1801,7 +1892,7 @@ const showSearcher = (function() {
     setSelectedIndex(searchBy, SEARCH_BY_CHAPTER, SEARCH_BY_MASK);
     setSelectedIndex(searchCaseSensitivityElement, SEARCH_CASE_SENSITIVE, SEARCH_CASE_SENSITIVITY_MASK);
     setSelectedIndex(searchAccentSensitivityElement, SEARCH_ACCENT_SENSITIVE, SEARCH_ACCENT_SENSITIVITY_MASK);
-    setSelectedIndex(searchModeElement, SEARCH_MODE_FUZZY, SEARCH_MODE_MASK);
+    setSelectedIndex(searchModeElement, SEARCH_MODE_WORD, SEARCH_MODE_MASK);
     initOptionsLock = false;
   };
 
@@ -1834,7 +1925,12 @@ const showSearcher = (function() {
     stringByChapters = null;
     stringByImages = null;
     options = 0;
+    unaccentedStrCaches = [null, null];
+    upperStrCaches = [null, null];
+    unaccentedUpperStrCaches = [null, null];
+    nfdStrCaches = [null, null];
   };
+  searcher.reset();
   return searcher;
 }());
 
