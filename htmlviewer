@@ -2176,7 +2176,7 @@ const showSearcher = (function() {
   };
 
   const escapeRegex = function(str) {
-    return str.replace(/[\\^$()\[\{?*+]/g, (m) => "\\" + m);
+    return str.replace(/[\\^$()\[\{?*+.]/g, (m) => "\\" + m);
   };
 
   const optionsToPatternAndStrKey = function(options, pattern) {
