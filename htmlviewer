@@ -2567,8 +2567,17 @@ const showSearcher = (function() {
       case SEARCH_MODE_WORD:
         // ignore word separator
         if (text[previousText.length] === " ") {
-          previousText = text;
-          return;
+          // consume spaces
+          let i = previousText.length + 1;
+          while (text[i] === " ") {
+            ++i;
+          }
+
+          // contains only spaces
+          if (i === text.length) {
+            previousText = text;
+            return;
+          }
         }
 
         let iword = previousWordIndex;
