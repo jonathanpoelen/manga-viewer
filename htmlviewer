@@ -87,17 +87,17 @@ config="${XDG_CONFIG_DIRS:-${XDG_DATA_HOME:-$HOME}/.config}"/htmlviewer
 inputconf="$config"/input.conf
 triggered=''
 
-co=$'\x1b[31m'
-cv=$'\x1b[32m'
-cl=$'\x1b[34m'
-cd=$'\x1b[37m'
-cr=$'\x1b[m'
+co=$'\x1b[31m'  # option name
+cv=$'\x1b[32m'  # parameter name (cf. <xxxx>)
+cl=$'\x1b[34m'  # list of parameter values (cf. {xxx|yyy})
+cd=$'\x1b[37m'  # default value
+cr=$'\x1b[m'    # reset color
 usage() {
   echo "Generate a html viewer file
 
-  htmlviewer [$co-a$cr|$co-A$cr] [$co-n$cr] [$co-s$cr] [$co-S$cr] [$co-c$cr <${cv}command$cr>] [$co-e$cr <${cv}html$cr>] [$co-f$cr <${cv}filename$cr>]
-             [$co-i$cr <${cv}filename$cr>] [$co-m$cr {${cl}normal$cr|${cl}double$cr|${cl}normal_or_doube$cr|${cl}webtoon$cr|${cl}all$cr}]
-             [$co-t$cr <${cv}title$cr>] [$co-x$cr <${cv}pixel_distance$cr>] directory...
+  htmlviewer [$co-a$cr|$co-A$cr] [$co-n$cr] [$co-s$cr] [$co-S$cr] [$co-c$cr <${cv}command${cr}>] [$co-e$cr <${cv}html${cr}>] [$co-f$cr <${cv}filename${cr}>]
+             [$co-i$cr <${cv}filename${cr}>] [$co-m$cr {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_doube${cr}|${cl}webtoon${cr}|${cl}all${cr}}]
+             [$co-t$cr <${cv}title${cr}>] [$co-x$cr <${cv}pixel_distance${cr}>] directory...
   htmlviewer $co-p$cr
   htmlviewer $co-K$cr
   htmlviewer $co-h$cr"
@@ -358,7 +358,7 @@ help() {
 
   COPYRIGHT
        By Jonathan Poelen
-       License MIT
+       MIT License
        https://github.com/jonathanpoelen/manga-viewer
 "
 }
