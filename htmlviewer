@@ -2322,11 +2322,15 @@ const showSearcher = (function() {
   let upperStrCaches;
   let unaccentedUpperStrCaches;
   let nfdStrCaches;
+  let icache = 0;
 
-  const resetDOM = function() {
+  const resetState = function() {
+    // state for updateResults()
+    previousText = "";
+    previousWordIndex = 0;
+
     removeChildren(searchResultListElement);
     const len = strings.length;
-    const icache = (options & SEARCH_BY_CHAPTER) ? 0 : 1;
     const unaccentedStrs = unaccentedStrCaches[icache];
     const upperStrs = upperStrCaches[icache];
     const unaccentedUpperStrs = unaccentedUpperStrCaches[icache];
@@ -2354,13 +2358,6 @@ const showSearcher = (function() {
         fragments: [],
       };
     }
-  };
-
-  const resetState = function() {
-    resetDOM();
-    // state for updateResults()
-    previousText = "";
-    previousWordIndex = 0;
   };
 
   const setActiveSearch = function(i) {
@@ -2787,8 +2784,25 @@ const showSearcher = (function() {
   let stringByChapters;
   let stringByImages;
 
+  const initStrCaches = function() {
+    // initialize string caches
+    const len = strings.length;
+    const unaccentedStrs = unaccentedStrCaches[icache] = new Array(len);
+    const upperStrs = upperStrCaches[icache] = new Array(len);
+    const unaccentedUpperStrs = unaccentedUpperStrCaches[icache] = new Array(len);
+    const nfdStrs = nfdStrCaches[icache] = new Array(len);
+    for (let i = 0; i < len; ++i) {
+      const str = strings[i];
+      unaccentedStrs[i] = removeAccents(str);
+      upperStrs[i] = str.toUpperCase();
+      unaccentedUpperStrs[i] = unaccentedStrs[i].toUpperCase();
+      nfdStrs[i] = str.normalize("NFD");
+    }
+  }
+
   const initStrings = function() {
     strings = (options & SEARCH_BY_CHAPTER) ? stringByChapters : stringByImages;
+    icache = (options & SEARCH_BY_CHAPTER) ? 0 : 1;
     if (strings) {
       return;
     }
@@ -2821,20 +2835,8 @@ const showSearcher = (function() {
       stringByImages = strings;
     }
 
-    const icache = (options & SEARCH_BY_CHAPTER) ? 0 : 1;
-    // initialize string caches
     if (!unaccentedStrCaches[icache]) {
-      const unaccentedStrs = unaccentedStrCaches[icache] = new Array(stringRefsLen);
-      const upperStrs = upperStrCaches[icache] = new Array(stringRefsLen);
-      const unaccentedUpperStrs = unaccentedUpperStrCaches[icache] = new Array(stringRefsLen);
-      const nfdStrs = nfdStrCaches[icache] = new Array(stringRefsLen);
-      for (let i = 0; i < stringRefsLen; ++i) {
-        const str = strings[i];
-        unaccentedStrs[i] = removeAccents(str);
-        upperStrs[i] = str.toUpperCase();
-        unaccentedUpperStrs[i] = unaccentedStrs[i].toUpperCase();
-        nfdStrs[i] = str.normalize("NFD");
-      }
+      initStrCaches();
     }
   };
 
@@ -2858,6 +2860,8 @@ const showSearcher = (function() {
       const idx = filename.lastIndexOf("/");
       strings[i] = (idx === -1) ? filename : filename.substr(idx + 1);
     }
+    icache = 2;
+    initStrCaches();
   };
 
   let initOptionsLock = false;
@@ -2951,10 +2955,10 @@ const showSearcher = (function() {
     stringByChapters = null;
     stringByImages = null;
     options = 0;
-    unaccentedStrCaches = [null, null];
-    upperStrCaches = [null, null];
-    unaccentedUpperStrCaches = [null, null];
-    nfdStrCaches = [null, null];
+    unaccentedStrCaches = [null, null, null];
+    upperStrCaches = [null, null, null];
+    unaccentedUpperStrCaches = [null, null, null];
+    nfdStrCaches = [null, null, null];
   };
   searcher.reset();
   return searcher;
