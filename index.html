@@ -2132,10 +2132,10 @@ const createModActions = function(shortcuts) {
   return createActions(shortcuts, actionsByKeys, Array.from(globalActionsByClicks));
 };
 
-allMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
+webtoonMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
 {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
 ]);
-webtoonMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
+allMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
 {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
 ]);
 
