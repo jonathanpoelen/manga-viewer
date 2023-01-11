@@ -21,7 +21,7 @@ jobs:
               .l{color:#6ab9fa}
               .d{color:#999999}
               </style></head><body><pre>'
-            htmlviewer -h | sed '
+            ./htmlviewer -h | sed '
               s/&/\&amp;/g
               s/</\&lt;/g
               s/\x1b\[31m/<span class="o">/g
