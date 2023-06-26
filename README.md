@@ -69,7 +69,8 @@ ctrl+down  next -12
 | prev
 c pgup_or_prev
 v prev
-b pgup_or_prev
+b pgup_or_prev 50
+n pgdown_or_next 50
 . prev
 / pgdown_or_next
 
