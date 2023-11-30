@@ -32,6 +32,7 @@ ctrl+down  next -12
 > next_chap 1
 
 | prev
+\ next
 c pgup_or_prev
 v prev
 b pgup_or_prev 50
