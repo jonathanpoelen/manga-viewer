@@ -2695,6 +2695,10 @@ const showSearcher = (function() {
     switch (e.key) {
       case "ArrowUp":
       case "ArrowDown":
+        // default behavior for ctrl+up/down (=> go to start/end of input)
+        if (e.ctrlKey) {
+          break;
+        }
       case "PageUp":
       case "PageDown": {
         e.preventDefault();
