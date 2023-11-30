@@ -2325,6 +2325,7 @@ const showSearcher = (function() {
   let unaccentedUpperStrCaches;
   let nfdStrCaches;
   let icache = 0;
+  let adjustSearchScroll;
 
   const resetState = function() {
     // state for updateResults()
@@ -2530,14 +2531,14 @@ const showSearcher = (function() {
   };
 
   const updateResultScroll = function() {
-    const firstElementChild = searchResultList.firstElementChild;
+    const firstElementChild = searchResultListElement.firstElementChild;
     if (!firstElementChild) {
       return;
     }
     const rect = activeElement.getBoundingClientRect();
-    const outerRect = searchResultList.getBoundingClientRect();
+    const outerRect = searchResultListElement.getBoundingClientRect();
     const firstRect = firstElementChild.getBoundingClientRect();
-    searchResultList.scrollTop = rect.y - firstRect.y - outerRect.height / 2;
+    searchResultListElement.scrollTop = rect.y - firstRect.y - outerRect.height / 2 + adjustSearchScroll;
   };
 
   const updateResults = function() {
@@ -2963,6 +2964,7 @@ const showSearcher = (function() {
       input.blur();
     });
     searcherElement.style.display = "flex";
+    adjustSearchScroll = input.getBoundingClientRect().height / 4 * 3;
     input.focus();
   };
 
