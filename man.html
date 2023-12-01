@@ -131,7 +131,7 @@ html{color:#c5c8c6;background:#070a13;}
           Advance n directories. A negative number goes back <span class="v">n</span> directories.
 
       <a class="o" id="prev_chap" href="#prev_chap">prev_chap</a> [<span class="v">n</span>=<span class="d">1</span>]
-          Equivalent to next -<span class="v">n</span>.
+          Equivalent to next_chap -<span class="v">n</span>.
 
       <a class="o" id="pgup" href="#pgup">pgup</a> [<span class="v">percent</span>=<span class="d">100</span>]
 
@@ -235,7 +235,11 @@ html{color:#c5c8c6;background:#070a13;}
              |{<span class="l">word</span>|<span class="l">fuzzy</span>|<span class="l">text</span>|<span class="l">regex</span>}
              ]...
           Show a finder.
-          Default are <span class="d">chapter</span>, <span class="d">uppercase_only</span>, <span class="d">accent_only</span> and <span class="d">word</span>.
+
+          In the input field, use the <span class="d">up</span>/<span class="d">down</span> arrow and <span class="d">page up</span>/<span class="d">down</span> to
+          navigate the search list. <span class="d">Enter</span> validates selection.
+
+          The default options are <span class="d">chapter</span>, <span class="d">uppercase_only</span>, <span class="d">accent_only</span> and <span class="d">word</span>.
 
           - <span class="l">chapter</span>, <span class="l">img</span>:
               Indicates from which part the urls will be cut.
