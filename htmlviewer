@@ -327,7 +327,11 @@ help() {
              |{${cl}word${cr}|${cl}fuzzy${cr}|${cl}text${cr}|${cl}regex${cr}}
              ]...
           Show a finder.
-          Default are ${cd}chapter${cr}, ${cd}uppercase_only${cr}, ${cd}accent_only${cr} and ${cd}word${cr}.
+
+          In the input field, use the ${cd}up${cr}/${cd}down${cr} arrow and ${cd}page up${cr}/${cd}down${cr} to
+          navigate the search list. ${cd}Enter${cr} validates selection.
+
+          The default options are ${cd}chapter${cr}, ${cd}uppercase_only${cr}, ${cd}accent_only${cr} and ${cd}word${cr}.
 
           - ${cl}chapter${cr}, ${cl}img${cr}:
               Indicates from which part the urls will be cut.
