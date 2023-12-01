@@ -2667,7 +2667,7 @@ const showSearcher = (function() {
   }, true);
 
   let savedIndex = null;
-  const validateItem = function(i) {
+  const validateItem = function(i, focusOnImage) {
     if (options & SEARCH_BY_IMAGE_IN_CHAP) {
       // /!\ i is a string
       i = (i|0) + savedIndex;
@@ -2683,6 +2683,9 @@ const showSearcher = (function() {
         initImageStringsOfChapIndex(startIndex);
         resetState();
         setActiveSearch(chapterByIndexes[ifile].startIndex === startIndex ? ifile - startIndex : 0);
+        if (focusOnImage) {
+          activeElement.focus();
+        }
         return;
       }
       i = startIndex;
@@ -2772,7 +2775,7 @@ const showSearcher = (function() {
     if (elem.tagName === "B") {
       elem = elem.parentNode;
     }
-    validateItem(elem.dataset.index);
+    validateItem(elem.dataset.index, true);
   });
 
   const searchCommonPrefixLength = function(strings) {
