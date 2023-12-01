@@ -223,7 +223,7 @@ help() {
           Advance n directories. A negative number goes back ${cv}n${cr} directories.
 
       ${co}prev_chap${cr} [${cv}n${cr}=${cd}1${cr}]
-          Equivalent to next -${cv}n${cr}.
+          Equivalent to next_chap -${cv}n${cr}.
 
       ${co}pgup${cr} [${cv}percent${cr}=${cd}100${cr}]
 
