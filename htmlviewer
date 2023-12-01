@@ -1896,7 +1896,7 @@ const showGoto = (function() {
     return startIndex;
   };
 
-  gotoImageInput.addEventListener("change", function(e) {
+  gotoImageInput.addEventListener("input", function(e) {
     updateLastInput(e);
     const startIndex = updateImageElement();
     if (startIndex !== chapStartIndex) {
@@ -1905,7 +1905,7 @@ const showGoto = (function() {
       updateChapElement();
     }
   });
-  gotoChapterInput.addEventListener("change", function(e) {
+  gotoChapterInput.addEventListener("input", function(e) {
     chapStartIndex = startIndexByChapters[gotoChapterInput.value-1];
     updateLastInput(e);
     updateChapElement();
