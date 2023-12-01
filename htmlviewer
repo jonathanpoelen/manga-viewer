@@ -2178,7 +2178,7 @@ const showSearcher = (function() {
   };
 
   const escapeRegex = function(str) {
-    return str.replace(/[\\^$()\[\{?*+.]/g, (m) => "\\" + m);
+    return str.replace(/[\\^$()\[\]{}?*+.]/g, (m) => "\\" + m);
   };
 
   const optionsToPatternAndStrKey = function(options, pattern) {
@@ -2236,16 +2236,17 @@ const showSearcher = (function() {
 
       let pattern = "";
       for (const m of escapeRegex(str.normalize("NFD"))
-        // Mn => Nonspacing_Mark (contains accents only?)
+        // Mn => Nonspacing_Mark
         .matchAll(/([^\p{Mn}]+)[\p{Mn}]?|[\p{Mn}]/gu)
       ) {
         const reg = m[1];
-        const accent = m[0].substr(reg.length);
-        pattern += reg.replace(/\p{L}/gu, toReg) + m[0].substr(reg.length);
+        const ch = m[0].substr(reg.length);
+        pattern += reg.replace(/\p{L}/gu, toReg) + ch;
       }
 
       regex = new RegExp(pattern, flags + "u");
     }
+    // options & SEARCH_UPPERCASE_ONLY
     else {
       const pattern = escapeRegex(str)
         // lower letter as lower and upper letter
