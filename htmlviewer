@@ -2626,8 +2626,7 @@ const showSearcher = (function() {
         break;
 
       case SEARCH_MODE_TEXT:
-        const pattern = text.substr(previous.length);
-        filter(results, createTextSearcher(options, pattern));
+        filter(results, createTextSearcher(options, text));
         updateRangeDisplay();
         break;
 
