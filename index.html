@@ -22,6 +22,11 @@ img {
   max-width:100%;
 }
 
+code {
+  display: inline-block;
+  border-radius: .5em;
+}
+
 #info, #goto, #mouseAssistance {
   display:none;
   z-index:10;
@@ -77,12 +82,29 @@ img {
 #repositoryUrl > a:hover {
   color: #aaa;
 }
+#repositoryUrl > code {
+  background: #222;
+  padding: .4em;
+  line-height: 1em;
+}
+
+#navigationShortcuts {
+  background: #ddd;
+  margin: auto;
+  display: table;
+  padding: 1em;
+  text-align: center;
+}
+#navigationShortcuts code {
+  background: #ccc;
+  padding: 2px .5em;
+}
 
 #loaderForm {
   display: table;
   background:#eee;
   margin: auto;
-  padding: 2em;
+  padding: 2.5em 2em;
   text-align:center;
 }
 
@@ -97,6 +119,9 @@ img {
 
 #loaderForm > input {
   display: inline-block;
+}
+#loaderForm > #submitLoader, #loaderForm > #closeLoader {
+  margin-bottom: 0px;
 }
 
 #loaderForm > fieldset > label {
@@ -240,18 +265,22 @@ b {
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
     <p id="finalpath"></p>
     <fieldset>
-      <legend>Mode:</legend>
+      <legend>Reading mode:</legend>
       <label><input type="radio" id="mode_normal" name="mode" value="normal"/>Normal <span class="urlmode">(url: <a href="?mode=normal">?mode=normal</a>)</span></label>
       <label><input type="radio" id="mode_double" name="mode" value="double"/>Double page <span class="urlmode">(url: <a href="?mode=double">?mode=double</a>)</span></label>
       <label><input type="radio" id="mode_webtoon" name="mode" value="webtoon"/>Webtoon <span class="urlmode">(url: <a href="?mode=webtoon">?mode=webtoon</a>)</span></label>
       <label><input type="radio" id="mode_normal_or_double" name="mode" value="normal_or_double"/>Normal or Double page <span class="urlmode">(url: <a href="?mode=normal_or_double">?mode=normal_or_double</a>)</span></label>
       <label><input type="radio" id="mode_all" name="mode" value="all"/>All page <span class="urlmode">(url: <a href="?mode=all">?mode=all</a>)</span></label>
     </fieldset>
-    <input type="submit"/>
+    <input id="submitLoader" type="submit"/>
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
+  <section id="navigationShortcuts">
+    <p>Page down or next page shortcut(s): <code>Space</code>, <code>n</code>, <code>/</code>, <code>LeftClick</code></p>
+    <p>Page up or prev page shortcut(s): <code>Shift+Space</code>, <code>c</code>, <code>b</code>, <code>Shift+LeftClick</code></p>
+  </section>
   <p id="repositoryUrl">
-    <a href="https://jonathanpoelen.github.io/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a><br/>
+    <a href="https://jonathanpoelen.github.io/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a> (<code>F1</code>, <code>F2</code>)<br>
     Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a>
   </p>
 </section>
@@ -286,7 +315,7 @@ b {
   <div id="searchResultList"></div>
 </section>
 
-<section id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>z</td><td>next -5</td></tr> <tr><td>x</td><td>next 5</td></tr> <tr><td>a</td><td>next -12</td></tr> <tr><td>s</td><td>next 12</td></tr> <tr><td>q</td><td>next -30</td></tr> <tr><td>w</td><td>next 30</td></tr> <tr><td>e</td><td>next -100</td></tr> <tr><td>r</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>\\</td><td>next </td></tr> <tr><td>c</td><td>pgup_or_prev </td></tr> <tr><td>v</td><td>prev </td></tr> <tr><td>b</td><td>pgup_or_prev 50</td></tr> <tr><td>n</td><td>pgdown_or_next 50</td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>m</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>g</td><td>goto </td></tr> <tr><td>^</td><td>goto 0</td></tr> <tr><td>$</td><td>goto -1</td></tr> <tr><td>h</td><td>mode webtoon</td></tr> <tr><td>j</td><td>mode double</td></tr> <tr><td>k</td><td>mode normal</td></tr> <tr><td>l</td><td>mode normal_or_double</td></tr> <tr><td>d</td><td>info </td></tr> <tr><td>o</td><td>info </td></tr> <tr><td>t</td><td>toggle_auto_scroll </td></tr> <tr><td>u</td><td>add_interval -25</td></tr> <tr><td>i</td><td>add_interval 25</td></tr> <tr><td>y</td><td>newtab </td></tr> <tr><td>Y</td><td>newtab foreground</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Ctrl+Shift+LeftClick</td><td>next_chap -1</td></tr> <tr><td>Alt+LeftClick</td><td>newtab </td></tr> <tr><td>AltGr+LeftClick</td><td>newtab </td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F8</td><td>search </td></tr> <tr><td>F10</td><td>open </td></tr> <tr><td>F6</td><td>save </td></tr> <tr><td>F7</td><td>load </td></tr></table></section>
+<section id="shortcuts"><table><tr><td>Space</td><td>pgdown_or_next </td></tr> <tr><td>Shift+Space</td><td>pgup_or_prev </td></tr> <tr><td>Space</td><td>restrict webtoon pgdown_or_next 98</td></tr> <tr><td>Space</td><td>restrict all pgdown_or_next 98</td></tr> <tr><td>Shift+Space</td><td>restrict webtoon pgup_or_prev 98</td></tr> <tr><td>Shift+Space</td><td>restrict all pgup_or_prev 98</td></tr> <tr><td>z</td><td>next -5</td></tr> <tr><td>x</td><td>next 5</td></tr> <tr><td>a</td><td>next -12</td></tr> <tr><td>s</td><td>next 12</td></tr> <tr><td>q</td><td>next -30</td></tr> <tr><td>w</td><td>next 30</td></tr> <tr><td>e</td><td>next -100</td></tr> <tr><td>r</td><td>next 100</td></tr> <tr><td>Left</td><td>prev </td></tr> <tr><td>Right</td><td>next </td></tr> <tr><td>Ctrl+Left</td><td>next -5</td></tr> <tr><td>Ctrl+Right</td><td>next 5</td></tr> <tr><td>Ctrl+Up</td><td>next 12</td></tr> <tr><td>Ctrl+Down</td><td>next -12</td></tr> <tr><td>&lt;</td><td>next_chap -1</td></tr> <tr><td>></td><td>next_chap 1</td></tr> <tr><td>|</td><td>prev </td></tr> <tr><td>\\</td><td>next </td></tr> <tr><td>c</td><td>pgup_or_prev </td></tr> <tr><td>v</td><td>prev </td></tr> <tr><td>b</td><td>pgup_or_prev 50</td></tr> <tr><td>n</td><td>pgdown_or_next 50</td></tr> <tr><td>.</td><td>prev </td></tr> <tr><td>/</td><td>pgdown_or_next </td></tr> <tr><td>m</td><td>rotate -90</td></tr> <tr><td>,</td><td>rotate 90</td></tr> <tr><td>g</td><td>goto </td></tr> <tr><td>^</td><td>goto 0</td></tr> <tr><td>$</td><td>goto -1</td></tr> <tr><td>h</td><td>mode webtoon</td></tr> <tr><td>j</td><td>mode double</td></tr> <tr><td>k</td><td>mode normal</td></tr> <tr><td>l</td><td>mode normal_or_double</td></tr> <tr><td>d</td><td>info </td></tr> <tr><td>o</td><td>info </td></tr> <tr><td>t</td><td>toggle_auto_scroll </td></tr> <tr><td>u</td><td>add_interval -25</td></tr> <tr><td>i</td><td>add_interval 25</td></tr> <tr><td>y</td><td>newtab </td></tr> <tr><td>Y</td><td>newtab foreground</td></tr> <tr><td>LeftClick</td><td>pgdown_or_next </td></tr> <tr><td>Shift+LeftClick</td><td>pgup_or_prev </td></tr> <tr><td>Ctrl+LeftClick</td><td>next_chap </td></tr> <tr><td>Ctrl+Shift+LeftClick</td><td>next_chap -1</td></tr> <tr><td>Alt+LeftClick</td><td>newtab </td></tr> <tr><td>AltGr+LeftClick</td><td>newtab </td></tr> <tr><td>@</td><td>mouse_assistance </td></tr> <tr><td>F1</td><td>shortcuts </td></tr> <tr><td>F2</td><td>shortcuts </td></tr> <tr><td>F8</td><td>search </td></tr> <tr><td>F10</td><td>open </td></tr> <tr><td>F6</td><td>save </td></tr> <tr><td>F7</td><td>load </td></tr></table></section>
 
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
 
@@ -2129,6 +2158,7 @@ const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctr
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 1, key: 'click0', action: function(){ openInNewTab(0); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '@', action: function(){ toggleMouseAssistance() }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F1', action: function(){ showShorcuts(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F2', action: function(){ showShorcuts(); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F8', action: function(){ let options = SEARCH_BY_CHAPTER | SEARCH_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD;showSearcher(options); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F10', action: function(){ showLoader(); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F6', action: function(){ savePosition(); }},
