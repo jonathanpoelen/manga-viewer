@@ -1,4 +1,4 @@
-`htmlviewer` is a tool that generates a web page to view images in a directorie. `htmlviewer-gui` is simple wrapper which uses `zenity` as GUI.
+`htmlviewer` is a tool that generates a web page to view images from a directorie. `htmlviewer-gui` is simple wrapper which uses `zenity` as GUI.
 
 A standalone viewer is available [here](https://jonathanpoelen.github.io/manga-viewer).
 
@@ -67,6 +67,7 @@ ctrl+down  next -12
 > next_chap 1
 
 | prev
+\ next
 c pgup_or_prev
 v prev
 b pgup_or_prev 50
@@ -112,6 +113,7 @@ altgr+left_click newtab
 # extra
 
 F1 shortcuts
+F2 shortcuts
 F8 search
 F10 open
 
