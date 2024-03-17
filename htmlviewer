@@ -797,6 +797,9 @@ htmlheader=
 force_mode_code=
 force_pixel_distance_code=
 title=
+help_shortcut=
+pgdown_or_next_shortcut=
+pgup_or_prev_shortcut=
 declare -a cmds=()
 
 while getopts 'aAsSnpKi:c:e:t:f:x:m:h?' opt ; do
@@ -865,7 +868,7 @@ if [[ -z "$title" ]]; then
 fi
 
 shortcuts=()
-raw_shortcuts=()
+html_table_shortcuts=()
 declare -A shortcuts_by_mode=()
 
 parse_input_line()
@@ -928,6 +931,7 @@ parse_input_line()
         display_key="${key^}"
       fi
     else
+      # html escape
       display_key="${display_key/ /Space}"
       display_key="${display_key/&/&amp;}"
       display_key="${display_key/</&lt;}"
@@ -953,7 +957,17 @@ parse_input_line()
     [[ 0 != ${controls[shift]} ]] && display_key="Shift+$display_key"
     [[ 0 != ${controls[alt]} ]] && display_key="Alt+$display_key"
     [[ 0 != ${controls[ctrl]} ]] && display_key="Ctrl+$display_key"
-    raw_shortcuts+=("<tr><td>$display_key</td><td>$cmdraw</td></tr>")
+    html_table_shortcuts+=("<tr><td>$display_key</td><td>$cmdraw</td></tr>")
+
+    if [[ -z $mode ]]; then
+      if [[ $fn == 'shortcuts' ]]; then
+        help_shortcut+="<code>$display_key</code>, "
+      elif [[ $fn == 'pgdown_or_next' ]]; then
+        pgdown_or_next_shortcut+="<code>$display_key</code>, "
+      elif [[ $fn == 'pgup_or_prev' ]]; then
+        pgup_or_prev_shortcut+="<code>$display_key</code>, "
+      fi
+    fi
   fi
 }
 
@@ -1026,6 +1040,11 @@ img {
   max-width:100%;
 }
 
+code {
+  display: inline-block;
+  border-radius: .5em;
+}
+
 #info, #goto, #mouseAssistance {
   display:none;
   z-index:10;
@@ -1081,6 +1100,23 @@ img {
 #repositoryUrl > a:hover {
   color: #aaa;
 }
+#repositoryUrl > code {
+  background: #222;
+  padding: .4em;
+  line-height: 1em;
+}
+
+#navigationShortcuts {
+  background: #ddd;
+  margin: auto;
+  display: table;
+  padding: 1em;
+  text-align: center;
+}
+#navigationShortcuts code {
+  background: #ccc;
+  padding: 2px .5em;
+}
 
 #loaderForm {
   display: table;
@@ -1101,6 +1137,9 @@ img {
 
 #loaderForm > input {
   display: inline-block;
+}
+#loaderForm > #submitLoader, #loaderForm > #closeLoader {
+  margin-bottom: 0px;
 }
 
 #loaderForm > fieldset > label {
@@ -1226,7 +1265,7 @@ b {
 <body>'
 
 if (( $standalone == 2 )); then
-  echo '<section id="shortcuts" style="display:block"><table>'"${raw_shortcuts[@]}"'</table></section>
+  echo '<section id="shortcuts" style="display:block"><table>'"${html_table_shortcuts[@]}"'</table></section>
 </body>
 </html>'
   exit
@@ -1252,18 +1291,22 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
     <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
     <p id="finalpath"></p>
     <fieldset>
-      <legend>Mode:</legend>
+      <legend>Reading mode:</legend>
       <label><input type="radio" id="mode_normal" name="mode" value="normal"/>Normal <span class="urlmode">(url: <a href="?mode=normal">?mode=normal</a>)</span></label>
       <label><input type="radio" id="mode_double" name="mode" value="double"/>Double page <span class="urlmode">(url: <a href="?mode=double">?mode=double</a>)</span></label>
       <label><input type="radio" id="mode_webtoon" name="mode" value="webtoon"/>Webtoon <span class="urlmode">(url: <a href="?mode=webtoon">?mode=webtoon</a>)</span></label>
       <label><input type="radio" id="mode_normal_or_double" name="mode" value="normal_or_double"/>Normal or Double page <span class="urlmode">(url: <a href="?mode=normal_or_double">?mode=normal_or_double</a>)</span></label>
       <label><input type="radio" id="mode_all" name="mode" value="all"/>All page <span class="urlmode">(url: <a href="?mode=all">?mode=all</a>)</span></label>
     </fieldset>
-    <input type="submit"/>
+    <input id="submitLoader" type="submit"/>
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
+  <section id="navigationShortcuts">
+    <p>Page down or next page shortcut(s): '"${pgdown_or_next_shortcut::-2}"'</p>
+    <p>Page up or prev page shortcut(s): '"${pgup_or_prev_shortcut::-2}"'</p>
+  </section>
   <p id="repositoryUrl">
-    <a href="https://jonathanpoelen.github.io/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a><br/>
+    <a href="https://jonathanpoelen.github.io/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a> ('"${help_shortcut::-2}"')<br>
     Project: <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a>
   </p>
 </section>
@@ -1298,7 +1341,7 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
   <div id="searchResultList"></div>
 </section>
 
-<section id="shortcuts"><table>'"${raw_shortcuts[@]}"'</table></section>
+<section id="shortcuts"><table>'"${html_table_shortcuts[@]}"'</table></section>
 
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
 
