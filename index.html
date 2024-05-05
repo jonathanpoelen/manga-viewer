@@ -262,7 +262,7 @@ b {
 <section id="loader">
   <form id="loaderForm">
     <label id="prefixLabel">Directory Prefix: <input id="prefix" type="text"/></label>
-    <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
+    <label>Directory: <input id="dirs" type="file" webkitdirectory multiple/></label>
     <p id="finalpath"></p>
     <fieldset>
       <legend>Reading mode:</legend>
@@ -290,10 +290,10 @@ b {
   <div id="searchInputError" type="text"></div>
   <section id="searchOptions">
     <select id="searchBy">
-      <option>By Chapter</option>
-      <option>By Image</option>
+      <option>By chapter</option>
+      <option>By image</option>
+      <option>By chapter then image</option>
     </select>
-    <label><input type="checkbox" id="searchThenBy">Then by Image</option></label>
     <label>Mode: <select id="searchMode">
       <option>Word</option>
       <option>Fuzzy</option>
@@ -1145,29 +1145,28 @@ const showLoader = (function() {
   }
 })();
 
-const SEARCH_BY_CHAPTER         = 0b0000_000_000_000_001;
-const SEARCH_BY_IMAGE           = 0b0000_000_000_000_010;
-const SEARCH_BY_IMAGE_IN_CHAP   = 0b0000_000_000_000_100;
-const SEARCH_BY_MASK            = 0b0000_000_000_000_111;
+const SEARCH_BY_CHAPTER               = 0b0000_000_000_0001;
+const SEARCH_BY_IMAGE                 = 0b0000_000_000_0010;
+const SEARCH_BY_CHAPTER_THEN_BY_IMAGE = 0b0000_000_000_0100;
+const SEARCH_BY_IMAGE_IN_CHAP         = 0b0000_000_000_1000; // private option (transition from chapter to image)
+const SEARCH_BY_MASK                  = 0b0000_000_000_1111;
+const SEARCH_BY_CONTAINS_CHAPTER_MASK = 0b0000_000_000_0101;
 
-const SEARCH_THEN_BY_IMAGE      = 0b0000_000_000_001_000;
-const SEARCH_THEN_BY_MASK       = 0b0000_000_000_001_000;
+const SEARCH_CASE_SENSITIVE           = 0b0000_000_001_0000;
+const SEARCH_CASE_INSENSITIVE         = 0b0000_000_010_0000;
+const SEARCH_UPPERCASE_ONLY           = 0b0000_000_100_0000;
+const SEARCH_CASE_SENSITIVITY_MASK    = 0b0000_000_111_0000;
 
-const SEARCH_CASE_SENSITIVE     = 0b000_000_001_000_000;
-const SEARCH_CASE_INSENSITIVE   = 0b000_000_010_000_000;
-const SEARCH_UPPERCASE_ONLY     = 0b000_000_100_000_000;
-const SEARCH_CASE_SENSITIVITY_MASK = 0b0000_000_111_000_000;
+const SEARCH_ACCENT_SENSITIVE         = 0b0000_001_000_0000;
+const SEARCH_ACCENT_INSENSITIVE       = 0b0000_010_000_0000;
+const SEARCH_ACCENT_ONLY              = 0b0000_100_000_0000;
+const SEARCH_ACCENT_SENSITIVITY_MASK  = 0b0000_111_000_0000;
 
-const SEARCH_ACCENT_SENSITIVE   = 0b0000_001_000_000_000;
-const SEARCH_ACCENT_INSENSITIVE = 0b0000_010_000_000_000;
-const SEARCH_ACCENT_ONLY        = 0b0000_100_000_000_000;
-const SEARCH_ACCENT_SENSITIVITY_MASK = 0b0000_111_000_000_000;
-
-const SEARCH_MODE_WORD          = 0b0001_000_000_000_000;
-const SEARCH_MODE_FUZZY         = 0b0010_000_000_000_000;
-const SEARCH_MODE_TEXT          = 0b0100_000_000_000_000;
-const SEARCH_MODE_REGEX         = 0b1000_000_000_000_000;
-const SEARCH_MODE_MASK          = 0b1111_000_000_000_000;
+const SEARCH_MODE_WORD                = 0b0001_000_000_0000;
+const SEARCH_MODE_FUZZY               = 0b0010_000_000_0000;
+const SEARCH_MODE_TEXT                = 0b0100_000_000_0000;
+const SEARCH_MODE_REGEX               = 0b1000_000_000_0000;
+const SEARCH_MODE_MASK                = 0b1111_000_000_0000;
 
 const showSearcher = (function() {
   // Testable searcher
@@ -1309,7 +1308,6 @@ const showSearcher = (function() {
   const input = document.getElementById("searchInputMode");
   const searchInputErrorElement = document.getElementById("searchInputError");
   const searchByElement = document.getElementById("searchBy");
-  const searchThenByElement = document.getElementById("searchThenBy");
   const searchCaseSensitivityElement = document.getElementById("searchCaseSensitivity");
   const searchAccentSensitivityElement = document.getElementById("searchAccentSensitivity");
   const searchModeElement = document.getElementById("searchMode");
@@ -1344,11 +1342,14 @@ const showSearcher = (function() {
     // create results and DOM elements
     results = new Array(len);
     const previousMatch = (options & SEARCH_MODE_WORD) ? {index:0, lastIndex:0} : 0;
+    const indexBychap = (options & SEARCH_BY_CONTAINS_CHAPTER_MASK) && !(options & SEARCH_BY_IMAGE_IN_CHAP);
+    const indexForImg = (options & SEARCH_BY_IMAGE_IN_CHAP) ? savedIndex : 0;
+    const modeName = modeToModeName(mode);
     for (let i = 0; i < len; ++i) {
       const str = strings[i];
       const elem = searchResultListElement.appendChild(document.createElement("a"));
       elem.appendChild(document.createTextNode(str));
-      elem.setAttribute("href", "#");
+      elem.setAttribute("href", `?mode=${modeName}&i=${indexBychap ? startIndexByChapters[i] : indexForImg+i}`);
       elem.dataset.index = i;
       results[i] = {
         str,
@@ -1375,7 +1376,7 @@ const showSearcher = (function() {
   }
 
   const userActiveIndex = function() {
-    return (options & SEARCH_BY_CHAPTER) ? chapterByIndexes[ifile].ichap : ifile;
+    return (options & SEARCH_BY_CONTAINS_CHAPTER_MASK) ? chapterByIndexes[ifile].ichap : ifile;
   };
 
   const getDisplayStrKey = function(mode) {
@@ -1670,13 +1671,13 @@ const showSearcher = (function() {
   let savedIndex = null;
   const validateItem = function(i, focusOnImage) {
     if (options & SEARCH_BY_IMAGE_IN_CHAP) {
-      // /!\ i is a string
+      // /!\ i is a string, force to Number with bitwise operator
       i = (i|0) + savedIndex;
       savedIndex = null;
     }
-    else if (options & SEARCH_BY_CHAPTER) {
+    else if (options & SEARCH_BY_CONTAINS_CHAPTER_MASK) {
       const startIndex = startIndexByChapters[i];
-      if (savedIndex === null && (options & SEARCH_THEN_BY_IMAGE)) {
+      if (savedIndex === null && (options & SEARCH_BY_CHAPTER_THEN_BY_IMAGE)) {
         input.value = "";
         activeElement = null;
         options |= SEARCH_BY_IMAGE_IN_CHAP;
@@ -1821,15 +1822,15 @@ const showSearcher = (function() {
   }
 
   const initStrings = function() {
-    strings = (options & SEARCH_BY_CHAPTER) ? stringByChapters : stringByImages;
-    icache = (options & SEARCH_BY_CHAPTER) ? 0 : 1;
+    strings = (options & SEARCH_BY_CONTAINS_CHAPTER_MASK) ? stringByChapters : stringByImages;
+    icache = (options & SEARCH_BY_CONTAINS_CHAPTER_MASK) ? 0 : 1;
     if (strings) {
       return;
     }
 
     let stringRefs = filenames;
     let stringRefsLen = nbFilename;
-    if (options & SEARCH_BY_CHAPTER) {
+    if (options & SEARCH_BY_CONTAINS_CHAPTER_MASK) {
       stringRefsLen = startIndexByChapters.length;
       stringRefs = new Array(stringRefsLen);
       for (let i = 0; i < stringRefsLen; ++i) {
@@ -1848,7 +1849,7 @@ const showSearcher = (function() {
       strings[i] = stringRefs[i].substr(prefixLen);
     }
 
-    if (options & SEARCH_BY_CHAPTER) {
+    if (options & SEARCH_BY_CONTAINS_CHAPTER_MASK) {
       stringByChapters = strings;
     }
     else {
@@ -1896,19 +1897,13 @@ const showSearcher = (function() {
     const oldOptions = options;
     options &= ~mask;
     options |= firstOption << ev.target.selectedIndex;
-    if ((oldOptions ^ options) & ~SEARCH_THEN_BY_MASK) {
+    if ((oldOptions ^ options) & ~SEARCH_BY_CHAPTER_THEN_BY_IMAGE) {
       resetState();
       setActiveSearch(activeElement?.dataset.index | 0);
       updateResults();
     }
   };
 
-  searchThenByElement.addEventListener("change", (ev) => {
-    ev.preventDefault();
-    ev.stopImmediatePropagation();
-    options &= ~SEARCH_THEN_BY_MASK;
-    options |= ev.target.checked ? SEARCH_THEN_BY_IMAGE : 0;
-  });
   searchCaseSensitivityElement.addEventListener("change", (ev) => {
     updateOptionsEvent(ev, SEARCH_CASE_SENSITIVE, SEARCH_CASE_SENSITIVITY_MASK);
   });
@@ -1938,7 +1933,6 @@ const showSearcher = (function() {
     };
 
     initOptionsLock = true;
-    searchThenByElement.checked = options & SEARCH_THEN_BY_IMAGE;
     setSelectedIndex(searchBy, SEARCH_BY_CHAPTER, SEARCH_BY_MASK);
     setSelectedIndex(searchCaseSensitivityElement, SEARCH_CASE_SENSITIVE, SEARCH_CASE_SENSITIVITY_MASK);
     setSelectedIndex(searchAccentSensitivityElement, SEARCH_ACCENT_SENSITIVE, SEARCH_ACCENT_SENSITIVITY_MASK);
@@ -2159,7 +2153,7 @@ const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctr
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '@', action: function(){ toggleMouseAssistance() }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F1', action: function(){ showShorcuts(); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F2', action: function(){ showShorcuts(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F8', action: function(){ let options = SEARCH_BY_CHAPTER | SEARCH_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD;showSearcher(options); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F8', action: function(){ let options = SEARCH_BY_CHAPTER_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD;showSearcher(options); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F10', action: function(){ showLoader(); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F6', action: function(){ savePosition(); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F7', action: function(){ loadPosition(); }},
@@ -2282,7 +2276,7 @@ function initFilenames(fileNameList, fileByFileName) {
   let startIndex = 0;
   let chap = {startIndex, images, ichap: 0};
   let seppos2;
-  chapterByIndexes[0] = chap;
+  chapterByIndexes[startIndex] = chap;
   startIndexByChapters.push(startIndex);
   for (let i = 1; i < nbFilename; ++i) {
     filename = filenames[i];
