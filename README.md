@@ -41,6 +41,15 @@ The keyboard and mouse shortcuts are available [here](https://jonathanpoelen.git
 Read `htmlviewer -h` or the [online version](https://jonathanpoelen.github.io/manga-viewer/man.html) for more options.
 
 
+# HTTP(S) version limitation
+
+Since a remote site doesn't have access to the machine's local files, and getting the file list from a page requires a user action, the web version has certain limitations:
+
+- The `load` command (`F7`) cannot save the image list, only the current position. You need to re-open the image folder before using it.
+- The command `newtab` (`y`, `Y`) will open a base64 encoded file. The file name will not be visible through the url.
+- Opening search links (`F8`) in a new tab does not work.
+
+
 # Default input.conf
 
 ```py
