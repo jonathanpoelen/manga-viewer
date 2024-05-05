@@ -1401,11 +1401,9 @@ const rotate = function(deg) {
   img.setAttribute("style", `transform:rotate(${deg}deg)`);
 };
 
-const openInNewTab = function(type) {
-  mode.syncIFile();
-  const url = filenames[ifile];
+const _openInNewTab = function(type, url) {
   if (type === 2) {
-    window.open(url, url);
+    window.open(url);
   }
   else {
     const a = document.createElement("a");
@@ -1421,6 +1419,21 @@ const openInNewTab = function(type) {
     }
     enableShortcuts();
     document.body.removeChild(a);
+  }
+};
+
+const openInNewTab = function(type) {
+  mode.syncIFile();
+  const filename = filenames[ifile];
+  if (isLocalProtocol || !fileByFilename) {
+    _openInNewTab(type, filename);
+  }
+  else {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      _openInNewTab(type, e.target.result);
+    };
+    reader.readAsDataURL(fileByFilename[filename]);
   }
 };
 
@@ -1465,12 +1478,13 @@ const setImage = (function(){
     };
   }
 
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    img.src = e.target.result;
+  };
+
   return function(img, filename) {
     if (fileByFilename) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        img.src = e.target.result;
-      };
       reader.readAsDataURL(fileByFilename[filename]);
     }
     else {
