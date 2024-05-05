@@ -1,25 +1,32 @@
-`htmlviewer` is a tool that generates a web page to view images from a directorie. `htmlviewer-gui` is simple wrapper which uses `zenity` as GUI.
+`htmlviewer` is a cli tool that generates a web page to view images from directories. `htmlviewer-gui` is simple wrapper which uses `zenity` as GUI.
 
-A standalone viewer is available [here](https://jonathanpoelen.github.io/manga-viewer).
+A fully online version that lets you open a directory is available [here](https://jonathanpoelen.github.io/manga-viewer).
 
-It's main advantage is that it uses one and the same key to scroll and go to the next image (space or left click by default), the behavior of which changes according to 5 reading modes:
+It's main advantage of the viewer is that it uses one and the same key to scroll and go to the next image (space or left click by default), the behavior of which changes according to 5 reading modes:
 
 - Normal (`k` key): Display one image at a time.
 - Double page (`j` key): The first time the scroll is at the bottom, it goes up. The second time goes to the next image.
-- Normal Or Double page (`l` key): Use double page mode when the width of the image is greater than the height. Otherwise use normal mode.
+- Normal Or Double page (`l` key): Uses the behavior of double page mode when the width of the image is greater than the height. Otherwise uses the behavior of normal mode.
 - Webtoon (`h` key): Displays all images in a chapter one below the other.
 - All: Displays all images one below the other.
 
-`htmlviewer` has several commands that can be associated with shortcuts.
+
+# Basic principle
+
+The interface is uncluttered and button-free, with only images displayed. Nevertheless, there are numerous keyboard and mouse shortcuts that trigger "commands". For example, going to the next page is a command.
+
+Shortcuts are configured when `htmlviewer` is launched via a config file or/and directory on the command line. For more details, see `htmlviwer -h` or the [online man](https://jonathanpoelen.github.io/manga-viewer/man.html#ch-input.conf) version.
+
+Once the file has been generated, it is no longer possible to modify the shortcuts. You'll need to generate a new file.
 
 
-# Basic usage:
+# Basic usage
 
 ```
 htmlviewer ${directories} > view.html
 ```
 
-Or a version which asks for the files to load when opening the html file:
+Or a version which asks for the directory to load when opening the html file:
 
 ```
 htmlviewer -a > view.html
@@ -27,11 +34,11 @@ htmlviewer -a > view.html
 
 `view.html` can be used [here](https://jonathanpoelen.github.io/manga-viewer) or downloaded with a right click on the link then "save link as...".
 
-Note that using it directly from the web server is less efficient and takes more memory. For security reasons, a website does not access local disks and opening images stores them in memory in a format that takes up more space than the image itself. This is why it is best to download the file and open it from your machine.
+Note that using it directory from the web server is less efficient and takes more memory. For security reasons, a website does not access local disks and opening images stores them in memory in a format that takes up more space than the image itself. This is why it is best to download the file and open it from your machine.
 
 The keyboard and mouse shortcuts are available [here](https://jonathanpoelen.github.io/manga-viewer/shortcuts.html), with `htmlviewer -p` or the `F1` keyboard shortcut.
 
-Read `htmlviewer -h` or [this page](https://jonathanpoelen.github.io/manga-viewer/man.html) for more options.
+Read `htmlviewer -h` or the [online version](https://jonathanpoelen.github.io/manga-viewer/man.html) for more options.
 
 
 # Default input.conf

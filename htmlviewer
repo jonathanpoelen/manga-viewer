@@ -143,13 +143,8 @@ help() {
   $co-n$cr
       Do not load default configuration files.
 
-      By default load $cd\${XDG_CONFIG_DIRS}/htmlviewer/input.conf$cr with
-      $cd\$HOME/.config$cr as default value when XDG_CONFIG_DIRS is unset.
-
-      Currently $cd$inputconf$cr
-
   $co-p$cr
-      Print default keyboard mapping.
+      Print the default input.conf file.
 
   $co-s$cr
       Sort input directories (default).
@@ -165,6 +160,11 @@ help() {
 
 
   input.conf
+      By default load $cd\${XDG_CONFIG_DIRS}/htmlviewer/input.conf$cr with
+      $cd\$HOME/.config$cr as default value when XDG_CONFIG_DIRS is unset.
+
+      Currently $cd$inputconf$cr
+
       The input.conf file consists of a list of mouse and key bindings,
       for example:
 
@@ -199,7 +199,7 @@ help() {
 
   Special key names
       ${cl}space${cr}
-      ${cl}sharp${cr} alias for #
+      ${cl}sharp${cr} for #
       ${cl}plus${cr} alias for +
       ${cl}pgup${cr} alias for PageUp
       ${cl}pgdown${cr} alias for PageDown
@@ -211,7 +211,7 @@ help() {
       ${cl}middle_click${cr} for click1
       ${cl}right_click${cr} for click2
 
-      Note: aliases are insensitive case
+      Note: special names are case insensitive.
 
   Commands
       ${co}next${cr} [${cv}n${cr}=${cd}1${cr}]
@@ -1289,7 +1289,7 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
 <section id="loader">
   <form id="loaderForm">
     <label id="prefixLabel">Directory Prefix: <input id="prefix" type="text"/></label>
-    <label>Directories: <input id="dirs" type="file" webkitdirectory="" multiple=""/></label>
+    <label>Directory: <input id="dirs" type="file" webkitdirectory multiple/></label>
     <p id="finalpath"></p>
     <fieldset>
       <legend>Reading mode:</legend>
