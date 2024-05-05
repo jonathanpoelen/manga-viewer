@@ -2387,11 +2387,14 @@ const showSearcher = (function() {
     // create results and DOM elements
     results = new Array(len);
     const previousMatch = (options & SEARCH_MODE_WORD) ? {index:0, lastIndex:0} : 0;
+    const indexBychap = (options & SEARCH_BY_CONTAINS_CHAPTER_MASK) && !(options & SEARCH_BY_IMAGE_IN_CHAP);
+    const indexForImg = (options & SEARCH_BY_IMAGE_IN_CHAP) ? savedIndex : 0;
+    const modeName = modeToModeName(mode);
     for (let i = 0; i < len; ++i) {
       const str = strings[i];
       const elem = searchResultListElement.appendChild(document.createElement("a"));
       elem.appendChild(document.createTextNode(str));
-      elem.setAttribute("href", "#");
+      elem.setAttribute("href", `?mode=${modeName}&i=${indexBychap ? startIndexByChapters[i] : indexForImg+i}`);
       elem.dataset.index = i;
       results[i] = {
         str,
@@ -3260,7 +3263,7 @@ function initFilenames(fileNameList, fileByFileName) {
   let startIndex = 0;
   let chap = {startIndex, images, ichap: 0};
   let seppos2;
-  chapterByIndexes[0] = chap;
+  chapterByIndexes[startIndex] = chap;
   startIndexByChapters.push(startIndex);
   for (let i = 1; i < nbFilename; ++i) {
     filename = filenames[i];
