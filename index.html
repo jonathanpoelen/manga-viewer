@@ -1755,21 +1755,29 @@ const showSearcher = (function() {
 
       // validate element
       case "Enter": {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        let i;
-        if (activeElement.parentNode) {
-          i = activeElement.dataset.index;
-        }
-        else if (results.length !== 0) {
-          i = results[0].elem.dataset.index;
+        if (e.ctrlKey) {
+          activeElement.focus();
+          activeElement.dispatchEvent(new KeyboardEvent("keydown", e));
+          activeElement.dispatchEvent(new KeyboardEvent("keyup", e));
+          // after default behavior (open in a new tab), retore focus to input
+          setTimeout(() => input.focus(), 0);
         }
         else {
-          return;
-        }
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          let i;
+          if (activeElement.parentNode) {
+            i = activeElement.dataset.index;
+          }
+          else if (results.length !== 0) {
+            i = results[0].elem.dataset.index;
+          }
+          else {
+            return;
+          }
 
-        validateItem(i);
+          validateItem(i);
+        }
         break;
       }
     }
@@ -1785,13 +1793,16 @@ const showSearcher = (function() {
   }, true);
 
   searchResultListElement.addEventListener("click", function(e) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    let elem = e.target;
-    if (elem.tagName === "B") {
-      elem = elem.parentNode;
+    // ctrl+click => open new tab (default behavior)
+    if (!e.ctrlKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      let elem = e.target;
+      if (elem.tagName === "B") {
+        elem = elem.parentNode;
+      }
+      validateItem(elem.dataset.index, true);
     }
-    validateItem(elem.dataset.index, true);
   });
 
   const searchCommonPrefixLength = function(strings) {
@@ -2167,7 +2178,7 @@ const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctr
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '@', action: function(){ toggleMouseAssistance() }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F1', action: function(){ showShorcuts(); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F2', action: function(){ showShorcuts(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F8', action: function(){ let options = SEARCH_BY_CHAPTER_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD;showSearcher(options); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F8', action: function(){ showSearcher((SEARCH_BY_CHAPTER_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD)); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F10', action: function(){ showLoader(); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F6', action: function(){ savePosition(); }},
  {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F7', action: function(){ loadPosition(); }},
