@@ -735,33 +735,33 @@ cmd_open()
 cmd_search()
 {
   local i
-  code='let options = SEARCH_BY_CHAPTER_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD;'
+  code='showSearcher((SEARCH_BY_CHAPTER_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD)'
   while (($# != 0)); do
     case "${1//-/_}" in
-      chap|chapter) code+='options = options & ~SEARCH_BY_MASK | SEARCH_BY_CHAPTER;';;
-      img|image)    code+='options = options & ~SEARCH_BY_MASK | SEARCH_BY_IMAGE;';;
+      chap|chapter) code+=' & (~SEARCH_BY_MASK | SEARCH_BY_CHAPTER)';;
+      img|image)    code+=' & (~SEARCH_BY_MASK | SEARCH_BY_IMAGE)';;
       chap_then_img|chapter_then_image|chapter_then_img|chap_then_image)
-                    code+='options = options & ~SEARCH_BY_MASK | SEARCH_BY_CHAPTER_THEN_BY_IMAGE;';;
+                    code+=' & (~SEARCH_BY_MASK | SEARCH_BY_CHAPTER_THEN_BY_IMAGE)';;
 
-      case_sensitive)   code+='options = options & ~SEARCH_CASE_SENSITIVITY_MASK | SEARCH_CASE_SENSITIVE;';;
-      case_insensitive) code+='options = options & ~SEARCH_CASE_SENSITIVITY_MASK | SEARCH_CASE_INSENSITIVE;';;
-      uppercase_only)   code+='options = options & ~SEARCH_CASE_SENSITIVITY_MASK | SEARCH_UPPERCASE_ONLY;';;
+      case_sensitive)   code+=' & (~SEARCH_CASE_SENSITIVITY_MASK | SEARCH_CASE_SENSITIVE)';;
+      case_insensitive) code+=' & (~SEARCH_CASE_SENSITIVITY_MASK | SEARCH_CASE_INSENSITIVE)';;
+      uppercase_only)   code+=' & (~SEARCH_CASE_SENSITIVITY_MASK | SEARCH_UPPERCASE_ONLY)';;
 
-      accent_sensitive)   code+='options = options & ~SEARCH_ACCENT_SENSITIVITY_MASK | SEARCH_ACCENT_SENSITIVE;';;
-      accent_insensitive) code+='options = options & ~SEARCH_ACCENT_SENSITIVITY_MASK | SEARCH_ACCENT_INSENSITIVE;';;
-      accent_only)        code+='options = options & ~SEARCH_ACCENT_SENSITIVITY_MASK | SEARCH_ACCENT_ONLY;';;
+      accent_sensitive)   code+=' & (~SEARCH_ACCENT_SENSITIVITY_MASK | SEARCH_ACCENT_SENSITIVE)';;
+      accent_insensitive) code+=' & (~SEARCH_ACCENT_SENSITIVITY_MASK | SEARCH_ACCENT_INSENSITIVE)';;
+      accent_only)        code+=' & (~SEARCH_ACCENT_SENSITIVITY_MASK | SEARCH_ACCENT_ONLY)';;
 
-      word)  code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_WORD;';;
-      fuzzy) code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_FUZZY;';;
-      text)  code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_TEXT;';;
-      regex) code+='options = options & ~SEARCH_MODE_MASK | SEARCH_MODE_REGEX;';;
+      word)  code+=' & (~SEARCH_MODE_MASK | SEARCH_MODE_WORD)';;
+      fuzzy) code+=' & (~SEARCH_MODE_MASK | SEARCH_MODE_FUZZY)';;
+      text)  code+=' & (~SEARCH_MODE_MASK | SEARCH_MODE_TEXT)';;
+      regex) code+=' & (~SEARCH_MODE_MASK | SEARCH_MODE_REGEX)';;
 
       *) error="Unknown '$1' option";
         return 1;;
     esac
     shift
   done
-  code+='showSearcher(options);'
+  code+=');'
 }
 
 cmd_save() {
