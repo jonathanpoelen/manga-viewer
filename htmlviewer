@@ -2800,21 +2800,29 @@ const showSearcher = (function() {
 
       // validate element
       case "Enter": {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        let i;
-        if (activeElement.parentNode) {
-          i = activeElement.dataset.index;
-        }
-        else if (results.length !== 0) {
-          i = results[0].elem.dataset.index;
+        if (e.ctrlKey) {
+          activeElement.focus();
+          activeElement.dispatchEvent(new KeyboardEvent("keydown", e));
+          activeElement.dispatchEvent(new KeyboardEvent("keyup", e));
+          // after default behavior (open in a new tab), retore focus to input
+          setTimeout(() => input.focus(), 0);
         }
         else {
-          return;
-        }
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          let i;
+          if (activeElement.parentNode) {
+            i = activeElement.dataset.index;
+          }
+          else if (results.length !== 0) {
+            i = results[0].elem.dataset.index;
+          }
+          else {
+            return;
+          }
 
-        validateItem(i);
+          validateItem(i);
+        }
         break;
       }
     }
@@ -2830,13 +2838,16 @@ const showSearcher = (function() {
   }, true);
 
   searchResultListElement.addEventListener("click", function(e) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    let elem = e.target;
-    if (elem.tagName === "B") {
-      elem = elem.parentNode;
+    // ctrl+click => open new tab (default behavior)
+    if (!e.ctrlKey) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      let elem = e.target;
+      if (elem.tagName === "B") {
+        elem = elem.parentNode;
+      }
+      validateItem(elem.dataset.index, true);
     }
-    validateItem(elem.dataset.index, true);
   });
 
   const searchCommonPrefixLength = function(strings) {
