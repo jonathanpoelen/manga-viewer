@@ -932,8 +932,8 @@ parse_input_line()
     else
       # html escape
       display_key="${display_key/ /Space}"
-      display_key="${display_key/&/&amp;}"
-      display_key="${display_key/</&lt;}"
+      display_key="${display_key/&/'&amp;'}"
+      display_key="${display_key/</'&lt;'}"
     fi
 
     local cmdraw
