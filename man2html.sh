@@ -7,6 +7,7 @@ echo -n '<!DOCTYPE html>
 <html><head><title>htmlviewer -h</title><meta charset="utf-8"/><style>
 .t{text-decoration:underline}
 .o{text-decoration:none}
+.o:hover,.o:focus{text-decoration:underline}
 
 html{color:#c5c8c6;background:#070a13}
 a{color:#c5c8f6}
