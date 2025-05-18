@@ -2,8 +2,10 @@
 <html><head><title>htmlviewer -h</title><meta charset="utf-8"/><style>
 .t{text-decoration:underline}
 .o{text-decoration:none}
+.o:hover,.o:focus{text-decoration:underline}
 
 html{color:#c5c8c6;background:#070a13}
+a{color:#c5c8f6}
 .t{color:#c5c8c6}
 .t:hover{color:#f5f8f6}
 .o{color:#ec4d62}
@@ -12,7 +14,8 @@ html{color:#c5c8c6;background:#070a13}
 .d{color:#999}
 
 @media (prefers-color-scheme: light) {
-  html{color:#000;background:#d5d8d6}
+  html{color:#000;background:#f5f8f6}
+  a{color:#008}
   .t{color:#000}
   .t:hover{color:#444}
   .o{color:#c31d27}
@@ -30,7 +33,7 @@ Generate a html viewer file
 
   htmlviewer [<a class="o" href="#opt-a">-a</a>|<a class="o" href="#opt-A">-A</a>] [<a class="o" href="#opt-n">-n</a>] [<a class="o" href="#opt-s">-s</a>] [<a class="o" href="#opt-S">-S</a>] [<a class="o" href="#opt-c">-c</a> &lt;<span class="v">command</span>>] [<a class="o" href="#opt-e">-e</a> &lt;<span class="v">html</span>>] [<a class="o" href="#opt-f">-f</a> &lt;<span class="v">filename</span>>]
              [<a class="o" href="#opt-i">-i</a> &lt;<span class="v">filename</span>>] [<a class="o" href="#opt-m">-m</a> {<span class="l">normal</span>|<span class="l">double</span>|<span class="l">normal_or_doube</span>|<span class="l">webtoon</span>|<span class="l">all</span>}]
-             [<a class="o" href="#opt-t">-t</a> &lt;<span class="v">title</span>>] [<a class="o" href="#opt-x">-x</a> &lt;<span class="v">pixel_distance</span>>] directory...
+             [<a class="o" href="#opt-t">-t</a> &lt;<span class="v">title</span>>] [<a class="o" href="#opt-x">-x</a> &lt;<span class="v">pixel_distance</span>>] [<a class="o" href="#opt-M">-M</a> &lt;<span class="v">url</span>>] directory...
   htmlviewer <a class="o" href="#opt-p">-p</a>
   htmlviewer <a class="o" href="#opt-K">-K</a>
   htmlviewer <a class="o" href="#opt-h">-h</a>
@@ -61,11 +64,15 @@ Generate a html viewer file
       Show this help.
 
   <a class="o" id="opt-K" href="#opt-K">-K</a>
-      Generates a html file which displays the name of the keys and
+      Generate a html file which displays the name of the keys and
       mouse buttons.
 
   <a class="o" id="opt-m" href="#opt-m">-m</a> {<span class="l">normal</span>|<span class="l">double</span>|<span class="l">normal_or_double</span>|<span class="l">webtoon</span>|<span class="l">all</span>}
       Specify default mode.
+
+  <a class="o" id="opt-M" href="#opt-M">-M</a> &lt;<span class="v">url</span>>
+      Specify the url of the man page used to display shortcuts.
+      An empty url desactive the links.
 
   <a class="o" id="opt-n" href="#opt-n">-n</a>
       Do not load default configuration files.
@@ -90,7 +97,7 @@ Generate a html viewer file
       By default load <span class="d">${XDG_CONFIG_DIRS}/htmlviewer/input.conf</span> with
       <span class="d">$HOME/.config</span> as default value when XDG_CONFIG_DIRS is unset.
 
-      Currently <span class="d">/home/runner/.config/htmlviewer/input.conf</span>
+      Currently <span class="d">$HOME/.config/htmlviewer/input.conf</span>
 
       The input.conf file consists of a list of mouse and key bindings,
       for example:
@@ -141,39 +148,39 @@ Generate a html viewer file
       Note: special names are case insensitive.
 
   <a class="t" id="ch-Commands" href="#ch-Commands">Commands</a>
-      <a class="o" href="#optnext">next</a> [<span class="v">n</span>=<span class="d">1</span>]
+      <a class="o" id="cmd-next" href="#cmd-next">next</a> [<span class="v">n</span>=<span class="d">1</span>]
           Advance n images. A negative number goes back <span class="v">n</span> images.
 
-      <a class="o" href="#optprev">prev</a> [<span class="v">n</span>=<span class="d">1</span>]
+      <a class="o" id="cmd-prev" href="#cmd-prev">prev</a> [<span class="v">n</span>=<span class="d">1</span>]
           Equivalent to next -<span class="v">n</span>.
 
-      <a class="o" href="#optnext_chap">next_chap</a> [<span class="v">n</span>=<span class="d">1</span>]
+      <a class="o" id="cmd-next_chap" href="#cmd-next_chap">next_chap</a> [<span class="v">n</span>=<span class="d">1</span>]
           Advance n directories. A negative number goes back <span class="v">n</span> directories.
 
-      <a class="o" href="#optprev_chap">prev_chap</a> [<span class="v">n</span>=<span class="d">1</span>]
+      <a class="o" id="cmd-prev_chap" href="#cmd-prev_chap">prev_chap</a> [<span class="v">n</span>=<span class="d">1</span>]
           Equivalent to next_chap -<span class="v">n</span>.
 
-      <a class="o" href="#optpgup">pgup</a> [<span class="v">percent</span>=<span class="d">100</span>]
+      <a class="o" id="cmd-pgup" href="#cmd-pgup">pgup</a> [<span class="v">percent</span>=<span class="d">100</span>]
 
-      <a class="o" href="#optpgdown">pgdown</a> [<span class="v">percent</span>=<span class="d">100</span>]
+      <a class="o" id="cmd-pgdown" href="#cmd-pgdown">pgdown</a> [<span class="v">percent</span>=<span class="d">100</span>]
 
-      <a class="o" href="#optpgdown_or_next">pgdown_or_next</a> [<span class="v">percent</span>=<span class="d">100</span>] [<span class="v">pixel_distance</span>=<span class="d">$bottom_pixel</span>]
+      <a class="o" id="cmd-pgdown_or_next" href="#cmd-pgdown_or_next">pgdown_or_next</a> [<span class="v">percent</span>=<span class="d">100</span>] [<span class="v">pixel_distance</span>=<span class="d">$bottom_pixel</span>]
           Next image when at the bottom of the page, otherwise scroll down.
 
-      <a class="o" href="#optpgup_or_prev">pgup_or_prev</a> [<span class="v">percent</span>=<span class="d">100</span>]
+      <a class="o" id="cmd-pgup_or_prev" href="#cmd-pgup_or_prev">pgup_or_prev</a> [<span class="v">percent</span>=<span class="d">100</span>]
           Previous image when at the top of the page, otherwise scroll up.
 
-      <a class="o" href="#optgoto">goto</a> [<span class="v">image_position</span>]
+      <a class="o" id="cmd-goto" href="#cmd-goto">goto</a> [<span class="v">image_position</span>]
           Opens a page selection window.
 
           When '<span class="v">image_position</span>' is specified, the nth image is opened directly.
           A negative number begins at the end and too large a number selects
           the last frame.
 
-      <a class="o" href="#optrotate">rotate</a> &lt;<span class="v">deg</span>>
+      <a class="o" id="cmd-rotate" href="#cmd-rotate">rotate</a> &lt;<span class="v">deg</span>>
           Rotate an images.
 
-      <a class="o" href="#optnewtab">newtab</a> [{<span class="l">background</span>|<span class="l">foreground</span>|<span class="l">window</span>}]
+      <a class="o" id="cmd-newtab" href="#cmd-newtab">newtab</a> [{<span class="l">background</span>|<span class="l">foreground</span>|<span class="l">window</span>}]
           Open the current image in a background tab (default), foreground tab
           or new window.
 
@@ -182,9 +189,9 @@ Generate a html viewer file
 
           window depends on browser options and may open a foreground tab.
 
-      <a class="o" href="#optmode">mode</a> {<span class="l">normal</span>|<span class="l">double</span>|<span class="l">normal_or_double</span>|<span class="l">webtoon</span>|<span class="l">all</span>} [<span class="v">image_limit</span>=<span class="d">0</span>]
+      <a class="o" id="cmd-mode" href="#cmd-mode">mode</a> {<span class="l">normal</span>|<span class="l">double</span>|<span class="l">normal_or_double</span>|<span class="l">webtoon</span>|<span class="l">all</span>} [<span class="v">image_limit</span>=<span class="d">0</span>]
           - <span class="l">normal</span>: One image at a time.
-          - <span class="l">double</span>: Once on 2, the commands <a class="o" href="#optpgdown_or_next">pgdown_or_next</a>/<a class="o" href="#optpgup_or_prev">pgup_or_prev</a> go to
+          - <span class="l">double</span>: Once on 2, the commands <a class="o" href="#cmd-pgdown_or_next">pgdown_or_next</a>/<a class="o" href="#cmd-pgup_or_prev">pgup_or_prev</a> go to
                     top/bottom of the page rather than go to the next/prev
                     image.
           - <span class="l">normal_or_double</span>: Use double page mode for images whose width is
@@ -196,29 +203,29 @@ Generate a html viewer file
           '<span class="v">image_limit</span>' specifies the maximum number of images displayed per
           page. <span class="v">0</span> for no limit.
 
-      <a class="o" href="#optinfo">info</a>
+      <a class="o" id="cmd-info" href="#cmd-info">info</a>
           Show current image position.
 
-      <a class="o" href="#optauto_scroll">auto_scroll</a> [<span class="v">ms_delay</span>=<span class="d">800</span>]
+      <a class="o" id="cmd-auto_scroll" href="#cmd-auto_scroll">auto_scroll</a> [<span class="v">ms_delay</span>=<span class="d">800</span>]
           Start auto scroll with specific delay.
 
-      <a class="o" href="#opttoggle_auto_scroll">toggle_auto_scroll</a> [<span class="v">ms_delay</span>=<span class="d">800</span>]
-          Resume or stop auto scroll. Equivalent to <a class="o" href="#optauto_scroll">auto_scroll</a> when not started.
+      <a class="o" id="cmd-toggle_auto_scroll" href="#cmd-toggle_auto_scroll">toggle_auto_scroll</a> [<span class="v">ms_delay</span>=<span class="d">800</span>]
+          Resume or stop auto scroll. Equivalent to <a class="o" href="#cmd-auto_scroll">auto_scroll</a> when not started.
 
-      <a class="o" href="#optadd_interval">add_interval</a> &lt;<span class="v">ms_delay</span>>
+      <a class="o" id="cmd-add_interval" href="#cmd-add_interval">add_interval</a> &lt;<span class="v">ms_delay</span>>
           Add delay of auto scroll. Delay can be negative.
 
-      <a class="o" href="#optset_bottom_pixel">set_bottom_pixel</a> &lt;<span class="v">pixel_distance</span>>
+      <a class="o" id="cmd-set_bottom_pixel" href="#cmd-set_bottom_pixel">set_bottom_pixel</a> &lt;<span class="v">pixel_distance</span>>
           Number of pixels at the bottom of the page that can be skipped for
-          so that <a class="o" href="#optpgdown_or_next">pgdown_or_next</a>, <a class="o" href="#optauto_scroll">auto_scroll</a> and <a class="o" href="#opttoggle_auto_scroll">toggle_auto_scroll</a> goes to
+          so that <a class="o" href="#cmd-pgdown_or_next">pgdown_or_next</a>, <a class="o" href="#cmd-auto_scroll">auto_scroll</a> and <a class="o" href="#cmd-toggle_auto_scroll">toggle_auto_scroll</a> goes to
           the next image.
 
           Default is <span class="d">20</span>.
 
-      <a class="o" href="#optadd_bottom_pixel">add_bottom_pixel</a> &lt;<span class="v">pixel_distance</span>>
-          Add <span class="v">pixel_distance</span>. See <a class="o" href="#optset_bottom_pixel">set_bottom_pixel</a>.
+      <a class="o" id="cmd-add_bottom_pixel" href="#cmd-add_bottom_pixel">add_bottom_pixel</a> &lt;<span class="v">pixel_distance</span>>
+          Add <span class="v">pixel_distance</span>. See <a class="o" href="#cmd-set_bottom_pixel">set_bottom_pixel</a>.
 
-      <a class="o" href="#opttrigger">trigger</a> [<span class="v">ms_delay</span>=<span class="d">0</span>] &lt;<span class="v">command</span>>
+      <a class="o" id="cmd-trigger" href="#cmd-trigger">trigger</a> [<span class="v">ms_delay</span>=<span class="d">0</span>] &lt;<span class="v">command</span>>
           Allows to trigger &lt;<span class="v">command</span>> when opening the page after &lt;<span class="v">ms_delay</span>>.
           The keyboard shortcut is associated with &lt;<span class="v">command</span>>.
 
@@ -231,24 +238,24 @@ Generate a html viewer file
             nokey trigger mode webtoon
             h mode webtoon
 
-      <a class="o" href="#optmouse">mouse</a> {<span class="l">top</span>|<span class="l">bottom</span>|<span class="l">left</span>|<span class="l">right</span>|<span class="l">top_left</span>|<span class="l">top_right</span>|<span class="l">bottom_left</span>|<span class="l">bottom_right</span>} &lt;<span class="v">command</span>>
+      <a class="o" id="cmd-mouse" href="#cmd-mouse">mouse</a> {<span class="l">top</span>|<span class="l">bottom</span>|<span class="l">left</span>|<span class="l">right</span>|<span class="l">top_left</span>|<span class="l">top_right</span>|<span class="l">bottom_left</span>|<span class="l">bottom_right</span>} &lt;<span class="v">command</span>>
           Execute &lt;<span class="v">command</span>> only when the mouse pointer is in a certain area.
 
           Note: Only works with mouse shortcuts.
 
-      <a class="o" href="#optmouse_assistance">mouse_assistance</a>
+      <a class="o" id="cmd-mouse_assistance" href="#cmd-mouse_assistance">mouse_assistance</a>
           Enable or disable the display of mouse area.
 
-      <a class="o" href="#optrestrict">restrict</a> {<span class="l">normal</span>|<span class="l">double</span>|<span class="l">normal_or_double</span>|<span class="l">webtoon</span>|<span class="l">all</span>} &lt;<span class="v">command</span>>
+      <a class="o" id="cmd-restrict" href="#cmd-restrict">restrict</a> {<span class="l">normal</span>|<span class="l">double</span>|<span class="l">normal_or_double</span>|<span class="l">webtoon</span>|<span class="l">all</span>} &lt;<span class="v">command</span>>
           Enable a shortcut for a specific mode.
 
-      <a class="o" href="#optshortcuts">shortcuts</a>
+      <a class="o" id="cmd-shortcuts" href="#cmd-shortcuts">shortcuts</a>
           Show shortcuts.
 
-      <a class="o" href="#optopen">open</a>
+      <a class="o" id="cmd-open" href="#cmd-open">open</a>
           Open directories.
 
-      <a class="o" href="#optsearch">search</a> [{<span class="l">chapter</span>|<span class="l">image</span>|<span class="l">chapter_then_image</span>}
+      <a class="o" id="cmd-search" href="#cmd-search">search</a> [{<span class="l">chapter</span>|<span class="l">image</span>|<span class="l">chapter_then_image</span>}
              |{<span class="l">case_sensitive</span>|<span class="l">case_insensitive</span>|<span class="l">uppercase_only</span>}
              |{<span class="l">accent_sensitive</span>|<span class="l">accent_insensitive</span>|<span class="l">accent_only</span>}
              |{<span class="l">word</span>|<span class="l">fuzzy</span>|<span class="l">text</span>|<span class="l">regex</span>}
@@ -281,15 +288,15 @@ Generate a html viewer file
           - <span class="l">word</span>, <span class="l">fuzzy</span>, <span class="l">text</span>, <span class="l">regex</span>:
               Algorithm used for the filter.
 
-      <a class="o" href="#optsave">save</a>
+      <a class="o" id="cmd-save" href="#cmd-save">save</a>
           Save position and mode.
 
-      <a class="o" href="#optload">load</a>
+      <a class="o" id="cmd-load" href="#cmd-load">load</a>
           Load saved position and mode.
 
 
   <a class="t" id="ch-COPYRIGHT" href="#ch-COPYRIGHT">COPYRIGHT</a>
        By Jonathan Poelen
        MIT License
-       https://github.com/jonathanpoelen/manga-viewer
+       <a href="https://github.com/jonathanpoelen/manga-viewer">https://github.com/jonathanpoelen/manga-viewer</a>
 </pre></body></html>
