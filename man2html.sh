@@ -29,10 +29,12 @@ html{color:#c5c8c6;background:#070a13}
 <p>(options and commands (in <span class="o">red</span>) are clickable links)</p>
 <p>Quick links: '
 
+# extract title and writes a table of contents
 sed -nE '
   /^  [^ \x1b]/{
     /^  htmlviewer/!{
       H
+      # convert invalid id character to -
       y/ ./--/
       H
     }
@@ -51,22 +53,39 @@ echo '</p>
 <pre>'
 
 sed -E '
+  # convert xml character to entity
   s/&/\&amp;/g
   s/</\&lt;/g
+
+  # add link and id to titles
   /^  [^ \x1b]/{
     /^  htmlviewer/!{
       h
+      # convert invalid id character to -
       y/ ./--/
       G
       s|^--([^ ]+)\n  (.*)|  <a class="t" id="ch-\1" href="#ch-\1">\2</a>|
       t
     }
   }
-  s~^  \x1b\[31m([^\x1b]+)\x1b\[m~  <a class="o" id="opt\1" href="#opt\1">\1</a>~
-  s~\x1b\[31m([^\x1b]+)\x1b\[m~<a class="o" href="#opt\1">\1</a>~g
+
+  # convert color and add link
+
+  # command name
+  s~^      \x1b\[31m([^\x1b]+)\x1b\[m~      <a class="o" id="cmd-\1" href="#cmd-\1">\1</a>~
+  # cli option name
+  s~^  \x1b\[31m([^\x1b]+)\x1b\[m~  <a class="o" id="opt\1" href="#opt\1">\1</a>~g
+  # cli option name in description
+  s~\x1b\[31m-([^\x1b]+)\x1b\[m~<a class="o" href="#opt-\1">-\1</a>~g
+  # command name in description
+  s~\x1b\[31m([^\x1b]+)\x1b\[m~<a class="o" href="#cmd-\1">\1</a>~g
+  # parameter name
   s~\x1b\[32m~<span class="v">~g
+  # list of parameter values
   s~\x1b\[34m~<span class="l">~g
+  # default value
   s~\x1b\[37m~<span class="d">~g
+  # reset
   s~\x1b\[m~</span>~g
 ' <<< "$s"
 
