@@ -100,7 +100,7 @@ usage() {
 
   htmlviewer [$co-a$cr|$co-A$cr] [$co-n$cr] [$co-s$cr] [$co-S$cr] [$co-c$cr <${cv}command${cr}>] [$co-e$cr <${cv}html${cr}>] [$co-f$cr <${cv}filename${cr}>]
              [$co-i$cr <${cv}filename${cr}>] [$co-m$cr {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_doube${cr}|${cl}webtoon${cr}|${cl}all${cr}}]
-             [$co-t$cr <${cv}title${cr}>] [$co-x$cr <${cv}pixel_distance${cr}>] directory...
+             [$co-t$cr <${cv}title${cr}>] [$co-x$cr <${cv}pixel_distance${cr}>] [$co-M$cr <${cv}url${cr}>] directory...
   htmlviewer $co-p$cr
   htmlviewer $co-K$cr
   htmlviewer $co-h$cr"
@@ -134,11 +134,15 @@ help() {
       Show this help.
 
   $co-K$cr
-      Generates a html file which displays the name of the keys and
+      Generate a html file which displays the name of the keys and
       mouse buttons.
 
   $co-m$cr {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_double${cr}|${cl}webtoon${cr}|${cl}all${cr}}
       Specify default mode.
+
+  $co-M$cr <${cv}url${cr}>
+      Specify the url of the man page used to display shortcuts.
+      An empty url desactive the links.
 
   $co-n$cr
       Do not load default configuration files.
@@ -480,7 +484,7 @@ init_local_mode()
   esac
 }
 
-subcomand()
+subcommand()
 {
   local fn=$1
   if [[ -z ${fns[$fn]} ]]; then
@@ -690,7 +694,7 @@ cmd_trigger()
   local -i delay=$1
   [[ "$1" != "$delay" ]] && delay=0 || shift
 
-  subcomand "$@"
+  subcommand "$@"
   triggered+="{action: function(){$code}, delay: $delay},"$'\n'
 }
 
@@ -703,7 +707,7 @@ cmd_mouse()
   fi
 
   shift
-  subcomand "$@"
+  subcommand "$@"
   code="if (isInZone(arguments[0], $zone)) { $code }"
 }
 
@@ -717,7 +721,7 @@ cmd_restrict()
 {
   init_local_mode "$1"
   shift
-  subcomand "$@"
+  subcommand "$@"
 }
 
 cmd_shortcuts()
@@ -799,9 +803,10 @@ title=
 help_shortcut=
 pgdown_or_next_shortcut=
 pgup_or_prev_shortcut=
+man_url='https://jonathanpoelen.github.io/manga-viewer/man.html'
 declare -a cmds=()
 
-while getopts 'aAsSnpKi:c:e:t:f:x:m:h?' opt ; do
+while getopts 'aAsSnpKi:c:e:t:f:x:m:M:h?' opt ; do
   case $opt in
     s) sort=1;;
     S) sort=0;;
@@ -846,6 +851,7 @@ window.addEventListener("click", mouseEvent, true);
 window.addEventListener("auxclick", mouseEvent, true);
 </script></body></html>';
        exit;;
+    M) man_url="$OPTARG";;
     ?) minihelp >&2;
        exit 2;;
   esac
@@ -868,7 +874,12 @@ fi
 
 shortcuts=()
 html_table_shortcuts=()
+html_header_shortcuts=
 declare -A shortcuts_by_mode=()
+
+if [[ -n $man_url ]]; then
+  html_header_shortcuts="<p id='shortcuts-header'>The description of each command can be found in the <a href='$man_url'>manual</a>.</p>"
+fi
 
 parse_input_line()
 {
@@ -895,7 +906,7 @@ parse_input_line()
     args+=("$arg")
   done
 
-  local mode # set by restrict
+  local mode # set by cmd_restrict
   cmd_$fn "${args[@]}" || error="$fn: $error"
 
   # extract controls and convert key to lowercase
@@ -936,19 +947,23 @@ parse_input_line()
       display_key="${display_key/</'&lt;'}"
     fi
 
-    local cmdraw
     # remove trigger prefix
     if [[ $fn = trigger ]]; then
       # remove delay prefix
-      if [[ ${args[@]} = [0-9] ]]; then
-        local tmp=("${args[@]}")
-        tmp[0]=''
-        cmdraw="${tmp[@]}"
+      if [[ ${args[0]} = [0-9]* ]]; then
+        args[1]=
+        fn="${args[1]}"
       else
-        cmdraw="${args[@]}"
+        fn="${args[0]}"
       fi
-    else
-      cmdraw="$fn ${args[@]}"
+    # urlify subcommand
+    elif [[ -n $man_url ]] && ( [[ $fn = 'restrict' ]] || [[ $fn = 'mouse' ]] ); then
+      args[1]="<a class='man-link' href='${man_url}#cmd-${args[1]}'>${args[1]}</a>"
+    fi
+
+    local htmlfn=$fn
+    if [[ -n $man_url ]]; then
+      htmlfn="<a class='man-link' href='${man_url}#cmd-$fn'>$fn</a>"
     fi
 
     [[ 0 != ${controls[meta]} ]] && display_key="Meta+$display_key"
@@ -956,7 +971,7 @@ parse_input_line()
     [[ 0 != ${controls[shift]} ]] && display_key="Shift+$display_key"
     [[ 0 != ${controls[alt]} ]] && display_key="Alt+$display_key"
     [[ 0 != ${controls[ctrl]} ]] && display_key="Ctrl+$display_key"
-    html_table_shortcuts+=("<tr><td>$display_key</td><td>$cmdraw</td></tr>")
+    html_table_shortcuts+=("<tr><td>$display_key</td><td>$htmlfn ${args[*]}</td></tr>")
 
     if [[ -z $mode ]]; then
       if [[ $fn == 'shortcuts' ]]; then
@@ -1178,6 +1193,32 @@ code {
   padding-right: .5em;
 }
 
+#shortcuts-header {
+  color: white;
+  text-align: center;
+}
+#shortcuts-header a {
+  color: #aaf;
+  text-decoration-color: #888;
+}
+#shortcuts-header a:focus {
+  text-decoration-color: #a00;
+}
+#shortcuts-header a:hover {
+  color: #bbf;
+}
+
+.man-link {
+  color: #000;
+  text-decoration-color: #aaa;
+}
+.man-link:focus {
+  text-decoration-color: #a00;
+}
+.man-link:hover {
+  text-decoration-color: #008;
+}
+
 #searcher {
   background:#eee;
   padding: 0 10%;
@@ -1264,7 +1305,10 @@ b {
 <body>'
 
 if (( $standalone == 2 )); then
-  echo '<section id="shortcuts" style="display:block"><table>'"${html_table_shortcuts[@]}"'</table></section>
+  echo '<section id="shortcuts" style="display:block">
+    '"$html_header_shortcuts"'
+    <table>'"${html_table_shortcuts[@]}"'</table>
+  </section>
 </body>
 </html>'
   exit
@@ -1340,7 +1384,10 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
   <div id="searchResultList"></div>
 </section>
 
-<section id="shortcuts"><table>'"${html_table_shortcuts[@]}"'</table></section>
+<section id="shortcuts">
+  '"$html_header_shortcuts"'
+  <table>'"${html_table_shortcuts[@]}"'</table>
+</section>
 
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
 

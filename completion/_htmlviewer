@@ -121,6 +121,7 @@ args=(
   + generating
   '-a[Builds a web page that can open images from the viewer]'
   '-A[Build a web page that lists the shortcuts available]'
+  '-M+[Specify the url of the man page used to display shortcuts]:url:'
 
   + misc
   '-e[Specify content of html header]'
