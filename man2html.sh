@@ -18,7 +18,7 @@ a{color:#c5c8f6}
 .d{color:#999}
 
 @media (prefers-color-scheme: light) {
-  html{color:#000;background:#d5d8d6}
+  html{color:#000;background:#f5f8f6}
   a{color:#008}
   .t{color:#000}
   .t:hover{color:#444}
