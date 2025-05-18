@@ -15,7 +15,7 @@ It's main advantage of the viewer is that it uses one and the same key to scroll
 
 The interface is uncluttered and button-free, with only images displayed. Nevertheless, there are numerous keyboard and mouse shortcuts that trigger "commands". For example, going to the next page is a command.
 
-Shortcuts are configured when `htmlviewer` is launched via a config file or/and directory on the command line. For more details, see `htmlviwer -h` or the [online man](https://jonathanpoelen.github.io/manga-viewer/man.html#ch-input.conf) version.
+Shortcuts are configured when `htmlviewer` is launched via a config file or/and directory on the command line. For more details, see `htmlviwer -h` or the [online man](https://jonathanpoelen.github.io/manga-viewer/man.html#ch-input-conf) version.
 
 Once the file has been generated, it is no longer possible to modify the shortcuts. You'll need to generate a new file.
 
