@@ -87,6 +87,9 @@ sed -E '
   s~\x1b\[37m~<span class="d">~g
   # reset
   s~\x1b\[m~</span>~g
+
+  # convert home path to $HOME
+  s~/home/[^/]+~$HOME~g
 ' <<< "$s"
 
 echo '</pre></body></html>'
