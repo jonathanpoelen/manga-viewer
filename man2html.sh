@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-s=$(</dev/stdin)  # <&0 doesn't work here with bash
+s=$(<${1:-/dev/stdin})  # <&0 doesn't work here with bash
 
 echo -n '<!DOCTYPE html>
 <html><head><title>htmlviewer -h</title><meta charset="utf-8"/><style>
