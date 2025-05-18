@@ -9,6 +9,7 @@ echo -n '<!DOCTYPE html>
 .o{text-decoration:none}
 
 html{color:#c5c8c6;background:#070a13}
+a{color:#c5c8f6}
 .t{color:#c5c8c6}
 .t:hover{color:#f5f8f6}
 .o{color:#ec4d62}
@@ -18,6 +19,7 @@ html{color:#c5c8c6;background:#070a13}
 
 @media (prefers-color-scheme: light) {
   html{color:#000;background:#d5d8d6}
+  a{color:#008}
   .t{color:#000}
   .t:hover{color:#444}
   .o{color:#c31d27}
@@ -90,6 +92,9 @@ sed -E '
 
   # convert home path to $HOME
   s~/home/[^/]+~$HOME~g
+
+  # convert http link to html link
+  s~https?://[-/.a-zA-Z0-9]+~<a href="&">&</a>~g
 ' <<< "$s"
 
 echo '</pre></body></html>'
