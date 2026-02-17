@@ -884,7 +884,7 @@ fi
 parse_input_line()
 {
   local key=$1
-  [[ ${key[0]} != '#' ]] || return
+  [[ ${key:0:1} != '#' ]] || return
 
   local fn=$2
   [[ ${fn[0]} != '#' ]] || {
