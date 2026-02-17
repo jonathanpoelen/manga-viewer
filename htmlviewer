@@ -204,16 +204,16 @@ help() {
   Special key names
       ${cl}space${cr}
       ${cl}sharp${cr} for #
-      ${cl}plus${cr} alias for +
+      ${cl}plus${cr} for +
       ${cl}pgup${cr} alias for PageUp
       ${cl}pgdown${cr} alias for PageDown
       ${cl}up${cr} alias for ArrowUp
       ${cl}down${cr} alias for ArrowDown
       ${cl}left${cr} alias for ArrowLeft
       ${cl}right${cr} alias for ArrowRight
-      ${cl}left_click${cr} for click0
-      ${cl}middle_click${cr} for click1
-      ${cl}right_click${cr} for click2
+      ${cl}left_click${cr} alias for click0
+      ${cl}middle_click${cr} alias for click1
+      ${cl}right_click${cr} alias for click2
 
       Note: special names are case insensitive.
 
