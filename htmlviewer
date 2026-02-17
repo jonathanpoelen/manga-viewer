@@ -887,7 +887,7 @@ parse_input_line()
   [[ ${key:0:1} != '#' ]] || return
 
   local fn=$2
-  [[ ${fn[0]} != '#' ]] || {
+  [[ -n $fn ]] || {
     error="key without command"
     return 1
   }
