@@ -998,6 +998,12 @@ parse_input_line()
         pgdown_or_next_shortcut+="<code>$display_key</code>, "
       elif [[ $fn == 'pgup_or_prev' ]]; then
         pgup_or_prev_shortcut+="<code>$display_key</code>, "
+      elif [[ $fn == 'mouse' ]]; then
+        if [[ $2 == 'pgdown_or_next' ]]; then
+          pgdown_or_next_shortcut+="<code>$display_key ($1 side)</code>, "
+        elif [[ $2 == 'pgup_or_prev' ]]; then
+          pgup_or_prev_shortcut+="<code>$display_key ($1 side)</code>, "
+        fi
       fi
     fi
   fi
