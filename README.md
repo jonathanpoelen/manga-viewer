@@ -115,14 +115,18 @@ Y newtab foreground
 
 # Mouse shortcuts
 
-left_click pgdown_or_next
-shift+left_click pgup_or_prev
+left_click mouse left pgup_or_prev
+left_click mouse right pgdown_or_next
 
-ctrl+left_click next_chap
-shift+ctrl+left_click next_chap -1
+left_click restrict all mouse left pgup_or_prev 98
+left_click restrict all mouse right pgdown_or_next 98
+left_click restrict webtoon mouse left pgup_or_prev 98
+left_click restrict webtoon mouse right pgdown_or_next 98
 
-alt+left_click newtab
-altgr+left_click newtab
+left_click+shift mouse left next_chap -1
+left_click+shift mouse right next_chap
+
+left_click+ctrl newtab
 
 @ mouse_assistance
 
