@@ -430,18 +430,22 @@ declare -A show_shortcut_map=(
 )
 
 declare -A mousezone=(
-  [xtop]=1
-  [xbottom]=2
-  [xleft]=4
-  [xright]=8
-  [xtop_left]=5
-  [xleft_top]=5
-  [xright_top]=9
-  [xtop_right]=9
-  [xbottom_left]=6
-  [xleft_bottom]=6
-  [xbottom_right]=10
-  [xright_bottom]=10
+  [xtop_left]=1
+  [xleft_top]=1
+
+  [xright_top]=2
+  [xtop_right]=2
+
+  [xbottom_left]=4
+  [xleft_bottom]=4
+
+  [xbottom_right]=8
+  [xright_bottom]=8
+
+  [xtop]=3
+  [xbottom]=12
+  [xleft]=5
+  [xright]=10
   [xall]=15
 )
 
@@ -700,7 +704,8 @@ cmd_trigger()
 
 cmd_mouse()
 {
-  local zone=${mousezone["x$1"]}
+  # non local variable, also used by the parent
+  zone=${mousezone["x$1"]}
   if [[ -z $zone ]]; then
     error="Unknown zone '$1'"
     return 1
@@ -708,7 +713,6 @@ cmd_mouse()
 
   shift
   subcommand "$@"
-  code="if (isInZone(arguments[0], $zone)) { $code }"
 }
 
 cmd_mouse_assistance()
@@ -907,6 +911,7 @@ parse_input_line()
   done
 
   local mode # set by cmd_restrict
+  local zone=0 # set by cmd_mouse
   cmd_$fn "${args[@]}" || error="$fn: $error"
 
   # extract controls and convert key to lowercase
@@ -924,7 +929,7 @@ parse_input_line()
 
   local newkey="${remap[${lowerkey}]}"
   [[ -z $newkey ]] || key="$newkey"
-  local shortcut="{alt: ${controls[alt]}, ctrl: ${controls[ctrl]}, shift: ${controls[shift]}, meta: ${controls[meta]}, altgr: ${controls[altgr]}, key: '$key', action: function(){ $code }},"$'\n'
+  local shortcut="{alt: ${controls[alt]}, ctrl: ${controls[ctrl]}, shift: ${controls[shift]}, meta: ${controls[meta]}, altgr: ${controls[altgr]}, zones: ${zone}, key: '$key', action: function(){ $code }},"$'\n'
 
   if [[ -z $mode ]]; then
     shortcuts+=("$shortcut")
@@ -3152,20 +3157,16 @@ const toggleMouseAssistance = (function() {
   };
 })();
 
-const isInZone = function(e, zone) {
+// zone mask:
+// .-------.
+// | 1 | 2 |
+// |---+---|
+// | 4 | 8 |
+// `-------`
+const getZone = function(e) {
   const isTop = (e.clientY < window.innerHeight / 2);
   const isLeft = (e.clientX < window.innerWidth / 2);
-  // top=1 bottom=2 left=4 right=8
-  switch (zone) {
-    case 1: return isTop;
-    case 2: return !isTop;
-    case 4: return isLeft;
-    case 8: return !isLeft;
-    case 5: return isTop && isLeft;
-    case 9: return isTop && !isLeft;
-    case 6: return !isTop && isLeft;
-    case 10: return !isTop && !isLeft;
-  }
+  return (isTop ? (isLeft ? 1 : 2) : (isLeft ? 4 : 8)) << 5;
 };
 
 const selectMode = function(newMode, imageLimit) {
@@ -3178,28 +3179,71 @@ const selectMode = function(newMode, imageLimit) {
   }
 };
 
-const rgxClickName = /^click\d+$/
-const createActions = function(shortcuts, actionsByKeys, actionsByClicks){
-  actionsByKeys = actionsByKeys || {};
-  actionsByClicks = actionsByClicks || [];
+const createActions = function(shortcuts) {
+  const actionsByKeys = {};
+  const actionsByClicks = {};
+  let hasMainClick = false;
+  let hasAuxClick = false;
 
   for (const d of shortcuts) {
-    let actionsByControls = actionsByKeys[d.key];
+    let actions = actionsByKeys;
+    let key = d.key;
+
+    // is click shortcut
+    if (/^click\d+$/.test(key)) {
+      const isMainClick = (key === "click0");
+      hasMainClick = hasMainClick || isMainClick;
+      hasAuxClick = hasAuxClick || !isMainClick;
+      actions = actionsByClicks;
+      key = key.substr(5); // remove "click" prefix
+    }
+
+    // init actions map
+    let actionsByControls = actions[key];
     if (!actionsByControls) {
       actionsByControls = {};
-      actionsByKeys[d.key] = actionsByControls;
-      if (rgxClickName.test(d.key)) {
-        actionsByClicks[d.key.substr(5)] = actionsByControls
+      actions[key] = actionsByControls;
+    }
+
+    // push action
+    const mask
+      = d.alt
+      + (d.ctrl << 1)
+      + (d.shift << 2)
+      + (d.meta << 3)
+      + (d.altgr << 4);
+    if (d.zones) {
+      for (let zone = 0b0001; zone <= 0b1000; zone <<= 1) {
+        if (d.zones & zone) {
+          actionsByControls[mask | (zone << 5)] = d.action;
+        }
       }
     }
-    actionsByControls[d.alt + (d.ctrl << 1) + (d.shift << 2) + (d.meta << 3) + (d.altgr << 4)] = d.action;
+    else {
+      actionsByControls[mask] = d.action;
+    }
   }
 
-  // if there is no conflict, assume assume that:
+  // populate event on each zone when zone is 0 (not specified)
+  for (const k in actionsByClicks) {
+    const actionsByControls = actionsByClicks[k];
+    for (const mask in actionsByControls) {
+      if (!(mask & 0b1111_00000)) {
+        const action = actionsByControls[mask];
+        for (let zone = 0b0001_00000; zone <= 0b1000_00000; zone <<= 1) {
+          if (!actionsByControls[mask | zone]) {
+            actionsByControls[mask | zone] = action;
+          }
+        }
+      }
+    }
+  }
+
+  // if there is no conflict, assume that:
   // - Shift+Key = Key (ex. Shift+< = <)
   // - AltGr+Key = Key
-  const res = [actionsByKeys, actionsByClicks];
-  for (const actions of res) {
+  // - AltGr+Shift+Key = Key
+  for (const actions of [actionsByKeys, actionsByClicks]) {
     for (const k in actions) {
       const actionsByControls = actions[k];
       for (const m in actionsByControls) {
@@ -3218,28 +3262,47 @@ const createActions = function(shortcuts, actionsByKeys, actionsByClicks){
     }
   }
 
-  return res;
+  return [actionsByKeys, actionsByClicks, hasMainClick, hasAuxClick];
 };
 
 // contains key and mouse actions
-const [globalActionsByKeys, globalActionsByClicks] = createActions(['"${shortcuts[@]}"']);
+const globalActions = createActions([
+ '"${shortcuts[@]}"']);
+
+let [actionsByKeys, actionsByClicks, hasMainClick, hasAuxClick] = globalActions;
 
 const createModActions = function(shortcuts) {
-  const actionsByKeys = {};
-  for (const d in globalActionsByKeys) {
-    actionsByKeys[d] = Object.assign({}, globalActionsByKeys[d]);
+  const actions = createActions(shortcuts);
+
+  // merge actions with global actions
+  for (let i = 0; i < 2; ++i) {
+    const actionsBy = actions[i];
+    const globalActionsBy = globalActions[i];
+    for (const k in globalActionsBy) {
+      const d = actionsBy[k];
+      if (d) {
+        const events = globalActionsBy[k];
+        for (const m in events) {
+          d[m] = d[m] || events[m];
+        }
+      }
+      else {
+        actionsBy[k] = globalActionsBy[k];
+      }
+    }
   }
-  return createActions(shortcuts, actionsByKeys, Array.from(globalActionsByClicks));
+
+  // merge "has click" values
+  actions[2] ||= globalActions[2];
+  actions[3] ||= globalActions[3];
+
+  return actions;
 };
 '
 for mode in "${!shortcuts_by_mode[@]}"; do
   echo "${mode}.shortcuts = createModActions([${shortcuts_by_mode[$mode]}]);"
 done
 echo '
-
-let actionsByKeys = globalActionsByKeys;
-let actionsByClicks = globalActionsByClicks;
-let actionsForPrimaryClick = actionsByClicks[0];
 
 const eventMask = function(e) {
   return e.altKey
@@ -3250,22 +3313,7 @@ const eventMask = function(e) {
       ;
 };
 
-const keydownEvent = function(e) {
-  const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
-  if (actions) {
-    const action = actions[eventMask(e)];
-    if (action) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      action();
-      return false;
-    }
-  }
-  return true;
-};
-
-const clickEvent = function(e) {
-  const action = actionsForPrimaryClick[eventMask(e)];
+const runAction = function(e, action) {
   if (action) {
     e.preventDefault();
     e.stopImmediatePropagation();
@@ -3273,37 +3321,26 @@ const clickEvent = function(e) {
     return false;
   }
   return true;
+}
+
+const keydownEvent = function(e) {
+  const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
+  return actions ? runAction(e, actions[eventMask(e)]) : true;
 };
 
-const auxClickEvent = function(e) {
-  let actions = actionsByClicks[e.button];
-  if (actions) {
-    const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
-    if (action) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      action(e);
-      return false;
-    }
-    return true;
-  }
+const clickEvent = function(e) {
+  const actions = actionsByClicks[e.button];
+  return actions ? runAction(e, actions[eventMask(e) | getZone(e)]) : true;
 };
 
 function updateShortcuts(mode) {
-  window.removeEventListener("click", clickEvent, true);
-  window.removeEventListener("auxclick", auxClickEvent, true);
+  if (hasMainClick) window.removeEventListener("click", clickEvent, true);
+  if (hasAuxClick) window.removeEventListener("auxclick", auxClickEvent, true);
 
-  actionsByKeys = mode.shortcuts ? mode.shortcuts[0] : globalActionsByKeys;
-  actionsByClicks = mode.shortcuts ? mode.shortcuts[1] : globalActionsByClicks;
+  [actionsByKeys, actionsByClicks, hasMainClick, hasAuxClick] = mode.shortcuts || globalActions;
 
-  if (0 in actionsByClicks) {
-    actionsForPrimaryClick = actionsByClicks[0];
-    window.addEventListener("click", clickEvent, true);
-  }
-
-  if (actionsByClicks.length > 1) {
-    window.addEventListener("auxclick", auxClickEvent, true);
-  }
+  if (hasMainClick) window.addEventListener("click", clickEvent, true);
+  if (hasAuxClick) window.addEventListener("auxclick", clickEvent, true);
 }
 
 function enableShortcuts() {
@@ -3312,8 +3349,8 @@ function enableShortcuts() {
 }
 
 function disableShortcuts() {
-  window.removeEventListener("click", clickEvent, true);
-  window.removeEventListener("auxclick", auxClickEvent, true);
+  if (hasMainClick) window.removeEventListener("click", clickEvent, true);
+  if (hasAuxClick) window.removeEventListener("auxclick", clickEvent, true);
   window.removeEventListener("keydown", keydownEvent, true);
 }
 
