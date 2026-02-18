@@ -506,8 +506,8 @@ cmd_next()
   if (( $# == 0 )); then
     code='mode.advance(1);'
   else
-    check_n 1 $#
-    check_int "$1"
+    check_n 1 $# &&
+    check_int "$1" &&
     code="mode.advance($1);"
   fi
 }
@@ -517,8 +517,8 @@ cmd_prev()
   if (( $# == 0 )); then
     code='mode.advance(-1);'
   else
-    check_n 1 $#
-    check_int "$1"
+    check_n 1 $# || return 1
+    check_int "$1" || return 1
     local -i n=$1
     ((n=-n))
     code="mode.advance($n);"
@@ -530,8 +530,8 @@ cmd_next_chap()
   if (( $# == 0 )); then
     code='mode.advanceChap(1);'
   else
-    check_n 1 $#
-    check_int "$1"
+    check_n 1 $# &&
+    check_int "$1" &&
     code="mode.advanceChap($1);"
   fi
 }
@@ -541,8 +541,8 @@ cmd_prev_chap()
   if (( $# == 0 )); then
     code='mode.advanceChap(-1);'
   else
-    check_n 1 $#
-    check_int "$1"
+    check_n 1 $# || return 1
+    check_int "$1" || return 1
     local -i n=$1
     ((n=-n))
     code="mode.advanceChap($n);"
@@ -554,16 +554,16 @@ cmd_goto()
   if (( $# == 0 )); then
     code='showGoto();'
   else
-    check_n 1 $#
-    check_int "$1"
+    check_n 1 $# &&
+    check_int "$1" &&
     code="gotoImage($1);"
   fi
 }
 
 cmd_rotate()
 {
-  check_n 1 $#
-  check_int "$1"
+  check_n 1 $# &&
+  check_int "$1" &&
   code="rotate($1);"
 }
 
@@ -572,7 +572,7 @@ cmd_newtab()
   if (( $# == 0 )); then
     code='openInNewTab(0);'
   else
-    check_n 1 $#
+    check_n 1 $# || return 1
     case "$1" in
       window) code="openInNewTab(2);";;
       foreground) code="openInNewTab(1);";;
@@ -588,8 +588,8 @@ cmd_mode()
   init_local_mode "$1"
 
   if (( $# > 1 )); then
-    check_n 2 $#
-    check_int "$2"
+    check_n 2 $# || return 1
+    check_int "$2" || return 1
     image_limit="$2"
   fi
 
@@ -601,8 +601,8 @@ cmd_pgup_or_prev()
   if (( $# == 0 )); then
     code='upOrPrev(body.clientHeight);'
   else
-    check_n 1 $#
-    check_int "$1"
+    check_n 1 $# &&
+    check_int "$1" &&
     code="upOrPrev(body.clientHeight * ($1 / 100));"
   fi
 }
@@ -612,12 +612,12 @@ cmd_pgdown_or_next()
   if (( $# == 0 )); then
     code='downOrNext(bottomPixelDistance, body.clientHeight);'
   elif (( $# == 1 )); then
-    check_int "$1"
+    check_int "$1" &&
     code="downOrNext(bottomPixelDistance, body.clientHeight * ($1 / 100));"
   else
-    check_n 2 $#
-    check_int "$1"
-    check_positive "$2"
+    check_n 2 $# &&
+    check_int "$1" &&
+    check_positive "$2" &&
     code="downOrNext($2, body.clientHeight * ($1 / 100));"
   fi
 }
@@ -627,8 +627,8 @@ cmd_pgup()
   if (( $# == 0 )); then
     code='body.scrollTop -= body.clientHeight;'
   else
-    check_n 1 $#
-    check_int "$1"
+    check_n 1 $# &&
+    check_int "$1" &&
     code="body.scrollTop -= body.clientHeight * ($1 / 100);"
   fi
 }
@@ -638,15 +638,15 @@ cmd_pgdown()
   if (( $# == 0 )); then
     code='body.scrollTop += body.clientHeight;'
   else
-    check_n 1 $#
-    check_int "$1"
+    check_n 1 $# &&
+    check_int "$1" &&
     code="body.scrollTop += body.clientHeight * ($1 / 100);"
   fi
 }
 
 cmd_info()
 {
-  check_n 0 $#
+  check_n 0 $# &&
   code='showImageInfo();'
 }
 
@@ -655,8 +655,8 @@ cmd_auto_scroll()
   if (( $# == 0 )); then
     code='startAutoScroll(800);' ;
   else
-    check_n 1 $#
-    check_positive "$1"
+    check_n 1 $# &&
+    check_positive "$1" &&
     code="startAutoScroll($1);"
   fi
 }
@@ -666,16 +666,16 @@ cmd_toggle_auto_scroll()
   if (( $# == 0 )); then
     code='toggleAutoScroll(800);' ;
   else
-    check_n 1 $#
-    check_positive "$1"
+    check_n 1 $# &&
+    check_positive "$1" &&
     code="toggleAutoScroll($1);"
   fi
 }
 
 cmd_add_interval()
 {
-  check_n 1 $#
-  check_int "$1"
+  check_n 1 $# &&
+  check_int "$1" &&
   code="addAutoScrollInterval($1);"
 }
 
@@ -688,8 +688,8 @@ cmd_set_bottom_pixel()
 
 cmd_add_bottom_pixel()
 {
-  check_n 1 $#
-  check_int "$1"
+  check_n 1 $# &&
+  check_int "$1" &&
   code="bottomPixelDistance = max(0, bottomPixelDistance + $1);"
 }
 
@@ -717,7 +717,7 @@ cmd_mouse()
 
 cmd_mouse_assistance()
 {
-  check_n 0 $#
+  check_n 0 $# &&
   code='toggleMouseAssistance()'
 }
 
@@ -730,13 +730,13 @@ cmd_restrict()
 
 cmd_shortcuts()
 {
-  check_n 0 $#
+  check_n 0 $# &&
   code='showShorcuts();'
 }
 
 cmd_open()
 {
-  check_n 0 $#
+  check_n 0 $# &&
   code='showLoader();'
 }
 
@@ -773,12 +773,12 @@ cmd_search()
 }
 
 cmd_save() {
-  check_n 0 $#
+  check_n 0 $# &&
   code='savePosition();'
 }
 
 cmd_load() {
-  check_n 0 $#
+  check_n 0 $# &&
   code='loadPosition();'
 }
 
