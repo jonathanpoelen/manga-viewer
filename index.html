@@ -62,6 +62,9 @@ code {
 #mouseAssistance > span:nth-child(1), #mouseAssistance > span:nth-child(2) {
   border-top:0;
 }
+#mouseAssistance > span:nth-child(2), #mouseAssistance > span:nth-child(4) {
+  border-right:0;
+}
 
 #shortcuts, #loader, #searcher {
   display:none;
@@ -302,8 +305,8 @@ b {
     <input id="closeLoader" type="button" value="Cancel (or escape)"/>
   </form>
   <section id="navigationShortcuts">
-    <p>Page down or next page shortcut(s): <code>Space</code>, <code>n</code>, <code>/</code>, <code>LeftClick</code></p>
-    <p>Page up or prev page shortcut(s): <code>Shift+Space</code>, <code>c</code>, <code>b</code>, <code>Shift+LeftClick</code></p>
+    <p>Page down or next page shortcut(s): <code>Space</code>, <code>n</code>, <code>/</code>, <code>Left_click (right side)</code></p>
+    <p>Page up or prev page shortcut(s): <code>Shift+Space</code>, <code>c</code>, <code>b</code>, <code>Left_click (left side)</code></p>
   </section>
   <p id="repositoryUrl">
     <a href="https://jonathanpoelen.github.io/manga-viewer/shortcuts.html">Mouse / Keyboard Shortcuts</a> (<code>F1</code>, <code>F2</code>)<br>
@@ -343,7 +346,7 @@ b {
 
 <section id="shortcuts">
   <p id='shortcuts-header'>The description of each command can be found in the <a href='https://jonathanpoelen.github.io/manga-viewer/man.html'>manual</a>.</p>
-  <table><tr><td>Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> </td></tr> <tr><td>Shift+Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> </td></tr> <tr><td>Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> webtoon <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> 98</td></tr> <tr><td>Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> all <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> 98</td></tr> <tr><td>Shift+Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> webtoon <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> 98</td></tr> <tr><td>Shift+Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> all <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> 98</td></tr> <tr><td>z</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -5</td></tr> <tr><td>x</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 5</td></tr> <tr><td>a</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -12</td></tr> <tr><td>s</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 12</td></tr> <tr><td>q</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -30</td></tr> <tr><td>w</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 30</td></tr> <tr><td>e</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -100</td></tr> <tr><td>r</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 100</td></tr> <tr><td>Left</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-prev'>prev</a> </td></tr> <tr><td>Right</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> </td></tr> <tr><td>Ctrl+Left</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -5</td></tr> <tr><td>Ctrl+Right</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 5</td></tr> <tr><td>Ctrl+Up</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 12</td></tr> <tr><td>Ctrl+Down</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -12</td></tr> <tr><td>&lt;</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next_chap'>next_chap</a> -1</td></tr> <tr><td>></td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next_chap'>next_chap</a> 1</td></tr> <tr><td>|</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-prev'>prev</a> </td></tr> <tr><td>\\</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> </td></tr> <tr><td>c</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> </td></tr> <tr><td>v</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-prev'>prev</a> </td></tr> <tr><td>b</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> 50</td></tr> <tr><td>n</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> 50</td></tr> <tr><td>.</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-prev'>prev</a> </td></tr> <tr><td>/</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> </td></tr> <tr><td>m</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-rotate'>rotate</a> -90</td></tr> <tr><td>,</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-rotate'>rotate</a> 90</td></tr> <tr><td>g</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-goto'>goto</a> </td></tr> <tr><td>^</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-goto'>goto</a> 0</td></tr> <tr><td>$</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-goto'>goto</a> -1</td></tr> <tr><td>h</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mode'>mode</a> webtoon</td></tr> <tr><td>j</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mode'>mode</a> double</td></tr> <tr><td>k</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mode'>mode</a> normal</td></tr> <tr><td>l</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mode'>mode</a> normal_or_double</td></tr> <tr><td>d</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-info'>info</a> </td></tr> <tr><td>o</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-info'>info</a> </td></tr> <tr><td>t</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-toggle_auto_scroll'>toggle_auto_scroll</a> </td></tr> <tr><td>u</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-add_interval'>add_interval</a> -25</td></tr> <tr><td>i</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-add_interval'>add_interval</a> 25</td></tr> <tr><td>y</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-newtab'>newtab</a> </td></tr> <tr><td>Y</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-newtab'>newtab</a> foreground</td></tr> <tr><td>LeftClick</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> </td></tr> <tr><td>Shift+LeftClick</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> </td></tr> <tr><td>Ctrl+LeftClick</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next_chap'>next_chap</a> </td></tr> <tr><td>Ctrl+Shift+LeftClick</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next_chap'>next_chap</a> -1</td></tr> <tr><td>Alt+LeftClick</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-newtab'>newtab</a> </td></tr> <tr><td>AltGr+LeftClick</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-newtab'>newtab</a> </td></tr> <tr><td>@</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse_assistance'>mouse_assistance</a> </td></tr> <tr><td>F1</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-shortcuts'>shortcuts</a> </td></tr> <tr><td>F2</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-shortcuts'>shortcuts</a> </td></tr> <tr><td>F8</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-search'>search</a> </td></tr> <tr><td>F10</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-open'>open</a> </td></tr> <tr><td>F6</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-save'>save</a> </td></tr> <tr><td>F7</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-load'>load</a> </td></tr></table>
+  <table><tr><td>Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> </td></tr> <tr><td>Shift+Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> </td></tr> <tr><td>Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> webtoon <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> 98</td></tr> <tr><td>Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> all <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> 98</td></tr> <tr><td>Shift+Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> webtoon <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> 98</td></tr> <tr><td>Shift+Space</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> all <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> 98</td></tr> <tr><td>z</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -5</td></tr> <tr><td>x</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 5</td></tr> <tr><td>a</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -12</td></tr> <tr><td>s</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 12</td></tr> <tr><td>q</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -30</td></tr> <tr><td>w</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 30</td></tr> <tr><td>e</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -100</td></tr> <tr><td>r</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 100</td></tr> <tr><td>Left</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-prev'>prev</a> </td></tr> <tr><td>Right</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> </td></tr> <tr><td>Ctrl+Left</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -5</td></tr> <tr><td>Ctrl+Right</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 5</td></tr> <tr><td>Ctrl+Up</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> 12</td></tr> <tr><td>Ctrl+Down</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> -12</td></tr> <tr><td>&lt;</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next_chap'>next_chap</a> -1</td></tr> <tr><td>></td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next_chap'>next_chap</a> 1</td></tr> <tr><td>|</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-prev'>prev</a> </td></tr> <tr><td>\</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next'>next</a> </td></tr> <tr><td>c</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> </td></tr> <tr><td>v</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-prev'>prev</a> </td></tr> <tr><td>b</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a> 50</td></tr> <tr><td>n</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> 50</td></tr> <tr><td>.</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-prev'>prev</a> </td></tr> <tr><td>/</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a> </td></tr> <tr><td>m</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-rotate'>rotate</a> -90</td></tr> <tr><td>,</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-rotate'>rotate</a> 90</td></tr> <tr><td>g</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-goto'>goto</a> </td></tr> <tr><td>^</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-goto'>goto</a> 0</td></tr> <tr><td>$</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-goto'>goto</a> -1</td></tr> <tr><td>h</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mode'>mode</a> webtoon</td></tr> <tr><td>j</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mode'>mode</a> double</td></tr> <tr><td>k</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mode'>mode</a> normal</td></tr> <tr><td>l</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mode'>mode</a> normal_or_double</td></tr> <tr><td>d</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-info'>info</a> </td></tr> <tr><td>o</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-info'>info</a> </td></tr> <tr><td>t</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-toggle_auto_scroll'>toggle_auto_scroll</a> </td></tr> <tr><td>u</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-add_interval'>add_interval</a> -25</td></tr> <tr><td>i</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-add_interval'>add_interval</a> 25</td></tr> <tr><td>y</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-newtab'>newtab</a> </td></tr> <tr><td>Y</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-newtab'>newtab</a> foreground</td></tr> <tr><td>Left_click</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse'>mouse</a> left <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgup_or_prev'>pgup_or_prev</a></td></tr> <tr><td>Left_click</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse'>mouse</a> right <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-pgdown_or_next'>pgdown_or_next</a></td></tr> <tr><td>Left_click</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> all <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse'>mouse</a> left pgup_or_prev 98</td></tr> <tr><td>Left_click</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> all <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse'>mouse</a> right pgdown_or_next 98</td></tr> <tr><td>Left_click</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> webtoon <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse'>mouse</a> left pgup_or_prev 98</td></tr> <tr><td>Left_click</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-restrict'>restrict</a> webtoon <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse'>mouse</a> right pgdown_or_next 98</td></tr> <tr><td>Shift+Shift</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse'>mouse</a> left <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next_chap'>next_chap</a> -1</td></tr> <tr><td>Shift+Shift</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse'>mouse</a> right <a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-next_chap'>next_chap</a></td></tr> <tr><td>Ctrl+Ctrl</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-newtab'>newtab</a> </td></tr> <tr><td>@</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-mouse_assistance'>mouse_assistance</a> </td></tr> <tr><td>F1</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-shortcuts'>shortcuts</a> </td></tr> <tr><td>F2</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-shortcuts'>shortcuts</a> </td></tr> <tr><td>F8</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-search'>search</a> </td></tr> <tr><td>F10</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-open'>open</a> </td></tr> <tr><td>F6</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-save'>save</a> </td></tr> <tr><td>F7</td><td><a class='man-link' href='https://jonathanpoelen.github.io/manga-viewer/man.html#cmd-load'>load</a> </td></tr></table>
 </section>
 
 <div id="mouseAssistance"><span></span><span></span><span></span><span></span></div>
@@ -2086,20 +2089,16 @@ const toggleMouseAssistance = (function() {
   };
 })();
 
-const isInZone = function(e, zone) {
+// zone mask:
+// .-------.
+// | 1 | 2 |
+// |---+---|
+// | 4 | 8 |
+// `-------`
+const getZone = function(e) {
   const isTop = (e.clientY < window.innerHeight / 2);
   const isLeft = (e.clientX < window.innerWidth / 2);
-  // top=1 bottom=2 left=4 right=8
-  switch (zone) {
-    case 1: return isTop;
-    case 2: return !isTop;
-    case 4: return isLeft;
-    case 8: return !isLeft;
-    case 5: return isTop && isLeft;
-    case 9: return isTop && !isLeft;
-    case 6: return !isTop && isLeft;
-    case 10: return !isTop && !isLeft;
-  }
+  return (isTop ? (isLeft ? 1 : 2) : (isLeft ? 4 : 8)) << 5;
 };
 
 const selectMode = function(newMode, imageLimit) {
@@ -2112,28 +2111,71 @@ const selectMode = function(newMode, imageLimit) {
   }
 };
 
-const rgxClickName = /^click\d+$/
-const createActions = function(shortcuts, actionsByKeys, actionsByClicks){
-  actionsByKeys = actionsByKeys || {};
-  actionsByClicks = actionsByClicks || [];
+const createActions = function(shortcuts) {
+  const actionsByKeys = {};
+  const actionsByClicks = {};
+  let hasMainClick = false;
+  let hasAuxClick = false;
 
   for (const d of shortcuts) {
-    let actionsByControls = actionsByKeys[d.key];
+    let actions = actionsByKeys;
+    let key = d.key;
+
+    // is click shortcut
+    if (/^click\d+$/.test(key)) {
+      const isMainClick = (key === "click0");
+      hasMainClick = hasMainClick || isMainClick;
+      hasAuxClick = hasAuxClick || !isMainClick;
+      actions = actionsByClicks;
+      key = key.substr(5); // remove "click" prefix
+    }
+
+    // init actions map
+    let actionsByControls = actions[key];
     if (!actionsByControls) {
       actionsByControls = {};
-      actionsByKeys[d.key] = actionsByControls;
-      if (rgxClickName.test(d.key)) {
-        actionsByClicks[d.key.substr(5)] = actionsByControls
+      actions[key] = actionsByControls;
+    }
+
+    // push action
+    const mask
+      = d.alt
+      + (d.ctrl << 1)
+      + (d.shift << 2)
+      + (d.meta << 3)
+      + (d.altgr << 4);
+    if (d.zones) {
+      for (let zone = 0b0001; zone <= 0b1000; zone <<= 1) {
+        if (d.zones & zone) {
+          actionsByControls[mask | (zone << 5)] = d.action;
+        }
       }
     }
-    actionsByControls[d.alt + (d.ctrl << 1) + (d.shift << 2) + (d.meta << 3) + (d.altgr << 4)] = d.action;
+    else {
+      actionsByControls[mask] = d.action;
+    }
   }
 
-  // if there is no conflict, assume assume that:
+  // populate event on each zone when zone is 0 (not specified)
+  for (const k in actionsByClicks) {
+    const actionsByControls = actionsByClicks[k];
+    for (const mask in actionsByControls) {
+      if (!(mask & 0b1111_00000)) {
+        const action = actionsByControls[mask];
+        for (let zone = 0b0001_00000; zone <= 0b1000_00000; zone <<= 1) {
+          if (!actionsByControls[mask | zone]) {
+            actionsByControls[mask | zone] = action;
+          }
+        }
+      }
+    }
+  }
+
+  // if there is no conflict, assume that:
   // - Shift+Key = Key (ex. Shift+< = <)
   // - AltGr+Key = Key
-  const res = [actionsByKeys, actionsByClicks];
-  for (const actions of res) {
+  // - AltGr+Shift+Key = Key
+  for (const actions of [actionsByKeys, actionsByClicks]) {
     for (const k in actions) {
       const actionsByControls = actions[k];
       for (const m in actionsByControls) {
@@ -2152,86 +2194,108 @@ const createActions = function(shortcuts, actionsByKeys, actionsByClicks){
     }
   }
 
-  return res;
+  return [actionsByKeys, actionsByClicks, hasMainClick, hasAuxClick];
 };
 
 // contains key and mouse actions
-const [globalActionsByKeys, globalActionsByClicks] = createActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'z', action: function(){ mode.advance(-5); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'x', action: function(){ mode.advance(5); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'a', action: function(){ mode.advance(-12); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 's', action: function(){ mode.advance(12); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'q', action: function(){ mode.advance(-30); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'w', action: function(){ mode.advance(30); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'e', action: function(){ mode.advance(-100); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'r', action: function(){ mode.advance(100); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'ArrowLeft', action: function(){ mode.advance(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'ArrowRight', action: function(){ mode.advance(1); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'ArrowLeft', action: function(){ mode.advance(-5); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'ArrowRight', action: function(){ mode.advance(5); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'ArrowUp', action: function(){ mode.advance(12); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'ArrowDown', action: function(){ mode.advance(-12); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '<', action: function(){ mode.advanceChap(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '>', action: function(){ mode.advanceChap(1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '|', action: function(){ mode.advance(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '\\', action: function(){ mode.advance(1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'c', action: function(){ upOrPrev(body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'v', action: function(){ mode.advance(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'b', action: function(){ upOrPrev(body.clientHeight * (50 / 100)); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'n', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (50 / 100)); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '.', action: function(){ mode.advance(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '/', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'm', action: function(){ rotate(-90); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ',', action: function(){ rotate(90); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'g', action: function(){ showGoto(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '^', action: function(){ gotoImage(0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '$', action: function(){ gotoImage(-1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'h', action: function(){ selectMode(webtoonMode, 0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'j', action: function(){ selectMode(doublePageMode, 0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'k', action: function(){ selectMode(normalMode, 0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'l', action: function(){ selectMode(normalOrDoublePageMode, 0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'd', action: function(){ showImageInfo(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'o', action: function(){ showImageInfo(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 't', action: function(){ toggleAutoScroll(800); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'u', action: function(){ addAutoScrollInterval(-25); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'i', action: function(){ addAutoScrollInterval(25); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'y', action: function(){ openInNewTab(0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'Y', action: function(){ openInNewTab(1); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'click0', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
- {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: 'click0', action: function(){ upOrPrev(body.clientHeight); }},
- {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, key: 'click0', action: function(){ mode.advanceChap(1); }},
- {alt: 0, ctrl: 1, shift: 1, meta: 0, altgr: 0, key: 'click0', action: function(){ mode.advanceChap(-1); }},
- {alt: 1, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'click0', action: function(){ openInNewTab(0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 1, key: 'click0', action: function(){ openInNewTab(0); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: '@', action: function(){ toggleMouseAssistance() }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F1', action: function(){ showShorcuts(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F2', action: function(){ showShorcuts(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F8', action: function(){ showSearcher((SEARCH_BY_CHAPTER_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD)); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F10', action: function(){ showLoader(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F6', action: function(){ savePosition(); }},
- {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: 'F7', action: function(){ loadPosition(); }},
+const globalActions = createActions([
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, zones: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'z', action: function(){ mode.advance(-5); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'x', action: function(){ mode.advance(5); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'a', action: function(){ mode.advance(-12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 's', action: function(){ mode.advance(12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'q', action: function(){ mode.advance(-30); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'w', action: function(){ mode.advance(30); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'e', action: function(){ mode.advance(-100); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'r', action: function(){ mode.advance(100); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'ArrowLeft', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'ArrowRight', action: function(){ mode.advance(1); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'ArrowLeft', action: function(){ mode.advance(-5); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'ArrowRight', action: function(){ mode.advance(5); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'ArrowUp', action: function(){ mode.advance(12); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'ArrowDown', action: function(){ mode.advance(-12); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '<', action: function(){ mode.advanceChap(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '>', action: function(){ mode.advanceChap(1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '|', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '\\', action: function(){ mode.advance(1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'c', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'v', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'b', action: function(){ upOrPrev(body.clientHeight * (50 / 100)); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'n', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (50 / 100)); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '.', action: function(){ mode.advance(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '/', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'm', action: function(){ rotate(-90); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: ',', action: function(){ rotate(90); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'g', action: function(){ showGoto(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '^', action: function(){ gotoImage(0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '$', action: function(){ gotoImage(-1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'h', action: function(){ selectMode(webtoonMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'j', action: function(){ selectMode(doublePageMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'k', action: function(){ selectMode(normalMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'l', action: function(){ selectMode(normalOrDoublePageMode, 0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'd', action: function(){ showImageInfo(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'o', action: function(){ showImageInfo(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 't', action: function(){ toggleAutoScroll(800); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'u', action: function(){ addAutoScrollInterval(-25); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'i', action: function(){ addAutoScrollInterval(25); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'y', action: function(){ openInNewTab(0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'y', action: function(){ openInNewTab(1); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 5, key: 'click0', action: function(){ upOrPrev(body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 10, key: 'click0', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight); }},
+ {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, zones: 5, key: 'click0', action: function(){ mode.advanceChap(-1); }},
+ {alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, zones: 10, key: 'click0', action: function(){ mode.advanceChap(1); }},
+ {alt: 0, ctrl: 1, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'click0', action: function(){ openInNewTab(0); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: '@', action: function(){ toggleMouseAssistance() }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'f1', action: function(){ showShorcuts(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'f2', action: function(){ showShorcuts(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'f8', action: function(){ showSearcher((SEARCH_BY_CHAPTER_THEN_BY_IMAGE | SEARCH_UPPERCASE_ONLY | SEARCH_ACCENT_ONLY | SEARCH_MODE_WORD)); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'f10', action: function(){ showLoader(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'f6', action: function(){ savePosition(); }},
+ {alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: 'f7', action: function(){ loadPosition(); }},
 ]);
+
+let [actionsByKeys, actionsByClicks, hasMainClick, hasAuxClick] = globalActions;
 
 const createModActions = function(shortcuts) {
-  const actionsByKeys = {};
-  for (const d in globalActionsByKeys) {
-    actionsByKeys[d] = Object.assign({}, globalActionsByKeys[d]);
+  const actions = createActions(shortcuts);
+
+  // merge actions with global actions
+  for (let i = 0; i < 2; ++i) {
+    const actionsBy = actions[i];
+    const globalActionsBy = globalActions[i];
+    for (const k in globalActionsBy) {
+      const d = actionsBy[k];
+      if (d) {
+        const events = globalActionsBy[k];
+        for (const m in events) {
+          d[m] = d[m] || events[m];
+        }
+      }
+      else {
+        actionsBy[k] = globalActionsBy[k];
+      }
+    }
   }
-  return createActions(shortcuts, actionsByKeys, Array.from(globalActionsByClicks));
+
+  // merge "has click" values
+  actions[2] ||= globalActions[2];
+  actions[3] ||= globalActions[3];
+
+  return actions;
 };
 
-webtoonMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
-{alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+webtoonMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, zones: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 5, key: 'click0', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 10, key: 'click0', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
 ]);
-allMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
-{alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+allMode.shortcuts = createModActions([{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 0, key: ' ', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 1, meta: 0, altgr: 0, zones: 0, key: ' ', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 5, key: 'click0', action: function(){ upOrPrev(body.clientHeight * (98 / 100)); }},
+{alt: 0, ctrl: 0, shift: 0, meta: 0, altgr: 0, zones: 10, key: 'click0', action: function(){ downOrNext(bottomPixelDistance, body.clientHeight * (98 / 100)); }},
 ]);
 
-
-let actionsByKeys = globalActionsByKeys;
-let actionsByClicks = globalActionsByClicks;
-let actionsForPrimaryClick = actionsByClicks[0];
 
 const eventMask = function(e) {
   return e.altKey
@@ -2242,22 +2306,7 @@ const eventMask = function(e) {
       ;
 };
 
-const keydownEvent = function(e) {
-  const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
-  if (actions) {
-    const action = actions[eventMask(e)];
-    if (action) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      action();
-      return false;
-    }
-  }
-  return true;
-};
-
-const clickEvent = function(e) {
-  const action = actionsForPrimaryClick[eventMask(e)];
+const runAction = function(e, action) {
   if (action) {
     e.preventDefault();
     e.stopImmediatePropagation();
@@ -2265,37 +2314,26 @@ const clickEvent = function(e) {
     return false;
   }
   return true;
+}
+
+const keydownEvent = function(e) {
+  const actions = actionsByKeys[e.key] || actionsByKeys[e.key.toLowerCase()];
+  return actions ? runAction(e, actions[eventMask(e)]) : true;
 };
 
-const auxClickEvent = function(e) {
-  let actions = actionsByClicks[e.button];
-  if (actions) {
-    const action = actions[e.altKey + (e.ctrlKey << 1) + (e.shiftKey << 2) + (e.metaKey << 3)];
-    if (action) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      action(e);
-      return false;
-    }
-    return true;
-  }
+const clickEvent = function(e) {
+  const actions = actionsByClicks[e.button];
+  return actions ? runAction(e, actions[eventMask(e) | getZone(e)]) : true;
 };
 
 function updateShortcuts(mode) {
-  window.removeEventListener("click", clickEvent, true);
-  window.removeEventListener("auxclick", auxClickEvent, true);
+  if (hasMainClick) window.removeEventListener("click", clickEvent, true);
+  if (hasAuxClick) window.removeEventListener("auxclick", auxClickEvent, true);
 
-  actionsByKeys = mode.shortcuts ? mode.shortcuts[0] : globalActionsByKeys;
-  actionsByClicks = mode.shortcuts ? mode.shortcuts[1] : globalActionsByClicks;
+  [actionsByKeys, actionsByClicks, hasMainClick, hasAuxClick] = mode.shortcuts || globalActions;
 
-  if (0 in actionsByClicks) {
-    actionsForPrimaryClick = actionsByClicks[0];
-    window.addEventListener("click", clickEvent, true);
-  }
-
-  if (actionsByClicks.length > 1) {
-    window.addEventListener("auxclick", auxClickEvent, true);
-  }
+  if (hasMainClick) window.addEventListener("click", clickEvent, true);
+  if (hasAuxClick) window.addEventListener("auxclick", clickEvent, true);
 }
 
 function enableShortcuts() {
@@ -2304,8 +2342,8 @@ function enableShortcuts() {
 }
 
 function disableShortcuts() {
-  window.removeEventListener("click", clickEvent, true);
-  window.removeEventListener("auxclick", auxClickEvent, true);
+  if (hasMainClick) window.removeEventListener("click", clickEvent, true);
+  if (hasAuxClick) window.removeEventListener("auxclick", clickEvent, true);
   window.removeEventListener("keydown", keydownEvent, true);
 }
 
