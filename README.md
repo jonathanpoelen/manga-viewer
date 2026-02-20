@@ -36,7 +36,7 @@ htmlviewer -a > view.html
 
 Note that using it directory from the web server is less efficient and takes more memory. For security reasons, a website does not access local disks and opening images stores them in memory in a format that takes up more space than the image itself. This is why it is best to download the file and open it from your machine.
 
-The keyboard and mouse shortcuts are available [here](https://jonathanpoelen.github.io/manga-viewer/shortcuts.html), with `htmlviewer -p` or the `F1` keyboard shortcut.
+The keyboard and mouse shortcuts are available [here](https://jonathanpoelen.github.io/manga-viewer/shortcuts.html), with `htmlviewer -p` or keyboard shortcuts `F1` or `F2`.
 
 Read `htmlviewer -h` or the [online version](https://jonathanpoelen.github.io/manga-viewer/man.html) for more options.
 
