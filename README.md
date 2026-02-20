@@ -43,7 +43,8 @@ Read `htmlviewer -h` or the [online version](https://jonathanpoelen.github.io/ma
 
 # HTTP(S) version limitation
 
-Since a remote site doesn't have access to the machine's local files, and getting the file list from a page requires a user action, the web version has certain limitations:
+Since a remote site doesn't have access to the machine's local files, and getting the file list from a page requires a user action,
+the online version has certain limitations unlike the locally opened version (`file://` protocol).
 
 - The `load` command (`F7`) cannot save the image list, only the current position. You need to re-open the image folder before using it.
 - The command `newtab` (`y`, `Y`) will open a base64 encoded file. The file name will not be visible through the url.
