@@ -965,47 +965,58 @@ parse_input_line()
       display_key="${display_key/</'&lt;'}"
     fi
 
-    # remove trigger prefix
-    if [[ $fn = trigger ]]; then
-      # remove delay prefix
-      if [[ ${args[0]} = [0-9]* ]]; then
-        args[1]=
-        fn="${args[1]}"
-      else
-        fn="${args[0]}"
-      fi
-    # urlify subcommand
-    elif [[ -n $man_url ]] && ( [[ $fn = 'restrict' ]] || [[ $fn = 'mouse' ]] ); then
-      args[1]="<a class='man-link' href='${man_url}#cmd-${args[1]}'>${args[1]}</a>"
-    fi
-
-    local htmlfn=$fn
-    if [[ -n $man_url ]]; then
-      htmlfn="<a class='man-link' href='${man_url}#cmd-$fn'>$fn</a>"
-    fi
-
     [[ 0 != ${controls[meta]} ]] && display_key="Meta+$display_key"
     [[ 0 != ${controls[altgr]} ]] && display_key="AltGr+$display_key"
     [[ 0 != ${controls[shift]} ]] && display_key="Shift+$display_key"
     [[ 0 != ${controls[alt]} ]] && display_key="Alt+$display_key"
     [[ 0 != ${controls[ctrl]} ]] && display_key="Ctrl+$display_key"
-    html_table_shortcuts+=("<tr><td>$display_key</td><td>$htmlfn ${args[*]}</td></tr>")
 
-    if [[ -z $mode ]]; then
-      if [[ $fn == 'shortcuts' ]]; then
-        help_shortcut+="<code>$display_key</code>, "
-      elif [[ $fn == 'pgdown_or_next' ]]; then
-        pgdown_or_next_shortcut+="<code>$display_key</code>, "
-      elif [[ $fn == 'pgup_or_prev' ]]; then
-        pgup_or_prev_shortcut+="<code>$display_key</code>, "
-      elif [[ $fn == 'mouse' ]]; then
-        if [[ $2 == 'pgdown_or_next' ]]; then
-          pgdown_or_next_shortcut+="<code>$display_key ($1 side)</code>, "
-        elif [[ $2 == 'pgup_or_prev' ]]; then
-          pgup_or_prev_shortcut+="<code>$display_key ($1 side)</code>, "
+    # urlify subcommand and extract list of next/prev + help shortcuts
+    args=($fn "${args[@]}")
+    local -i icmd iend=${#args}
+    local side
+    for (( icmd=0; icmd < iend; ++icmd )); do
+      fn=${args[icmd]}
+      args[icmd]="<a class='man-link' href='${man_url}#cmd-$fn'>$fn</a>"
+      # command with subcommand + extract zone
+      if [[ $fn == 'mouse' ]]; then
+        ((++icmd))
+        side=" (${args[icmd]} side)"
+      # command with subcommand and optional argument
+      elif [[ $fn = trigger ]]; then
+        # skip the optional delay prefix
+        if [[ ${args[icmd+1]} = [0-9]* ]]; then
+          # ignore command and delay when delay is 0
+          if [[ ${args[icmd+1]} = 0 ]]; then
+            args[icmd]=
+            args[icmd+1]=
+          fi
+          ((++icmd))
+        # ignore command when no delay
+        else
+          args[icmd]=
         fi
+      # command with subcommand
+      elif [[ $fn == 'restrict' ]]; then
+        ((++icmd))
+      # regular command
+      else
+        # exctract special shortcuts
+        if [[ -z $mode ]]; then
+          if [[ $fn == 'pgdown_or_next' ]]; then
+            pgdown_or_next_shortcut+="<code>$display_key$side</code>, "
+          elif [[ $fn == 'pgup_or_prev' ]]; then
+            pgup_or_prev_shortcut+="<code>$display_key$side</code>, "
+          elif [[ $fn == 'shortcuts' ]]; then
+            help_shortcut+="<code>$display_key</code>, "
+          fi
+        fi
+        # no more command
+        break
       fi
-    fi
+    done
+
+    html_table_shortcuts+=("<tr><td>$display_key</td><td>${args[*]}</td></tr>")
   fi
 }
 
