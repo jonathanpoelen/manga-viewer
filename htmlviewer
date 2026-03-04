@@ -918,13 +918,20 @@ parse_input_line()
   local zone=0 # set by cmd_mouse
   cmd_$fn "${args[@]}" || error="$fn: $error"
 
-  # extract controls and convert key to lowercase
+  #
+  # Extract controls and key
+  #
+
   local -A controls=([alt]=0 [ctrl]=0 [shift]=0 [meta]=0 [altgr]=0)
   local ifs="$IFS"
+
+  # split on '+'
   IFS=+
   local -a keys=($key)
   IFS="$ifs"
 
+  # extract key and set controls
+  # last key is in $dkey and lowercase
   local lowerkey dkey
   for key in "${keys[@]}"; do
     lowerkey="${key,,}"
@@ -935,14 +942,21 @@ parse_input_line()
     fi
   done
 
+  # no key is an error (with or without key control)
   if [[ -z $dkey ]]; then
     error='key not specified'
     return 1
   fi
 
-  local newkey="${remap["$dkey"]}"
-  [[ -z $newkey ]] || dkey="$newkey"
-  local shortcut="{alt: ${controls[alt]}, ctrl: ${controls[ctrl]}, shift: ${controls[shift]}, meta: ${controls[meta]}, altgr: ${controls[altgr]}, zones: ${zone}, key: '$dkey', action: function(){ $code }},"$'\n'
+  # unalias key
+  dkey="${remap["$dkey"]}"
+  [[ -z $dkey ]] || key="$dkey"
+
+  #
+  # Configure shortcut
+  #
+
+  local shortcut="{alt: ${controls[alt]}, ctrl: ${controls[ctrl]}, shift: ${controls[shift]}, meta: ${controls[meta]}, altgr: ${controls[altgr]}, zones: ${zone}, key: '$key', action: function(){ $code }},"$'\n'
 
   if [[ -z $mode ]]; then
     shortcuts+=("$shortcut")
