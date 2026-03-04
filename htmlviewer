@@ -406,7 +406,7 @@ declare -A fns=(
   [load]=1
 )
 
-declare -A remap=(
+declare -A js_key_name_map=(
   [space]=' '
   [left]='ArrowLeft'
   [right]='ArrowRight'
@@ -949,7 +949,7 @@ parse_input_line()
   fi
 
   # unalias key
-  dkey="${remap["$dkey"]}"
+  dkey="${js_key_name_map["$dkey"]}"
   [[ -z $dkey ]] || key="$dkey"
 
   #
