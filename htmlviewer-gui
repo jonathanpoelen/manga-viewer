@@ -18,8 +18,9 @@ IFS=$'\n'
 files=($(zenity --title='Select directories' --file-selection --directory --multiple --separator=$'\n')) || exit 1
 IFS="$ifs"
 
-mode=$(zenity --title='Select mode' --list --column='' --text='Default mode' --hide-header normal 'double page' webtoon all) || exit 1
+mode=$(zenity --title='Select mode' --list --column='' --text='Default mode' --hide-header normal 'double page' 'normal or double page' webtoon all) || exit 1
 [[ $mode != 'double page' ]] || mode=double
+[[ $mode != 'normal or double page' ]] || mode=normal_or_double
 
 output=${TMPDIR:-/tmp}/htmlviewer.html
 
