@@ -2,7 +2,7 @@
 
 A fully online version that lets you open a directory is available [here](https://jonathanpoelen.github.io/manga-viewer).
 
-It's main advantage of the viewer is that it uses one and the same key to scroll and go to the next image (space or left click by default), the behavior of which changes according to 5 reading modes:
+The main advantage of this viewer is that it uses a single key to scroll through the images and move to the next one (the spacebar or a left-click on the right side of the page), and its functionality varies depending on the following 5 viewing modes:
 
 - Normal (`k` key): Display one image at a time.
 - Double page (`j` key): The first time the scroll is at the bottom, it goes up. The second time goes to the next image.
