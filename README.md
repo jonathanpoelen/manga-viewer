@@ -5,7 +5,7 @@ A fully online version that lets you open a directory is available [here](https:
 The main advantage of this viewer is that it uses a single key to scroll through the images and move to the next one (the spacebar or a left-click on the right side of the page), and its functionality varies depending on the following 5 viewing modes:
 
 - Normal (`k` key): Display one image at a time.
-- Double page (`j` key): The first time the scroll is at the bottom, it goes up. The second time goes to the next image.
+- Double page (`j` key): The first time the scrollbar is at the bottom, it moves back up. The second time, it moves to the next image.
 - Normal Or Double page (`l` key): Uses the behavior of double page mode when the width of the image is greater than the height. Otherwise uses the behavior of normal mode.
 - Webtoon (`h` key): Displays all images in a chapter one below the other.
 - All: Displays all images one below the other.
