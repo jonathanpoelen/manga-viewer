@@ -1376,7 +1376,7 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
   <form id="gotoForm">
     <p><label>Image: <input type="number" id="gotoImage" min="1"/> / <span id="gotoImageMax"></span></label> <span id="gotoImageInChapter"></span></p>
     <p><label>Chapter: <input type="number" id="gotoChapter" min="1"/> / <span id="gotoChapterMax"></span></label> <span id="gotoNameOfChapter"></span></p>
-    <p><input type="button" value="Cancel (or escape)" id="gotoCancel"/> <input type="submit"/></p>
+    <p><input type="button" value="Cancel (or Escape key)" id="gotoCancel"/> <input type="submit"/></p>
   </form>
 </section>
 
@@ -1394,7 +1394,7 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
       <label><input type="radio" id="mode_all" name="mode" value="all"/>All page <span class="urlmode">(url: <a href="?mode=all">?mode=all</a>)</span></label>
     </fieldset>
     <input id="submitLoader" type="submit"/>
-    <input id="closeLoader" type="button" value="Cancel (or escape)"/>
+    <input id="closeLoader" type="button" value="Cancel (or Escape key)"/>
   </form>
   <section id="navigationShortcuts">
     <p>Page down or next page shortcut(s): '"${pgdown_or_next_shortcut::-2}"'</p>
@@ -1432,7 +1432,7 @@ echo '<noscript><p style="background:#eee;color:black;text-align:center;font-siz
       <option>Accent Only</option>
     </select></label>
   </section>
-  <input id="searchClose" type="button" value="Cancel (or escape)"/>
+  <input id="searchClose" type="button" value="Cancel (or Escape key)"/>
   <div id="searchResultList"></div>
 </section>
 
