@@ -103,7 +103,7 @@ usage() {
   echo "Generate a html viewer file
 
   htmlviewer [$co-a$cr|$co-A$cr] [$co-n$cr] [$co-s$cr] [$co-S$cr] [$co-c$cr <${cv}command${cr}>] [$co-e$cr <${cv}html${cr}>] [$co-f$cr <${cv}filename${cr}>]
-             [$co-i$cr <${cv}filename${cr}>] [$co-m$cr {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_doube${cr}|${cl}webtoon${cr}|${cl}all${cr}}]
+             [$co-i$cr <${cv}filename${cr}>] [$co-m$cr {${cl}normal${cr}|${cl}double${cr}|${cl}normal_or_double${cr}|${cl}webtoon${cr}|${cl}all${cr}}]
              [$co-t$cr <${cv}title${cr}>] [$co-x$cr <${cv}pixel_distance${cr}>] [$co-M$cr <${cv}url${cr}>] directory...
   htmlviewer $co-p$cr
   htmlviewer $co-K$cr
