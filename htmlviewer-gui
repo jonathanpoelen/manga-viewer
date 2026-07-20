@@ -2,8 +2,10 @@
 
 set -e
 
+# Checks whether a command `htmlviewer is available
+# or searches for the program in the same folder as `htmlviewer-gui`.
 cmd=htmlviewer
-if ! command $cmd &>/dev/null; then
+if ! command -v "$cmd" &>/dev/null; then
   cmd="$(basename "$0")"/htmlviewer
   if [[ ! -f "$cmd" ]]; then
     zenity --error --text 'htmlviewer not found'
